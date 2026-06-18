@@ -1,6 +1,7 @@
 import { Switch, Route } from 'wouter';
 import { Router } from 'wouter';
 import { useHashLocation } from 'wouter/use-hash-location';
+import LandingPage from './pages/LandingPage';
 // import { PrivateRoute } from './components/common/PrivateRoute';
 import './App.css';
 
@@ -9,6 +10,7 @@ export default function App() {
     <Router hook={useHashLocation}>
       <Switch>
         {/* Rotas públicas */}
+        <Route path="/" component={LandingPage} />
         {/* TODO: <Route path="/login" component={LoginPage} /> */}
         {/* TODO: <Route path="/register" component={RegisterPage} /> */}
 
@@ -17,11 +19,11 @@ export default function App() {
           <PrivateRoute><DashboardPage /></PrivateRoute>
         </Route> */}
 
-        {/* Fallback temporário para desenvolvimento */}
+        {/* Fallback */}
         <Route>
           <div style={{ padding: '20px', textAlign: 'center' }}>
-            <h1>RPG Imersivo</h1>
-            <p>Scaffold e rotas base configurados com sucesso.</p>
+            <h1>404</h1>
+            <p>Página não encontrada.</p>
           </div>
         </Route>
       </Switch>
