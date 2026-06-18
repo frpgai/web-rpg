@@ -1,23 +1,52 @@
+import { useEffect } from 'react';
 import { Switch, Route } from 'wouter';
 import { Router } from 'wouter';
 import { useHashLocation } from 'wouter/use-hash-location';
 import LandingPage from './pages/LandingPage';
-// import { PrivateRoute } from './components/common/PrivateRoute';
+import LoginPage from './pages/auth/LoginPage';
+import RegisterPage from './pages/auth/RegisterPage';
+import DashboardPage from './pages/dashboard/DashboardPage';
+import OriginsPage from './pages/hero/create/origins';
+import AestheticsPage from './pages/hero/create/AestheticsPage';
+import { PrivateRoute } from './components/common/PrivateRoute';
+import { useAuthStore } from './stores/authStore';
+import { systemService } from './api/services/systemService';
+import { useSystemStore } from './stores/systemStore';
 import './App.css';
 
 export default function App() {
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    systemService.list().then((systems) => {
+      if (systems.length === 1) {
+        useSystemStore.getState().setCurrentSystem(systems[0]);
+      }
+    }).catch(() => {
+      // non-critical — ignore errors
+    });
+  }, [isAuthenticated]);
+
   return (
     <Router hook={useHashLocation}>
       <Switch>
         {/* Rotas públicas */}
         <Route path="/" component={LandingPage} />
-        {/* TODO: <Route path="/login" component={LoginPage} /> */}
-        {/* TODO: <Route path="/register" component={RegisterPage} /> */}
+        <Route path="/login" component={LoginPage} />
+        <Route path="/register" component={RegisterPage} />
+
 
         {/* Rotas privadas */}
-        {/* TODO: <Route path="/dashboard">
+        <Route path="/dashboard">
           <PrivateRoute><DashboardPage /></PrivateRoute>
-        </Route> */}
+        </Route>
+        <Route path="/hero/create/origins">
+          <PrivateRoute><OriginsPage /></PrivateRoute>
+        </Route>
+        <Route path="/hero/create/aesthetics">
+          <PrivateRoute><AestheticsPage /></PrivateRoute>
+        </Route>
 
         {/* Fallback */}
         <Route>

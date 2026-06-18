@@ -1,0 +1,17 @@
+/* Attributes Page Styles (scoped) */
+.attributes-page-root {
+  min-height: 100vh;
+  background-color: var(--color-bg); /* colors.bg */
+  color: var(--color-text); /* colors.text */
+  padding-bottom: 120px;
+  box-sizing: border-box;
+}
+
+.attributes-page-scroll {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 24px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}

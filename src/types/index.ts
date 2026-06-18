@@ -7,3 +7,177 @@ export type AvailableCampaign = {
   open_slots: number;
   ai_narration: boolean;
 };
+
+export type User = {
+  id: string;
+  name: string;
+  email: string;
+};
+
+export type AuthResponse = {
+  token: string;
+  user: User;
+};
+
+export interface Ancestry {
+  id: string;
+  slug: string;
+  name: string;
+  description: string;
+  icon: string;
+  traits: string[];
+}
+
+export interface Background {
+  id: string;
+  slug: string;
+  name: string;
+  description: string;
+  icon: string;
+  attribute_bonuses: Record<string, number> & { eligible?: string[] | undefined };
+  traits: string[];
+}
+
+export interface ClassKit {
+  slug: string;
+  name: string;
+  description: string;
+  icon: string;
+  items: { name: string; rarity: string; weight_kg: number }[];
+}
+
+export interface ClassAbility {
+  slug: string;
+  name: string;
+  type: 'action' | 'bonus_action' | 'reaction' | 'passive';
+  description: string;
+  icon: string;
+  mana_cost: number;
+  range: string;
+}
+
+export type HeroAbility = ClassAbility;
+
+export interface InventoryItem {
+  name: string;
+  rarity: 'common' | 'uncommon' | 'rare' | 'very_rare' | 'legendary';
+  weight_kg: number;
+}
+
+export interface CharacterClass {
+  id: string;
+  slug: string;
+  name: string;
+  description: string;
+  icon: string;
+  key_attribute: string;
+  base_hp: number;
+  base_mp: number;
+  base_def: number;
+  starting_kits: ClassKit[];
+  abilities: ClassAbility[];
+}
+
+export interface AvatarPreset {
+  id: string;
+  url: string;
+  label: string;
+  recommended: boolean;
+}
+
+export interface HeroAttributes {
+  str: number;
+  dex: number;
+  con: number;
+  int: number;
+  wis: number;
+  cha: number;
+}
+
+export interface HeroStats {
+  hp: number;
+  hp_max: number;
+  mp: number;
+  mp_max: number;
+  def: number;
+}
+
+export interface HeroSheet {
+  attributes: HeroAttributes;
+  stats: HeroStats;
+  traits: string[];
+  abilities: ClassAbility[];
+  inventory: { name: string; rarity: string; weight_kg: number }[];
+}
+
+export interface HeroDetail {
+  id: string;
+  name: string;
+  ancestry: { id: string; slug: string; name: string };
+  characterClass: { id: string; slug: string; name: string };
+  level: number;
+  xp: number;
+  xp_next_level: number;
+  avatar_url: string | null;
+  backstory: string | null;
+  sheet: HeroSheet;
+  active_session: { id: string; name: string } | null;
+}
+
+export interface PreviewResult {
+  base_hp: number | null;
+  base_mp: number | null;
+  base_def: number | null;
+  key_attribute: string | null;
+  attribute_bonuses: Record<string, number>;
+  traits: string[];
+}
+
+export interface CreateHeroRequest {
+  name: string;
+  ancestry_id: string;
+  characterClass_id: string;
+  attributes: HeroAttributes;
+  avatar_url: string;
+  backstory?: string;
+  kit_slug: string;
+  ability_slugs: [string, string];
+}
+
+export type Hero = {
+  id: string;
+  name: string;
+  class: string;
+  level: number;
+  avatar_url: string | null;
+  pending_turn: boolean;
+  hp_current: number;
+  hp_max: number;
+  xp: number;
+  xp_next_level: number;
+};
+
+export type PendingTurnNext = {
+  turn_id: string;
+  campaign_id: string;
+  campaign_name: string;
+  hero_name: string;
+  hero_avatar_url: string | null;
+  created_at: string;
+};
+
+export type PendingTurn = {
+  total: number;
+  next: PendingTurnNext | null;
+};
+
+export interface System {
+  id: string;
+  slug: string;
+  name: string;
+  version: string;
+  description: string;
+  created_at: string;
+  updated_at: string;
+}
+

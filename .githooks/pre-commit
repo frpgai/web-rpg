@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+# pre-commit hook — valida colisões de classes CSS antes de commitar
+# Instalação: git config core.hooksPath .githooks  (já configurado via setup.sh)
+
+set -e
+
+ROOT="$(git rev-parse --show-toplevel)"
+SCRIPT="$ROOT/scripts/check_css_collisions.py"
+
+# Só roda se o script existir
+if [ ! -f "$SCRIPT" ]; then
+  exit 0
+fi
+
+# Só roda se houver arquivos CSS staged
+CSS_STAGED=$(git diff --cached --name-only --diff-filter=ACM | grep '\.css$' || true)
+if [ -z "$CSS_STAGED" ]; then
+  exit 0
+fi
+
+echo "🎨 Verificando colisões de classes CSS..."
+
+OUTPUT=$(python3 "$SCRIPT" 2>&1)
+EXIT_CODE=$?
+
+echo "$OUTPUT"
+
+if [ $EXIT_CODE -ne 0 ] || echo "$OUTPUT" | grep -q "colisões detectadas: [^0]"; then
+  echo ""
+  echo "❌ Commit bloqueado: colisões de CSS detectadas."
+  echo "   Use prefixos específicos por componente (ex: .origins-card, não .card)"
+  exit 1
+fi
+
+echo "✅ CSS OK — sem colisões."
+exit 0

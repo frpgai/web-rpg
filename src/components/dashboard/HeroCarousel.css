@@ -1,0 +1,32 @@
+.dashboard-hero-carousel-row {
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
+  padding: 4px 16px;
+  overflow-x: auto;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE 10+ */
+}
+
+.dashboard-hero-carousel-row::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
+.dashboard-hero-carousel-container {
+  width: 100%;
+  overflow-x: auto;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE 10+ */
+}
+
+.dashboard-hero-carousel-container::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
+.dashboard-hero-carousel-scroll {
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
+  padding: 4px 16px 16px 16px;
+  width: max-content;
+}

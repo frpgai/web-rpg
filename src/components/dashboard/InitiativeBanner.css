@@ -1,0 +1,115 @@
+.dashboard-initiative-banner {
+  position: relative;
+  background-color: rgba(215, 186, 255, 0.08);
+  border: 1px solid rgba(215, 186, 255, 0.4);
+  border-radius: 12px;
+  margin-bottom: 24px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.dashboard-initiative-banner:hover {
+  transform: translateY(-2px);
+  border-color: rgba(215, 186, 255, 0.6);
+}
+
+.dashboard-initiative-pulse-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(215, 186, 255, 0.04);
+  border-radius: 12px;
+  animation: dashboard-initiative-pulse 2s infinite ease-in-out;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.dashboard-initiative-content {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.dashboard-initiative-left {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.dashboard-initiative-label {
+  font-family: 'Space Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-primary);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+.dashboard-initiative-subtitle {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-text);
+  text-align: left;
+}
+
+.dashboard-initiative-subtitle strong {
+  color: var(--color-secondary);
+}
+
+.dashboard-initiative-button {
+  background-color: var(--color-primary);
+  border: none;
+  border-radius: 999px;
+  padding: 8px 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.dashboard-initiative-button:hover {
+  background-color: #c09bf8;
+  box-shadow: 0 0 12px rgba(215, 186, 255, 0.4);
+}
+
+.dashboard-initiative-button-text {
+  font-family: 'Space Mono', monospace;
+  font-size: 10px;
+  color: var(--color-on-primary);
+  letter-spacing: 1px;
+  font-weight: 700;
+}
+
+@keyframes dashboard-initiative-pulse {
+  0% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 0.9;
+  }
+  100% {
+    opacity: 0.3;
+  }
+}
+
+@media (max-width: 600px) {
+  .dashboard-initiative-content {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .dashboard-initiative-button {
+    width: 100%;
+  }
+}
