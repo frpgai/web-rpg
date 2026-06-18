@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useLocation } from 'wouter';
 import { AuthModal } from '../components/landing/AuthModal';
+import { useAuthStore } from '../stores/authStore';
 import type { AvailableCampaign } from '../types';
 
 const HERO_IMAGE = 'https://lh3.googleusercontent.com/aida-public/AB6AXuBxaN_1Wxk7TcZEoO29ZEQyo2GrkcNw6D1cDA_OrhPKb18VhRpdYQITkMmy-Rqfm9vDdvlnYRaFG1nCVa0Z5YhVWzZvTMooL-0rSLMB_v3bmgnia9T241khcpD4FYDhE4FZ8PJ19nCYMUmuF71L-Z6fAV6j2MdDdkcwhL_4tc-hk-V6BuIHAh4u-5iqcv7Z6rN2Nz1rEg_WGMuTaHaMSg74GC4vL4UJ2oDIU8hfdfHpdFqNGi5BDFSm7myG7vo7FyeqZCiYIiX-m0SY';
@@ -9,6 +10,8 @@ type AudioState = 'idle' | 'loading' | 'playing' | 'paused' | 'error';
 
 export default function LandingPage() {
   const [, setLocation] = useLocation();
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const clearToken = useAuthStore((s) => s.clearToken);
   const [modalVisible, setModalVisible] = useState(false);
   const [adventures, setAdventures] = useState<AvailableCampaign[]>([]);
   const [loadingAdventures, setLoadingAdventures] = useState(true);
@@ -88,7 +91,11 @@ export default function LandingPage() {
   }
 
   function requireAuth() {
-    setModalVisible(true);
+    if (!isAuthenticated) {
+      setModalVisible(true);
+    } else {
+      setLocation('/dashboard');
+    }
   }
 
   return (
@@ -96,9 +103,15 @@ export default function LandingPage() {
       {/* Header */}
       <header className="landing-header">
         <h1 className="landing-logo">BARD</h1>
-        <button className="landing-login-btn" onClick={() => setLocation('/login')}>
-          Entrar / Cadastrar
-        </button>
+        {isAuthenticated ? (
+          <button className="landing-login-btn" onClick={clearToken}>
+            Sair
+          </button>
+        ) : (
+          <button className="landing-login-btn" onClick={() => setLocation('/login')}>
+            Entrar / Cadastrar
+          </button>
+        )}
       </header>
 
       <div className="landing-scroll-content">
@@ -206,9 +219,11 @@ export default function LandingPage() {
 
       {/* Bottom CTA */}
       <div className="landing-bottom-bar">
-        <button className="cta-btn" onClick={() => setLocation('/register')}>
+        <button className="cta-btn" onClick={() => setLocation(isAuthenticated ? '/dashboard' : '/register')}>
           <span className="cta-btn-icon">👤</span>
-          <span className="cta-btn-text">CRIAR MEU PRIMEIRO HERÓI</span>
+          <span className="cta-btn-text">
+            {isAuthenticated ? 'ENTRAR NO PAINEL' : 'CRIAR MEU PRIMEIRO HERÓI'}
+          </span>
         </button>
       </div>
 
