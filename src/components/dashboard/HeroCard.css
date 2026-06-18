@@ -1,0 +1,283 @@
+.dashboard-hero-card {
+  background-color: rgba(31, 31, 36, 0.4);
+  border-radius: 12px;
+  border: 1px solid rgba(215, 186, 255, 0.3);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  position: relative;
+  cursor: pointer;
+  box-sizing: border-box;
+  text-align: left;
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.dashboard-hero-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(215, 186, 255, 0.5);
+  box-shadow: 0 0 16px rgba(215, 186, 255, 0.1);
+}
+
+/* New Hero Card */
+.dashboard-hero-card-new {
+  border: 2px dashed rgba(215, 186, 255, 0.6);
+  border-radius: 12px;
+  background-color: rgba(31, 31, 36, 0.7);
+  min-height: 180px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 0 15px rgba(215, 186, 255, 0.1);
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.dashboard-hero-card-new:hover {
+  transform: translateY(-2px);
+  border-color: var(--color-primary);
+  box-shadow: 0 0 20px rgba(215, 186, 255, 0.3);
+}
+
+.dashboard-hero-card-energy-pulse {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(215, 186, 255, 0.05);
+  animation: dashboard-new-hero-pulse 4s infinite ease-in-out;
+  pointer-events: none;
+}
+
+.dashboard-hero-card-new-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  z-index: 1;
+}
+
+.dashboard-hero-card-new-icon-wrapper {
+  background-color: rgba(189, 147, 249, 0.2);
+  padding: 12px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dashboard-hero-card-new-label {
+  font-family: 'Space Mono', monospace;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-primary);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  text-align: center;
+}
+
+/* Skeleton State */
+.dashboard-hero-card-skeleton {
+  cursor: default;
+  pointer-events: none;
+  animation: dashboard-skeleton-fade 1.5s infinite ease-in-out;
+}
+
+.dashboard-hero-card-skeleton-avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 12px;
+  background-color: var(--color-surface-container);
+}
+
+.dashboard-hero-card-skeleton-name {
+  width: 120px;
+  height: 16px;
+  border-radius: 4px;
+  background-color: var(--color-surface-container);
+  margin-bottom: 8px;
+}
+
+.dashboard-hero-card-skeleton-class {
+  width: 80px;
+  height: 12px;
+  border-radius: 4px;
+  background-color: var(--color-surface-container);
+}
+
+.dashboard-hero-card-skeleton-bar {
+  height: 6px;
+  border-radius: 999px;
+  background-color: var(--color-surface-container);
+}
+
+/* Card Header */
+.dashboard-hero-card-header {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 16px;
+}
+
+.dashboard-hero-card-avatar-wrapper {
+  position: relative;
+  width: 64px;
+  height: 64px;
+}
+
+.dashboard-hero-card-avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 12px;
+  border: 2px solid rgba(215, 186, 255, 0.5);
+  object-fit: cover;
+}
+
+.dashboard-hero-card-avatar-fallback {
+  width: 64px;
+  height: 64px;
+  border-radius: 12px;
+  background-color: rgba(215, 186, 255, 0.15);
+  border: 2px solid rgba(215, 186, 255, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dashboard-hero-card-avatar-letter {
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.dashboard-hero-card-level-badge {
+  position: absolute;
+  bottom: -4px;
+  right: -4px;
+  background-color: var(--color-bg);
+  border-radius: 999px;
+  border: 1px solid rgba(215, 186, 255, 0.3);
+  padding: 2px 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dashboard-hero-card-level-text {
+  font-family: 'Space Mono', monospace;
+  font-size: 10px;
+  color: var(--color-primary);
+  letter-spacing: 1px;
+}
+
+.dashboard-hero-card-turn-dot {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: var(--color-tertiary);
+  border: 1.5px solid var(--color-bg);
+}
+
+.dashboard-hero-card-info {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.dashboard-hero-card-name {
+  font-family: 'Playfair Display', serif;
+  font-weight: 600;
+  font-size: 20px;
+  line-height: 24px;
+  color: var(--color-text);
+  letter-spacing: -0.3px;
+  margin-bottom: 4px;
+}
+
+.dashboard-hero-card-class {
+  font-family: 'Space Mono', monospace;
+  font-size: 11px;
+  line-height: 14px;
+  color: var(--color-text-muted);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+/* Bars */
+.dashboard-hero-card-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.dashboard-hero-card-bar-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.dashboard-hero-card-bar-labels {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.dashboard-hero-card-bar-label {
+  font-family: 'Space Mono', monospace;
+  font-size: 10px;
+  color: var(--color-text);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.dashboard-hero-card-bar-track {
+  height: 6px;
+  background-color: var(--color-surface-container);
+  border-radius: 999px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.dashboard-hero-card-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+}
+
+.dashboard-hero-card-bar-fill-xp {
+  background-color: #4a3f6b;
+}
+
+/* Keyframe animations */
+@keyframes dashboard-new-hero-pulse {
+  0% {
+    opacity: 0.4;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.02);
+  }
+  100% {
+    opacity: 0.4;
+    transform: scale(1);
+  }
+}
+
+@keyframes dashboard-skeleton-fade {
+  0% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.9;
+  }
+  100% {
+    opacity: 0.4;
+  }
+}

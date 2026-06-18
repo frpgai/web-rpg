@@ -1,0 +1,135 @@
+.dashboard-campaign-card {
+  height: 256px;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid rgba(215, 186, 255, 0.15);
+  background-size: cover;
+  background-position: center;
+  position: relative;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  box-sizing: border-box;
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.dashboard-campaign-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(215, 186, 255, 0.35);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.6);
+}
+
+.dashboard-campaign-card-cover-fallback {
+  background-color: #1a1a28;
+}
+
+.dashboard-campaign-card-gradient {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+  padding: 16px;
+  background: linear-gradient(to bottom, transparent 0%, rgba(13, 13, 20, 0.5) 50%, rgba(13, 13, 20, 0.95) 100%);
+  box-sizing: border-box;
+}
+
+.dashboard-campaign-card-top-row {
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.dashboard-campaign-card-active-badge {
+  background-color: var(--color-primary);
+  border-radius: 4px;
+  padding: 3px 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dashboard-campaign-card-active-badge-text {
+  font-family: 'Space Mono', monospace;
+  font-size: 9px;
+  color: var(--color-on-primary);
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.dashboard-campaign-card-badge {
+  border-radius: 4px;
+  padding: 3px 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dashboard-campaign-card-badge-text {
+  font-family: 'Space Mono', monospace;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.dashboard-campaign-card-bottom {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-align: left;
+}
+
+.dashboard-campaign-card-name {
+  font-family: 'Playfair Display', serif;
+  font-size: 22px;
+  color: var(--color-text);
+  line-height: 28px;
+  font-weight: 700;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.dashboard-campaign-card-system {
+  font-family: 'Space Mono', monospace;
+  font-size: 10px;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.dashboard-campaign-card-slots {
+  font-size: 12px;
+  color: var(--color-outline);
+}
+
+.dashboard-campaign-card-continue-row {
+  margin-top: 4px;
+  display: flex;
+  flex-direction: row;
+}
+
+.dashboard-campaign-card-continue-button {
+  background-color: var(--color-primary);
+  border-radius: 8px;
+  padding: 8px 16px;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.dashboard-campaign-card-continue-button:hover {
+  background-color: #c09bf8;
+  box-shadow: 0 0 12px rgba(215, 186, 255, 0.4);
+}
+
+.dashboard-campaign-card-continue-text {
+  font-family: 'Space Mono', monospace;
+  font-size: 10px;
+  color: var(--color-on-primary);
+  font-weight: 700;
+  letter-spacing: 1px;
+}

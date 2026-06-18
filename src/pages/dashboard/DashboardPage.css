@@ -1,0 +1,261 @@
+.dashboard-centered {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100svh;
+  background-color: var(--color-bg);
+  gap: 16px;
+  box-sizing: border-box;
+}
+
+.dashboard-centered .loading-text {
+  font-family: 'Space Mono', monospace;
+  font-size: 14px;
+  color: var(--color-text-muted);
+}
+
+.dashboard-centered .error-text {
+  font-family: 'Inter', sans-serif;
+  color: var(--color-secondary);
+  text-align: center;
+}
+
+.dashboard-centered .retry-button {
+  background-color: transparent;
+  border: 1px solid var(--color-primary);
+  color: var(--color-primary);
+  border-radius: 8px;
+  padding: 8px 16px;
+  cursor: pointer;
+  font-family: 'Space Mono', monospace;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.dashboard-centered .retry-button:hover {
+  background-color: rgba(215, 186, 255, 0.1);
+  box-shadow: 0 0 10px rgba(215, 186, 255, 0.2);
+}
+
+.dashboard-root {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-height: 100svh;
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  position: relative;
+  padding-bottom: 88px;
+  box-sizing: border-box;
+}
+
+/* Header */
+.dashboard-header {
+  position: sticky;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 48px 20px 12px 20px;
+  background: rgba(19, 19, 24, 0.75);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+.dashboard-header .header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dashboard-header .logo {
+  font-family: 'Playfair Display', serif;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--color-primary);
+  letter-spacing: 4px;
+  text-shadow: 0 0 8px rgba(215, 186, 255, 0.6);
+}
+
+.dashboard-header .header-icon {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background-color 0.2s ease;
+}
+
+.dashboard-header .header-icon:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+/* Scroll Area */
+.dashboard-scroll {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Section Header */
+.dashboard-root .section-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 4px;
+  margin-top: 16px;
+}
+
+.dashboard-root .section-title {
+  font-family: 'Space Mono', monospace;
+  font-size: 11px;
+  color: var(--color-outline);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+.dashboard-root .section-title-inline {
+  font-family: 'Space Mono', monospace;
+  font-size: 11px;
+  color: var(--color-outline);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 8px;
+  padding-left: 4px;
+}
+
+/* Stats Grid */
+.dashboard-root .stats-grid {
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
+  padding: 0 4px;
+  margin-top: 8px;
+}
+
+.dashboard-root .stat-card {
+  flex: 1;
+  background-color: rgba(31, 31, 36, 0.7);
+  border-radius: 12px;
+  border: 1px solid rgba(215, 186, 255, 0.15);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  box-sizing: border-box;
+}
+
+.dashboard-root .stat-label {
+  font-family: 'Space Mono', monospace;
+  font-size: 9px;
+  color: var(--color-outline);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+.dashboard-root .stat-value {
+  font-family: 'Playfair Display', serif;
+  font-size: 24px;
+  font-weight: 700;
+}
+
+/* Active Campaign */
+.dashboard-root .active-campaign-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 0 4px;
+  margin-top: 16px;
+}
+
+/* Explore Campaigns */
+.dashboard-root .explore-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.dashboard-root .see-all-button {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-family: 'Space Mono', monospace;
+  font-size: 11px;
+  color: var(--color-primary);
+  letter-spacing: 1px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.dashboard-root .see-all-button:hover {
+  background-color: rgba(215, 186, 255, 0.05);
+}
+
+.dashboard-root .empty-campaigns {
+  padding: 24px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px dashed rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+}
+
+.dashboard-root .empty-text {
+  color: var(--color-outline);
+  font-size: 13px;
+  text-align: center;
+}
+
+.dashboard-root .campaigns-list {
+  display: flex;
+  flex-direction: row;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.dashboard-root .campaigns-list::-webkit-scrollbar {
+  display: none;
+}
+
+/* Floating Action Button */
+.dashboard-root .fab {
+  position: fixed;
+  right: 20px;
+  bottom: 92px;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background-color: var(--color-primary);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 15px rgba(215, 186, 255, 0.4);
+  z-index: 999;
+  transition: transform 0.2s ease, background-color 0.2s ease;
+}
+
+.dashboard-root .fab:hover {
+  transform: scale(1.05);
+  background-color: #c09bf8;
+  box-shadow: 0 0 20px rgba(215, 186, 255, 0.6);
+}
+
+@media (max-width: 600px) {
+  .dashboard-header {
+    padding-top: 24px;
+  }
+}

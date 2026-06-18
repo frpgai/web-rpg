@@ -1,0 +1,48 @@
+/* =============================================================================
+   Design Tokens — CSS Custom Properties
+   Espelha src/constants/theme.ts para uso direto nos arquivos CSS.
+   NUNCA use valores hexadecimais hardcoded nos arquivos CSS do projeto.
+   Use sempre as variáveis definidas aqui.
+   ============================================================================= */
+
+:root {
+  /* ── Backgrounds ─────────────────────────────────────────────────────────── */
+  --color-bg:                #131318;
+  --color-surface-lowest:    #0e0e13;
+  --color-surface:           #131318;
+  --color-surface-low:       #1b1b20;
+  --color-surface-container: #1f1f24;
+  --color-surface-high:      #2a292f;
+  --color-surface-highest:   #35343a;
+
+  /* ── Brand Colors ────────────────────────────────────────────────────────── */
+  --color-primary:           #d7baff;
+  --color-primary-container: #bd93f9;
+  --color-on-primary:        #411478;
+  --color-secondary:         #ffb86c;
+  --color-tertiary:          #31e368;
+
+  /* ── Text ────────────────────────────────────────────────────────────────── */
+  --color-text:              #e4e1e9;
+  --color-text-muted:        #ccc3d3;
+  --color-outline:           #968e9c;
+  --color-outline-variant:   #4a4451;
+
+  /* ── Spacing ─────────────────────────────────────────────────────────────── */
+  --space-xs:  4px;
+  --space-sm:  8px;
+  --space-md:  16px;
+  --space-lg:  24px;
+  --space-xl:  32px;
+
+  /* ── Radius ──────────────────────────────────────────────────────────────── */
+  --radius-sm:   4px;
+  --radius-md:   8px;
+  --radius-lg:   12px;
+  --radius-full: 9999px;
+
+  /* ── Typography ──────────────────────────────────────────────────────────── */
+  --font-display: 'Playfair Display', serif;
+  --font-mono:    'Space Mono', monospace;
+  --font-sans:    'Inter', sans-serif;
+}
