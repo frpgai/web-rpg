@@ -6,7 +6,9 @@ export const apiClient = ky.create({
   timeout: 30000,
   hooks: {
     beforeRequest: [
-      ({ request }) => {
+      (requestOrObj: any) => {
+        const request = requestOrObj?.request || requestOrObj;
+        if (!request || !request.headers) return;
         const token = useAuthStore.getState().token;
         if (token) {
           request.headers.set('Authorization', `Bearer ${token}`);
@@ -14,12 +16,14 @@ export const apiClient = ky.create({
       },
     ],
     afterResponse: [
-      ({ response }) => {
-        if (response.status === 401) {
+      (requestOrObj: any, _options?: any, response?: any) => {
+        const res = requestOrObj?.response || response || requestOrObj;
+        if (!res) return;
+        if (res.status === 401) {
           useAuthStore.getState().clearToken();
           window.location.hash = '#/login';
         }
-        return response;
+        return res;
       },
     ],
   },
