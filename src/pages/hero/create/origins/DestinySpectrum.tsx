@@ -1,27 +1,44 @@
 import { SvgIcon } from '../../../../components/ui/SvgIcon';
 import { Tooltip } from '../../../../components/ui/Tooltip';
-import type { Ancestry, Background, CharacterClass } from '../../../../types';
+import type { Ancestry, Background, Vocation } from '../../../../types';
 import type { PreviewResult } from '../../../../types';
-import { KEY_ATTR_PT, SECONDARY, formatBonuses } from './origins.utils';
+import { ATTR_LABELS, KEY_ATTR_PT, SECONDARY, formatBonuses } from './origins.utils';
 
 interface DestinySpectrumProps {
   ancestry: Ancestry | null;
   background: Background | null;
-  characterClass: CharacterClass | null;
+  vocation: Vocation | null;
   preview: PreviewResult | null;
   previewLoading: boolean;
   previewError: string | null;
 }
 
+function formatSpellSlots(slots: Record<string, number> | null | undefined): string | null {
+  if (!slots) return null;
+  const entries = Object.entries(slots).filter(([, qty]) => qty > 0);
+  if (entries.length === 0) return null;
+  return entries.map(([lvl, qty]) => `${qty} slot${qty > 1 ? 's' : ''} nv${lvl}`).join(', ');
+}
+
 export function DestinySpectrum({
   ancestry,
   background,
-  characterClass,
+  vocation,
   preview,
   previewLoading,
   previewError,
 }: DestinySpectrumProps) {
-  const bonusSummary = background ? formatBonuses(background.attribute_bonuses) : null;
+  const eligibleAttrs = background?.eligible_attributes
+    ?? background?.attribute_bonuses?.eligible
+    ?? [];
+
+  const eligibleLabel = eligibleAttrs.length > 0
+    ? eligibleAttrs.map((a) => ATTR_LABELS[a] ?? a.toUpperCase()).join(' / ')
+    : null;
+
+  const spellSlotsLabel = preview?.is_spellcaster
+    ? formatSpellSlots(vocation?.spell_slots_by_level)
+    : null;
 
   return (
     <div className="origins-spectrum-panel">
@@ -45,14 +62,14 @@ export function DestinySpectrum({
           <span className="origins-spectrum-row-label">Antecedente</span>
           <div className="origins-spectrum-row-right">
             <span className="origins-spectrum-row-value">{background?.name ?? '—'}</span>
-            {bonusSummary ? (
-              <span className="origins-spectrum-bonus-text">{bonusSummary}</span>
+            {eligibleLabel ? (
+              <span className="origins-spectrum-bonus-text">{eligibleLabel}</span>
             ) : null}
           </div>
         </div>
         <div className="origins-spectrum-row">
           <span className="origins-spectrum-row-label">Vocação</span>
-          <span className="origins-spectrum-row-value">{characterClass?.name ?? '—'}</span>
+          <span className="origins-spectrum-row-value">{vocation?.name ?? '—'}</span>
         </div>
 
         {/* Sinergia Inicial */}
@@ -76,16 +93,6 @@ export function DestinySpectrum({
               )}
             </div>
             <div className="origins-spectrum-stat-box">
-              <span className="origins-spectrum-stat-label">MP</span>
-              {previewLoading ? (
-                <div className="origins-spectrum-stat-skeleton" />
-              ) : (
-                <span className="origins-spectrum-stat-value">
-                  {preview?.base_mp != null ? String(preview.base_mp).padStart(2, '0') : '—'}
-                </span>
-              )}
-            </div>
-            <div className="origins-spectrum-stat-box">
               <span className="origins-spectrum-stat-label">DEF</span>
               {previewLoading ? (
                 <div className="origins-spectrum-stat-skeleton" />
@@ -95,7 +102,29 @@ export function DestinySpectrum({
                 </span>
               )}
             </div>
+            <div className="origins-spectrum-stat-box">
+              <span className="origins-spectrum-stat-label">DADO HP</span>
+              {previewLoading ? (
+                <div className="origins-spectrum-stat-skeleton" />
+              ) : (
+                <span className="origins-spectrum-stat-value">
+                  {vocation?.hit_die ? `d${vocation.hit_die}` : '—'}
+                </span>
+              )}
+            </div>
           </div>
+
+          {/* Spell Slots — apenas para conjuradores */}
+          {(previewLoading || spellSlotsLabel) && (
+            <div className="origins-spectrum-row" style={{ marginTop: '4px' }}>
+              <span className="origins-spectrum-row-label">Spell Slots</span>
+              {previewLoading ? (
+                <div className="origins-spectrum-row-skeleton" />
+              ) : (
+                <span className="origins-spell-slots-badge">{spellSlotsLabel}</span>
+              )}
+            </div>
+          )}
 
           {/* Key attribute row */}
           <div className="origins-spectrum-row" style={{ marginTop: '8px' }}>
@@ -106,24 +135,22 @@ export function DestinySpectrum({
               <div className="origins-spectrum-row-skeleton" />
             ) : (
               <span className="origins-spectrum-row-value">
-                {preview?.key_attribute ? (KEY_ATTR_PT[preview.key_attribute] ?? preview.key_attribute.toUpperCase()) : '—'}
-              </span>
-            )}
-          </div>
-
-          {/* Attribute bonuses row */}
-          <div className="origins-spectrum-row">
-            <span className="origins-spectrum-row-label">Bônus</span>
-            {previewLoading ? (
-              <div className="origins-spectrum-row-skeleton" />
-            ) : (
-              <span className="origins-spectrum-row-value">
-                {preview?.attribute_bonuses && Object.keys(preview.attribute_bonuses).length > 0
-                  ? formatBonuses(preview.attribute_bonuses)
+                {preview?.key_attribute
+                  ? (KEY_ATTR_PT[preview.key_attribute] ?? preview.key_attribute.toUpperCase())
                   : '—'}
               </span>
             )}
           </div>
+
+          {/* Eligible attributes from background */}
+          {eligibleLabel && (
+            <div className="origins-spectrum-row">
+              <span className="origins-spectrum-row-label">Attrs Elegíveis</span>
+              <span className="origins-spectrum-row-value" style={{ color: SECONDARY }}>
+                {eligibleLabel}
+              </span>
+            </div>
+          )}
 
           {/* Traits row */}
           {(preview?.traits && preview.traits.length > 0) && (

@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useState } from 'react';
 import { catalogApi } from '../api/services/catalog';
-import type { Ancestry, Background, PreviewResult, CharacterClass } from '../types';
+import { useSystemStore } from '../stores/systemStore';
+import type { Ancestry, Background, PreviewResult, Vocation } from '../types';
 
 interface OriginsStepState {
   ancestries: Ancestry[];
-  classes: CharacterClass[];
+  vocations: Vocation[];
   backgrounds: Background[];
   preview: PreviewResult | null;
   catalogLoading: boolean;
@@ -14,9 +15,10 @@ interface OriginsStepState {
 }
 
 export function useOriginsStep() {
+  const { currentSystem } = useSystemStore();
   const [state, setState] = useState<OriginsStepState>({
     ancestries: [],
-    classes: [],
+    vocations: [],
     backgrounds: [],
     preview: null,
     catalogLoading: true,
@@ -28,15 +30,16 @@ export function useOriginsStep() {
   const loadCatalog = useCallback(async () => {
     setState((prev) => ({ ...prev, catalogLoading: true, catalogError: null }));
     try {
-      const [ancestries, classes, backgrounds] = await Promise.all([
+      const systemId = currentSystem?.id ?? 'default';
+      const [ancestries, vocations, backgrounds] = await Promise.all([
         catalogApi.ancestries(),
-        catalogApi.classes(),
+        catalogApi.vocations(systemId),
         catalogApi.backgrounds(),
       ]);
       setState((prev) => ({
         ...prev,
         ancestries,
-        classes,
+        vocations,
         backgrounds,
         catalogLoading: false,
         catalogError: null,
@@ -48,7 +51,7 @@ export function useOriginsStep() {
         catalogError: 'Não foi possível carregar o catálogo.',
       }));
     }
-  }, []);
+  }, [currentSystem?.id]);
 
   useEffect(() => {
     loadCatalog();
@@ -57,14 +60,14 @@ export function useOriginsStep() {
   const fetchPreview = useCallback(
     async (
       ancestryId: string | null,
-      classId: string | null,
+      vocationId: string | null,
       backgroundId: string | null,
     ) => {
       setState((prev) => ({ ...prev, previewLoading: true, previewError: null }));
       try {
-        const result = await catalogApi.previewHero({
+        const result = await catalogApi.previewHeroV2({
           ancestry_id: ancestryId,
-          characterClass_id: classId,
+          class_id: vocationId,
           background_id: backgroundId,
         });
         setState((prev) => ({
@@ -76,7 +79,6 @@ export function useOriginsStep() {
       } catch {
         setState((prev) => ({
           ...prev,
-          // Keep previous preview on error
           previewLoading: false,
           previewError: 'Não foi possível calcular o espectro.',
         }));
@@ -87,6 +89,8 @@ export function useOriginsStep() {
 
   return {
     ...state,
+    // Keep backward-compatible alias
+    classes: state.vocations,
     reloadCatalog: loadCatalog,
     fetchPreview,
   };

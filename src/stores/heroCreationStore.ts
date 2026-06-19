@@ -1,11 +1,14 @@
 import { create } from 'zustand';
-import type { Ancestry, Background, CharacterClass, HeroAttributes } from '../types';
+import type { Ancestry, Background, CharacterClass, Vocation, HeroAttributes } from '../types';
 import { POINT_BUY_BUDGET, POINT_BUY_COST } from '../constants/rules';
+
+/** The class/vocation stored during hero creation. May be CharacterClass (legacy) or Vocation (new). */
+export type StoredClass = CharacterClass | Vocation;
 
 type HeroCreationState = {
   // Step 1
   ancestry: Ancestry | null;
-  characterClass: CharacterClass | null;
+  characterClass: StoredClass | null;
   background: Background | null;
   asiPlus2: string | null;   // atributo que recebe +2 (chave interna: 'str','dex',...)
   asiPlus1: string | null;   // atributo que recebe +1 (deve ser diferente de asiPlus2)
@@ -24,7 +27,7 @@ type HeroCreationState = {
   // Actions
   reset: () => void;
   setAncestry: (a: Ancestry) => void;
-  setCharacterClass: (v: CharacterClass) => void;
+  setCharacterClass: (v: StoredClass) => void;
   setBackground: (b: Background) => void;
   setBaseAttributes: (attrs: HeroAttributes) => void;
   setAttribute: (key: keyof HeroAttributes, value: number) => void;

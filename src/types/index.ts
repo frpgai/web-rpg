@@ -19,23 +19,79 @@ export type AuthResponse = {
   user: User;
 };
 
-export interface Ancestry {
+export interface Trait {
   id: string;
   slug: string;
   name: string;
   description: string;
+}
+
+export interface Ancestry {
+  id: string;
+  system_id?: string;
+  slug: string;
+  name: string;
+  description: string;
   icon: string;
+  speed?: number;
+  hp_bonus_per_level?: number;
+  enabled?: boolean;
   traits: string[];
+}
+
+export interface AncestryDetails extends Ancestry {
+  traits_detail: Trait[];
 }
 
 export interface Background {
   id: string;
+  system_id?: string;
   slug: string;
   name: string;
   description: string;
   icon: string;
+  eligible_attributes?: string[];
   attribute_bonuses: Record<string, number> & { eligible?: string[] | undefined };
   traits: string[];
+  enabled?: boolean;
+}
+
+export interface BackgroundDetails extends Background {
+  traits_detail: Trait[];
+}
+
+export interface AsiChoice {
+  plus2: string | null;
+  plus1: string | null;
+  allPlus1: boolean;
+}
+
+export interface StartingItem {
+  item_id: string;
+  slug: string;
+  name: string;
+  type: string;
+  quantity: number;
+  equipped: boolean;
+}
+
+export interface Vocation {
+  id: string;
+  system_id: string;
+  slug: string;
+  name: string;
+  description: string;
+  icon?: string;
+  key_attribute: string;
+  hit_die: number;
+  is_spellcaster: boolean;
+  spell_slots_by_level: Record<string, number> | null;
+  enabled: boolean;
+}
+
+export interface VocationDetails extends Vocation {
+  starting_items: StartingItem[];
+  traits: Trait[];
 }
 
 export interface ClassKit {
@@ -77,6 +133,9 @@ export interface CharacterClass {
   starting_kits: ClassKit[];
   abilities: ClassAbility[];
 }
+
+/** @deprecated Use Vocation instead */
+export type LegacyCharacterClass = CharacterClass;
 
 export interface AvatarPreset {
   id: string;
@@ -126,10 +185,11 @@ export interface HeroDetail {
 
 export interface PreviewResult {
   base_hp: number | null;
-  base_mp: number | null;
+  base_mp?: number | null;
   base_def: number | null;
+  is_spellcaster?: boolean | null;
   key_attribute: string | null;
-  attribute_bonuses: Record<string, number>;
+  attribute_bonuses: Record<string, number> & { eligible?: string[] };
   traits: string[];
 }
 

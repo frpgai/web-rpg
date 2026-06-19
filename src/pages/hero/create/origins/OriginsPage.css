@@ -503,3 +503,195 @@
   line-height: 1.6;
   margin: 12px 0 0 0;
 }
+
+/* ── Card info button ──────────────────────────────────────────────────────── */
+.origins-card-info-btn {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.07);
+  border: 1px solid var(--color-outline-variant);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 11px;
+  color: var(--color-text-muted);
+  line-height: 1;
+  padding: 0;
+  z-index: 2;
+  transition: background-color 0.15s ease;
+}
+
+.origins-card-info-btn:hover {
+  background-color: rgba(215, 186, 255, 0.12);
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+/* ── ASI Section ───────────────────────────────────────────────────────────── */
+.origins-asi-section {
+  background-color: var(--color-surface-container);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: 8px;
+  padding: var(--space-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  margin-top: var(--space-sm);
+}
+
+.origins-asi-title {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  margin: 0;
+}
+
+.origins-asi-options {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.origins-asi-option-row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.origins-asi-option-active {
+  /* highlight when Option A is active */
+}
+
+.origins-asi-option-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.origins-asi-dropdowns {
+  display: flex;
+  flex-direction: row;
+  gap: var(--space-sm);
+  flex-wrap: wrap;
+}
+
+.origins-asi-dropdown-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  min-width: 120px;
+}
+
+.origins-asi-dropdown-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--color-text-muted);
+}
+
+.origins-asi-select {
+  background-color: var(--color-surface-high);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: 4px;
+  color: var(--color-text);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  padding: 6px var(--space-sm);
+  cursor: pointer;
+  outline: none;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.origins-asi-select:focus {
+  border-color: var(--color-primary);
+}
+
+.origins-asi-or-divider {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.origins-asi-or-divider::before,
+.origins-asi-or-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background-color: var(--color-outline-variant);
+}
+
+.origins-asi-or-text {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.origins-asi-option-b {
+  background-color: var(--color-surface-high);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: 6px;
+  padding: var(--space-sm) var(--space-md);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-align: left;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.origins-asi-option-b:hover {
+  border-color: var(--color-primary);
+}
+
+.origins-asi-option-b-selected {
+  border-color: var(--color-primary);
+  background-color: rgba(215, 186, 255, 0.07);
+}
+
+.origins-asi-option-b-label {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--color-primary);
+  letter-spacing: 0.08em;
+}
+
+.origins-asi-option-b-desc {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--color-text-muted);
+  line-height: 1.4;
+}
+
+.origins-asi-eligible-list {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--color-secondary);
+  letter-spacing: 0.05em;
+}
+
+/* ── Spell slots badge ─────────────────────────────────────────────────────── */
+.origins-spell-slots-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background-color: rgba(49, 227, 104, 0.08);
+  border: 1px solid rgba(49, 227, 104, 0.2);
+  border-radius: 4px;
+  padding: 2px var(--space-sm);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--color-tertiary);
+  letter-spacing: 0.05em;
+}
