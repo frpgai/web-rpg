@@ -1,5 +1,6 @@
 import type { Background } from '../../../../types';
-import { ATTR_LABELS } from './origins.utils';
+import { ATTR_LABELS, PRIMARY } from './origins.utils';
+import { SvgIcon } from '../../../../components/ui/SvgIcon';
 
 interface AsiSectionProps {
   background: Background;
@@ -47,7 +48,14 @@ export function AsiSection({
 
   return (
     <div className="origins-asi-section">
-      <p className="origins-asi-title">Distribuição de Atributos (ASI)</p>
+      <div className="origins-asi-header">
+        <SvgIcon name="star" size={20} color={PRIMARY} />
+        <p className="origins-asi-title">Distribuir Atributos (ASI)</p>
+      </div>
+
+      <p className="origins-asi-desc">
+        Escolha como manifestar seu poder inato. Distribua +2 em um atributo e +1 em outro diferente.
+      </p>
 
       <div className="origins-asi-options">
         {/* Opção A */}
@@ -55,14 +63,14 @@ export function AsiSection({
           <span className="origins-asi-option-label">Opção A</span>
           <div className="origins-asi-dropdowns">
             <div className="origins-asi-dropdown-group">
-              <label className="origins-asi-dropdown-label">+2 em:</label>
+              <label className="origins-asi-dropdown-label-plus2">Bônus +2</label>
               <select
                 className="origins-asi-select"
                 value={asiPlus2 ?? ''}
                 onChange={(e) => handleSelectPlus2(e.target.value || '')}
                 onClick={() => onSetAllPlus1(false)}
               >
-                <option value="">— escolha —</option>
+                <option value="">Selecionar Atributo</option>
                 {availableForPlus2.map((attr) => (
                   <option key={attr} value={attr}>
                     {ATTR_LABELS[attr] ?? attr.toUpperCase()}
@@ -71,14 +79,14 @@ export function AsiSection({
               </select>
             </div>
             <div className="origins-asi-dropdown-group">
-              <label className="origins-asi-dropdown-label">+1 em:</label>
+              <label className="origins-asi-dropdown-label-plus1">Bônus +1</label>
               <select
                 className="origins-asi-select"
                 value={asiPlus1 ?? ''}
                 onChange={(e) => handleSelectPlus1(e.target.value || '')}
                 onClick={() => onSetAllPlus1(false)}
               >
-                <option value="">— escolha —</option>
+                <option value="">Selecionar Atributo</option>
                 {availableForPlus1.map((attr) => (
                   <option key={attr} value={attr}>
                     {ATTR_LABELS[attr] ?? attr.toUpperCase()}

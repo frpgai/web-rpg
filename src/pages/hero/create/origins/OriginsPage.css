@@ -533,24 +533,43 @@
 }
 
 /* ── ASI Section ───────────────────────────────────────────────────────────── */
+/* ── ASI Section — glass-panel style, pixel-perfect via Stitch d08c4a06bdd646f082bd1ba913324899 ── */
 .origins-asi-section {
-  background-color: var(--color-surface-container);
-  border: 1px solid var(--color-outline-variant);
-  border-radius: 8px;
-  padding: var(--space-md);
+  background: color-mix(in srgb, var(--color-bg) 80%, transparent);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid color-mix(in srgb, var(--color-primary) 10%, transparent);
+  border-radius: var(--radius-md);
+  padding: var(--space-lg);
   display: flex;
   flex-direction: column;
-  gap: var(--space-sm);
+  gap: var(--space-md);
   margin-top: var(--space-sm);
 }
 
+.origins-asi-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-sm);
+}
+
+
 .origins-asi-title {
   font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 0.15em;
+  font-size: 12px;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--color-text-muted);
+  color: var(--color-text);
   margin: 0;
+}
+
+.origins-asi-desc {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  color: var(--color-text-muted);
+  line-height: 1.6;
+  margin: 0 0 var(--space-md) 0;
 }
 
 .origins-asi-options {
@@ -559,14 +578,21 @@
   gap: var(--space-sm);
 }
 
+/* Opção A — selected state adds subtle primary glow border */
 .origins-asi-option-row {
   display: flex;
   flex-direction: column;
   gap: var(--space-xs);
+  padding: var(--space-md);
+  border-radius: var(--radius-md);
+  border: 1px solid color-mix(in srgb, var(--color-text) 5%, transparent);
+  background-color: var(--color-surface-low);
+  transition: border-color 0.2s ease;
 }
 
 .origins-asi-option-active {
-  /* highlight when Option A is active */
+  border-color: color-mix(in srgb, var(--color-primary) 60%, transparent);
+  box-shadow: 0 0 15px color-mix(in srgb, var(--color-primary) 30%, transparent);
 }
 
 .origins-asi-option-label {
@@ -575,41 +601,62 @@
   color: var(--color-text-muted);
   text-transform: uppercase;
   letter-spacing: 0.1em;
+  margin-bottom: var(--space-xs);
 }
 
 .origins-asi-dropdowns {
-  display: flex;
-  flex-direction: row;
-  gap: var(--space-sm);
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-md);
 }
 
 .origins-asi-dropdown-group {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  flex: 1;
-  min-width: 120px;
+  gap: var(--space-sm);
 }
 
+/* "+2" label — primary color per Stitch */
+.origins-asi-dropdown-label-plus2 {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--color-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+/* "+1" label — secondary color per Stitch */
+.origins-asi-dropdown-label-plus1 {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--color-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+/* Keep backward-compat alias used by existing markup */
 .origins-asi-dropdown-label {
   font-family: var(--font-mono);
   font-size: 10px;
   color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
 }
 
 .origins-asi-select {
-  background-color: var(--color-surface-high);
-  border: 1px solid var(--color-outline-variant);
-  border-radius: 4px;
+  width: 100%;
+  background-color: var(--color-surface-low);
+  border: 1px solid color-mix(in srgb, var(--color-text) 10%, transparent);
+  border-radius: var(--radius-md);
   color: var(--color-text);
   font-family: var(--font-mono);
-  font-size: 11px;
-  padding: 6px var(--space-sm);
+  font-size: 12px;
+  padding: var(--space-md);
   cursor: pointer;
   outline: none;
   appearance: none;
   -webkit-appearance: none;
+  transition: border-color 0.2s ease;
 }
 
 .origins-asi-select:focus {
@@ -620,6 +667,7 @@
   display: flex;
   align-items: center;
   gap: var(--space-sm);
+  margin: var(--space-xs) 0;
 }
 
 .origins-asi-or-divider::before,
@@ -638,26 +686,28 @@
   letter-spacing: 0.1em;
 }
 
+/* Opção B button */
 .origins-asi-option-b {
-  background-color: var(--color-surface-high);
-  border: 1px solid var(--color-outline-variant);
-  border-radius: 6px;
-  padding: var(--space-sm) var(--space-md);
+  background-color: var(--color-surface-low);
+  border: 1px solid color-mix(in srgb, var(--color-text) 5%, transparent);
+  border-radius: var(--radius-md);
+  padding: var(--space-md);
   cursor: pointer;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--space-xs);
   text-align: left;
-  transition: border-color 0.2s ease, background-color 0.2s ease;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .origins-asi-option-b:hover {
-  border-color: var(--color-primary);
+  border-color: color-mix(in srgb, var(--color-primary) 60%, transparent);
 }
 
 .origins-asi-option-b-selected {
-  border-color: var(--color-primary);
-  background-color: rgba(215, 186, 255, 0.07);
+  border-color: color-mix(in srgb, var(--color-primary) 60%, transparent);
+  box-shadow: 0 0 15px color-mix(in srgb, var(--color-primary) 30%, transparent);
+  background-color: color-mix(in srgb, var(--color-primary) 7%, transparent);
 }
 
 .origins-asi-option-b-label {
