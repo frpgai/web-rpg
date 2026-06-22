@@ -1,0 +1,200 @@
+/* ── AsiSection — prefixo .origins-asi-* ───────────────────────────────────── */
+
+/* Container principal — sub-seção dentro do painel Antecedente */
+.origins-asi-section {
+  grid-column: 1 / -1;
+  margin-top: var(--space-md);
+  padding: var(--space-md);
+  background: rgba(215, 186, 255, 0.04); /* primary/4 — leve destaque da sub-seção */
+  border: 1px solid rgba(215, 186, 255, 0.12); /* primary/12 */
+  border-radius: 12px; /* rounded-xl do Stitch */
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+/* Header: ícone + título */
+.origins-asi-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.origins-asi-icon {
+  font-size: 16px;
+  color: var(--color-primary);
+  line-height: 1;
+}
+
+.origins-asi-title {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-text);
+  margin: 0;
+}
+
+/* Abreviação "ASI" com underline puntilhado de tooltip */
+.origins-asi-title-abbr {
+  border-bottom: 1px dashed var(--color-outline);
+  cursor: help;
+  text-decoration: none;
+}
+
+/* Botão "Distribuir +1/+1/+1" */
+.origins-asi-allplus1-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding: var(--space-sm) var(--space-md);
+  background: var(--color-surface-container);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: 8px; /* rounded-lg do Stitch */
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s, box-shadow 0.2s;
+  text-align: left;
+}
+
+.origins-asi-allplus1-btn:hover {
+  background: var(--color-surface-high);
+}
+
+.origins-asi-allplus1-btn-active {
+  background: rgba(215, 186, 255, 0.08); /* primary/8 */
+  border-color: rgba(215, 186, 255, 0.4); /* primary/40 */
+  box-shadow: 0 0 10px rgba(215, 186, 255, 0.15);
+}
+
+.origins-asi-allplus1-label {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-primary);
+}
+
+.origins-asi-allplus1-hint {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  color: var(--color-text-muted);
+  line-height: 1.4;
+}
+
+/* Área de seletores +2 / +1 */
+.origins-asi-selectors {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  transition: opacity 0.2s;
+}
+
+.origins-asi-selectors-disabled {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+/* Grupo de seletor: label + chips */
+.origins-asi-selector-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.origins-asi-selector-label {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.origins-asi-selector-label-text {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  border-bottom: 1px dashed var(--color-outline);
+  cursor: help;
+}
+
+/* Grade de chips de atributo */
+.origins-asi-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+}
+
+/* Chip individual */
+.origins-asi-chip {
+  padding: 4px 10px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  background: var(--color-surface-low);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: 4px; /* rounded do Stitch */
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s, box-shadow 0.15s;
+  line-height: 1.5;
+}
+
+.origins-asi-chip:hover:not(:disabled) {
+  background: var(--color-surface-container);
+  border-color: var(--color-outline);
+  color: var(--color-text);
+}
+
+/* Chip selecionado — visual primary */
+.origins-asi-chip-selected {
+  color: var(--color-primary);
+  background: rgba(215, 186, 255, 0.1); /* primary/10 */
+  border-color: rgba(215, 186, 255, 0.35); /* primary/35 */
+  box-shadow: 0 0 8px rgba(215, 186, 255, 0.2);
+}
+
+.origins-asi-chip-selected:hover:not(:disabled) {
+  background: rgba(215, 186, 255, 0.15);
+}
+
+/* Chip desabilitado */
+.origins-asi-chip-disabled,
+.origins-asi-chip:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+/* ── Tooltip ─────────────────────────────────────────────────────────────────── */
+.origins-asi-tooltip-anchor {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  outline: none;
+}
+
+.origins-asi-tooltip-bubble {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100;
+  min-width: 180px;
+  max-width: 260px;
+  padding: var(--space-xs) var(--space-sm);
+  background: var(--color-surface-highest);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: 6px;
+  font-family: var(--font-sans);
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--color-text-muted);
+  white-space: normal;
+  pointer-events: none;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+}

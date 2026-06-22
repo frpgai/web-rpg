@@ -28,13 +28,14 @@ export function useOriginsStep() {
   });
 
   const loadCatalog = useCallback(async () => {
+    if (!currentSystem?.id) return;
     setState((prev) => ({ ...prev, catalogLoading: true, catalogError: null }));
     try {
-      const systemId = currentSystem?.id ?? 'default';
+      const systemId = currentSystem.id;
       const [ancestries, vocations, backgrounds] = await Promise.all([
-        catalogApi.ancestries(),
+        catalogApi.ancestries(systemId),
         catalogApi.vocations(systemId),
-        catalogApi.backgrounds(),
+        catalogApi.backgrounds(systemId),
       ]);
       setState((prev) => ({
         ...prev,

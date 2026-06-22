@@ -1,15 +1,14 @@
 import React from 'react';
 
 interface SvgIconProps {
-  name: string;
+  name?: string;
   size?: number | string;
   color?: string;
   className?: string;
 }
 
 export function SvgIcon({ name, size = 24, color = 'currentColor', className = '' }: SvgIconProps) {
-  // Normalize names
-  const key = name.toLowerCase().replace(/_/g, '-');
+  const key = (name ?? '').toLowerCase().replace(/_/g, '-');
 
   // SVG paths dictionary
   const icons: Record<string, React.ReactNode> = {

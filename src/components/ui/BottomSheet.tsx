@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import './BottomSheet.css';
 
 interface BottomSheetProps {
@@ -22,7 +23,7 @@ export function BottomSheet({ open, onClose, title, children }: BottomSheetProps
 
   if (!open) return null;
 
-  return (
+  return createPortal(
     <div
       className="bottom-sheet-overlay"
       ref={overlayRef}
@@ -42,6 +43,7 @@ export function BottomSheet({ open, onClose, title, children }: BottomSheetProps
           {children}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

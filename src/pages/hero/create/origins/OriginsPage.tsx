@@ -58,6 +58,9 @@ export default function OriginsPage() {
     setAncestry(randAncestry);
     setCharacterClass(randVocation);
     setBackground(randBackground);
+    setAsiPlus2(null);
+    setAsiPlus1(null);
+    setAsiAllPlus1(false);
     fetchPreview(randAncestry.id, randVocation.id, randBackground.id);
   }
 
