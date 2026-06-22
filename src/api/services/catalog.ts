@@ -23,10 +23,24 @@ export const catalogApi = {
     ancestry_id: string | null;
     characterClass_id: string | null;
     background_id: string | null;
-  }) => apiClient.post('api/v1/hero/preview', { json: input }).json<PreviewResult>(),
+  }) => {
+    const params = new URLSearchParams();
+    if (input.ancestry_id)       params.set('ancestry_id',       input.ancestry_id);
+    if (input.characterClass_id) params.set('characterClass_id', input.characterClass_id);
+    if (input.background_id)     params.set('background_id',     input.background_id);
+    const qs = params.toString();
+    return apiClient.get(`api/v1/hero/preview${qs ? '?' + qs : ''}`).json<PreviewResult>();
+  },
   previewHeroV2: (input: {
     ancestry_id: string | null;
     class_id: string | null;
     background_id: string | null;
-  }) => apiClient.post('api/v1/hero/preview', { json: input }).json<PreviewResult>(),
+  }) => {
+    const params = new URLSearchParams();
+    if (input.ancestry_id)   params.set('ancestry_id',   input.ancestry_id);
+    if (input.class_id)      params.set('class_id',      input.class_id);
+    if (input.background_id) params.set('background_id', input.background_id);
+    const qs = params.toString();
+    return apiClient.get(`api/v1/hero/preview${qs ? '?' + qs : ''}`).json<PreviewResult>();
+  },
 };
