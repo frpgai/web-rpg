@@ -1,6 +1,5 @@
 import type { Background } from '../../../../types';
-import { ATTR_LABELS, PRIMARY } from './origins.utils';
-import { SvgIcon } from '../../../../components/ui/SvgIcon';
+import { ATTR_LABELS } from './origins.utils';
 
 interface AsiSectionProps {
   background: Background;
@@ -49,7 +48,9 @@ export function AsiSection({
   return (
     <div className="origins-asi-section">
       <div className="origins-asi-header">
-        <SvgIcon name="star" size={20} color={PRIMARY} />
+        <span className="material-symbols-outlined" style={{ fontSize: 20, color: 'var(--color-secondary)' }}>
+          auto_fix_high
+        </span>
         <p className="origins-asi-title">Distribuir Atributos (ASI)</p>
       </div>
 
@@ -63,7 +64,7 @@ export function AsiSection({
           <span className="origins-asi-option-label">Opção A</span>
           <div className="origins-asi-dropdowns">
             <div className="origins-asi-dropdown-group">
-              <label className="origins-asi-dropdown-label-plus2">Bônus +2</label>
+              <label className="origins-asi-dropdown-label-plus2">+2 em:</label>
               <select
                 className="origins-asi-select"
                 value={asiPlus2 ?? ''}
@@ -79,7 +80,7 @@ export function AsiSection({
               </select>
             </div>
             <div className="origins-asi-dropdown-group">
-              <label className="origins-asi-dropdown-label-plus1">Bônus +1</label>
+              <label className="origins-asi-dropdown-label-plus1">+1 em:</label>
               <select
                 className="origins-asi-select"
                 value={asiPlus1 ?? ''}

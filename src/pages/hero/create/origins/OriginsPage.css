@@ -554,6 +554,7 @@
  */
 
 /* Container principal — idêntico ao glass-panel do Stitch */
+/* ── ASI Section — glass-panel p-lg rounded-xl per Stitch ──────────────────── */
 .origins-asi-section {
   background: rgba(19, 19, 24, 0.8);
   backdrop-filter: blur(12px);
@@ -564,9 +565,11 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-md);
+  position: relative;
+  overflow: hidden;
 }
 
-/* Header: ícone star + título — gap-sm (8px), mb-lg (24px) per Stitch */
+/* Header: material-symbol + font-label-mono uppercase tracking-widest — gap-sm mb-lg */
 .origins-asi-header {
   display: flex;
   align-items: center;
@@ -585,23 +588,23 @@
   margin: 0;
 }
 
-/* Descrição: text-[11px] text-on-surface-variant leading-relaxed mb-md */
+/* Descrição: text-[11px] text-on-surface-variant leading-relaxed */
 .origins-asi-desc {
   font-family: var(--font-sans);
   font-size: 11px;
   line-height: 1.625;
   color: var(--color-text-muted);
-  margin: 0 0 var(--space-md) 0;
+  margin: 0;
 }
 
-/* Wrapper das opções */
+/* Wrapper das opções — space-y-sm (8px) */
 .origins-asi-options {
   display: flex;
   flex-direction: column;
   gap: var(--space-sm);
 }
 
-/* Opção A — sem borda extra; active state replica active-glow do Stitch */
+/* Opção A — flex col gap-xs p-md rounded-lg border border-white/5 bg-surface-container-low */
 .origins-asi-option-row {
   display: flex;
   flex-direction: column;
@@ -610,16 +613,16 @@
   border-radius: var(--radius-sm);
   border: 1px solid rgba(255, 255, 255, 0.05);
   background-color: var(--color-surface-low);
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
-/* active-glow: box-shadow + border-color rgba(215,186,255,0.6) */
+/* active-glow: box-shadow 0 0 15px rgba(primary,0.3) + border rgba(primary,0.6) */
 .origins-asi-option-active {
   box-shadow: 0 0 15px rgba(215, 186, 255, 0.3);
   border-color: rgba(215, 186, 255, 0.6);
 }
 
-/* "Opção A" label acima dos selects */
+/* "Opção A" label — font-label-mono text-[10px] text-on-surface-variant uppercase */
 .origins-asi-option-label {
   font-family: var(--font-mono);
   font-size: 10px;
@@ -629,36 +632,59 @@
   margin-bottom: var(--space-xs);
 }
 
-/* Grid 2 colunas — grid-cols-2 gap-lg (24px) per Stitch */
+/* Grid 2 colunas — grid-cols-2 gap-md (16px) per Stitch */
 .origins-asi-dropdowns {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: var(--space-lg);
+  gap: var(--space-md);
 }
 
-/* Cada coluna: space-y-sm (8px) per Stitch */
+/* Cada coluna: flex col gap-sm (8px) */
 .origins-asi-dropdown-group {
   display: flex;
   flex-direction: column;
   gap: var(--space-sm);
 }
 
-/* Label "+2": font-label-mono text-[10px] text-primary uppercase tracking-wider */
+/*
+ * Label badge "+2 em:": inline-flex items-center gap-xs px-2 py-0.5
+ * bg-primary/10 border border-primary/20 rounded text-[10px] text-primary
+ * Espelha o badge de antecedente do Stitch ("+2 FOR, +1 CON")
+ */
 .origins-asi-dropdown-label-plus2 {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: 2px var(--space-sm);
+  background-color: rgba(215, 186, 255, 0.1);
+  border: 1px solid rgba(215, 186, 255, 0.2);
+  border-radius: var(--radius-sm);
   font-family: var(--font-mono);
   font-size: 10px;
   color: var(--color-primary);
   text-transform: uppercase;
   letter-spacing: 0.05em;
+  align-self: flex-start;
 }
 
-/* Label "+1": font-label-mono text-[10px] text-secondary uppercase tracking-wider */
+/*
+ * Label badge "+1 em:": inline-flex items-center
+ * bg-secondary/10 border border-secondary/20 text-secondary
+ */
 .origins-asi-dropdown-label-plus1 {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: 2px var(--space-sm);
+  background-color: rgba(255, 184, 108, 0.1);
+  border: 1px solid rgba(255, 184, 108, 0.2);
+  border-radius: var(--radius-sm);
   font-family: var(--font-mono);
   font-size: 10px;
   color: var(--color-secondary);
   text-transform: uppercase;
   letter-spacing: 0.05em;
+  align-self: flex-start;
 }
 
 /* Alias de compatibilidade */
@@ -671,9 +697,10 @@
 }
 
 /*
- * Select: bg-surface-container-low border border-white/10 rounded-lg p-md
+ * Select: bg-surface-container-low border border-white/10 rounded-lg p-sm
  *         text-on-surface font-label-mono text-[12px] focus:border-primary
- * rounded-lg = 4px per Stitch config; p-md = 16px
+ * rounded-lg = var(--radius-sm) 4px per Stitch config
+ * padding: py-sm px-sm (8px)
  */
 .origins-asi-select {
   width: 100%;
@@ -683,19 +710,20 @@
   color: var(--color-text);
   font-family: var(--font-mono);
   font-size: 12px;
-  padding: var(--space-md);
+  padding: var(--space-sm) var(--space-md);
   cursor: pointer;
   outline: none;
   appearance: none;
   -webkit-appearance: none;
-  transition: border-color 0.2s ease;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .origins-asi-select:focus {
   border-color: var(--color-primary);
+  box-shadow: 0 0 0 1px rgba(215, 186, 255, 0.2);
 }
 
-/* Divisor "ou" entre Opção A e B */
+/* Divisor "ou" — linha com texto centralizado */
 .origins-asi-or-divider {
   display: flex;
   align-items: center;
@@ -720,8 +748,9 @@
 }
 
 /*
- * Opção B — mesma forma visual que Opção A (surface-container-low, border white/5,
- * rounded-lg, p-md) + active-glow quando selecionado
+ * Opção B — mesmo visual que Opção A: surface-container-low border-white/5
+ * rounded-lg p-md + active-glow quando selecionado
+ * active:scale-95 transition-all per Stitch
  */
 .origins-asi-option-b {
   background-color: var(--color-surface-low);
@@ -733,12 +762,16 @@
   flex-direction: column;
   gap: var(--space-xs);
   text-align: left;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.15s ease;
   width: 100%;
 }
 
 .origins-asi-option-b:hover {
   border-color: rgba(215, 186, 255, 0.3);
+}
+
+.origins-asi-option-b:active {
+  transform: scale(0.98);
 }
 
 .origins-asi-option-b-selected {
@@ -747,24 +780,36 @@
   background-color: rgba(215, 186, 255, 0.07);
 }
 
-/* "+1 / +1 / +1" — font-label-mono text-[12px] text-primary */
+/*
+ * Badge "+1/+1/+1" — inline-flex items-center gap-xs px-2 py-0.5
+ * bg-primary/10 border border-primary/20 rounded text-[10px] text-primary
+ * Espelha exatamente o badge de vocação do Stitch (ex: "FOR +2")
+ */
 .origins-asi-option-b-label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: 2px var(--space-sm);
+  background-color: rgba(215, 186, 255, 0.1);
+  border: 1px solid rgba(215, 186, 255, 0.2);
+  border-radius: var(--radius-sm);
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: 10px;
   line-height: 16px;
   color: var(--color-primary);
   letter-spacing: 0.08em;
+  align-self: flex-start;
 }
 
 /* Descrição da opção B — text-[11px] text-on-surface-variant leading-tight */
 .origins-asi-option-b-desc {
-  font-family: var(--font-mono);
-  font-size: 10px;
+  font-family: var(--font-sans);
+  font-size: 11px;
   color: var(--color-text-muted);
   line-height: 1.4;
 }
 
-/* Lista de atributos elegíveis — text-secondary */
+/* Lista de atributos elegíveis — text-secondary font-label-mono */
 .origins-asi-eligible-list {
   font-family: var(--font-mono);
   font-size: 10px;
