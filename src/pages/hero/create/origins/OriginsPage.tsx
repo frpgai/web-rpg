@@ -1,10 +1,12 @@
 import { useLocation } from 'wouter';
+import { useState, useEffect } from 'react';
 import { useOriginsStep } from '../../../../hooks/useOriginsStep';
 import { useHeroCreationStore } from '../../../../stores/heroCreationStore';
 import { CreationStepHeader } from '../../../../components/hero-creation/CreationStepHeader';
 import { CreationFooter } from '../../../../components/hero-creation/CreationFooter';
 import { OracleButton } from '../../../../components/hero-creation/OracleButton';
-import type { Ancestry, Background, Vocation } from '../../../../types';
+import type { Ancestry, Background, Vocation, DraftData } from '../../../../types';
+import { heroApi } from '../../../../api/services/hero';
 import { SECONDARY, TERTIARY } from './origins.utils';
 import { SectionPanel } from './SectionPanel';
 import { AncestryCard } from './AncestryCard';
@@ -47,6 +49,63 @@ export default function OriginsPage() {
   // characterClass now accepts StoredClass (Vocation | CharacterClass)
   const vocation = characterClass as Vocation | null;
 
+  const [hasDraft, setHasDraft] = useState(false);
+  const [draftData, setDraftData] = useState<DraftData | null>(null);
+
+  // Load draft on mount
+  useEffect(() => {
+    heroApi.getDraft().then((draft) => {
+      if (draft) {
+        setDraftData(draft.draft_data);
+        setHasDraft(true);
+      }
+    }).catch(() => {
+      // silently ignore draft load errors
+    });
+  }, []);
+
+  // Restore selections from draft when catalogs are ready
+  useEffect(() => {
+    if (!hasDraft || !draftData) return;
+    if (ancestries.length === 0 || vocations.length === 0 || backgrounds.length === 0) return;
+
+    const foundAncestry = draftData.ancestry_id ? ancestries.find((a) => a.id === draftData.ancestry_id) : undefined;
+    const foundVocation = draftData.vocation_id ? vocations.find((v) => v.id === draftData.vocation_id) : undefined;
+    const foundBackground = draftData.background_id ? backgrounds.find((bg) => bg.id === draftData.background_id) : undefined;
+
+    if (foundAncestry) setAncestry(foundAncestry);
+    if (foundVocation) setCharacterClass(foundVocation);
+    if (foundBackground) setBackground(foundBackground);
+
+    if (foundAncestry || foundVocation || foundBackground) {
+      fetchPreview(
+        foundAncestry?.id ?? null,
+        foundVocation?.id ?? null,
+        foundBackground?.id ?? null,
+      );
+    }
+
+    setHasDraft(false);
+    setDraftData(null);
+  }, [hasDraft, draftData, ancestries, vocations, backgrounds]);
+
+  function handleContinueDraft() {
+    // selections already restored in useEffect above once catalogs loaded
+    setHasDraft(false);
+    setDraftData(null);
+  }
+
+  async function handleDiscardDraft() {
+    try {
+      await heroApi.deleteDraft();
+    } catch {
+      // non-blocking
+    }
+    reset();
+    setHasDraft(false);
+    setDraftData(null);
+  }
+
   function handleOracle() {
     if (ancestries.length === 0 || vocations.length === 0 || backgrounds.length === 0) return;
     const randAncestry = ancestries[Math.floor(Math.random() * ancestries.length)];
@@ -58,7 +117,20 @@ export default function OriginsPage() {
     fetchPreview(randAncestry.id, randVocation.id, randBackground.id);
   }
 
-  function handleNext() {
+  async function handleNext() {
+    if (!ancestry || !vocation || !background) return;
+    try {
+      await heroApi.saveDraft({
+        draft_step: 'origins',
+        draft_data: {
+          ancestry_id: ancestry.id,
+          vocation_id: vocation.id,
+          background_id: background.id,
+        },
+      });
+    } catch {
+      console.error('Failed to save draft');
+    }
     setLocation('/hero/create/attributes');
   }
 
@@ -93,6 +165,24 @@ export default function OriginsPage() {
 
   return (
     <div className="origins-page-root">
+      {hasDraft && (
+        <div className="origins-draft-overlay">
+          <div className="origins-draft-modal">
+            <h2 className="origins-draft-title">Criação em andamento</h2>
+            <p className="origins-draft-body">
+              Você possui uma criação de personagem em andamento. Deseja continuar de onde parou?
+            </p>
+            <div className="origins-draft-actions">
+              <button className="origins-draft-btn-primary" onClick={handleContinueDraft}>
+                Continuar
+              </button>
+              <button className="origins-draft-btn-secondary" onClick={handleDiscardDraft}>
+                Começar do zero
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       <div className="origins-page-scroll">
         <CreationStepHeader
           stepLabel="PASSO 01: ORIGENS"

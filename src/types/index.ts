@@ -1,3 +1,25 @@
+export interface DraftData {
+  ancestry_id?: string;
+  vocation_id?: string;
+  background_id?: string;
+}
+
+export interface DraftHero {
+  id: string;
+  draft_step: string;
+  draft_data: DraftData;
+}
+
+export interface SaveDraftRequest {
+  draft_step: string;
+  draft_data: DraftData;
+}
+
+export interface SaveDraftResponse {
+  id: string;
+  draft_step: string;
+}
+
 export type AvailableCampaign = {
   id: string;
   name: string;
