@@ -19,9 +19,9 @@ export const KEY_ATTR_PT: Record<string, string> = {
   str: 'FOR', dex: 'DES', con: 'CON', int: 'INT', wis: 'SAB', cha: 'CAR',
 };
 
-export function formatBonuses(bonuses: Record<string, number>): string {
-  return Object.entries(bonuses)
-    .filter(([k]) => k !== 'eligible')
-    .map(([attr, val]) => `${val > 0 ? '+' : ''}${val} ${ATTR_LABELS[attr] ?? attr.toUpperCase()}`)
-    .join(', ');
+export function formatBonuses(bonuses: number[]): string {
+  if (!bonuses || bonuses.length === 0) return '';
+  return bonuses
+    .map((val) => `${val > 0 ? '+' : ''}${val}`)
+    .join(' / ');
 }

@@ -32,15 +32,16 @@ export interface Ancestry {
   slug: string;
   name: string;
   description: string;
-  icon: string;
+  icon?: string;
   speed?: number;
   hp_bonus_per_level?: number;
   enabled?: boolean;
-  traits: string[];
+  traits: Trait[];
 }
 
-export interface AncestryDetails extends Ancestry {
-  traits_detail: Trait[];
+
+export interface AncestryDetails extends Omit<Ancestry, 'traits'> {
+  traits: Trait[];
 }
 
 export interface Background {
@@ -49,15 +50,15 @@ export interface Background {
   slug: string;
   name: string;
   description: string;
-  icon: string;
-  eligible_attributes?: string[];
-  attribute_bonuses: Record<string, number> & { eligible?: string[] | undefined };
+  icon?: string;
+  bonuses: number[];
+  eligible_attributes: string[];
   traits: string[];
   enabled?: boolean;
 }
 
-export interface BackgroundDetails extends Background {
-  traits_detail: Trait[];
+export interface BackgroundDetails extends Omit<Background, 'traits'> {
+  traits: Trait[];
 }
 
 export interface AsiChoice {
@@ -236,6 +237,30 @@ export interface System {
   slug: string;
   name: string;
   version: string;
+  description: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface SystemRules {
+  id: string;
+  system_id: string;
+  point_buy_budget: number;
+  min_attribute_score: number;
+  max_attribute_buy_score: number;
+  point_buy_costs: Record<string, number>;
+  carry_capacity_multiplier: number;
+  carry_capacity_base: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface SystemAttribute {
+  id: string;
+  system_id: string;
+  slug: string;
+  name: string;
+  abbreviation: string;
   description: string;
   created_at: string;
   updated_at: string;

@@ -1,9 +1,8 @@
 import { useState } from 'react';
 import { SvgIcon } from '../../../../components/ui/SvgIcon';
 import { BottomSheet } from '../../../../components/ui/BottomSheet';
-import type { Ancestry, AncestryDetails } from '../../../../types';
+import type { Ancestry } from '../../../../types';
 import { PRIMARY } from './origins.utils';
-import { catalogApi } from '../../../../api/services/catalog';
 
 interface AncestryCardProps {
   ancestry: Ancestry;
@@ -13,26 +12,13 @@ interface AncestryCardProps {
 
 export function AncestryCard({ ancestry, selected, onSelect }: AncestryCardProps) {
   const [sheetOpen, setSheetOpen] = useState(false);
-  const [details, setDetails] = useState<AncestryDetails | null>(null);
-  const [detailsLoading, setDetailsLoading] = useState(false);
 
-  async function handleInfo(e: React.MouseEvent) {
+  function handleInfo(e: React.MouseEvent) {
     e.stopPropagation();
     setSheetOpen(true);
-    if (!details) {
-      setDetailsLoading(true);
-      try {
-        const d = await catalogApi.ancestryDetails(ancestry.id);
-        setDetails(d);
-      } catch {
-        // ignore — sheet shows partial info from card
-      } finally {
-        setDetailsLoading(false);
-      }
-    }
   }
 
-  const traitsToShow = details?.traits_detail ?? [];
+  const traitsToShow = ancestry.traits ?? [];
 
   return (
     <>
@@ -58,7 +44,7 @@ export function AncestryCard({ ancestry, selected, onSelect }: AncestryCardProps
         </span>
         {ancestry.traits && ancestry.traits.length > 0 && (
           <span className="origins-ancestry-card-traits">
-            {ancestry.traits.slice(0, 2).join(' • ')}
+            {ancestry.traits.slice(0, 2).map((t) => t.name).join(' • ')}
           </span>
         )}
         {selected && <div className="origins-selected-bar" />}
@@ -69,9 +55,6 @@ export function AncestryCard({ ancestry, selected, onSelect }: AncestryCardProps
         onClose={() => setSheetOpen(false)}
         title={ancestry.name}
       >
-        {detailsLoading && (
-          <p className="origins-error-text">Carregando traços…</p>
-        )}
         {traitsToShow.length > 0 ? (
           traitsToShow.map((trait) => (
             <div key={trait.id} className="bottom-sheet-trait-item">
@@ -79,7 +62,7 @@ export function AncestryCard({ ancestry, selected, onSelect }: AncestryCardProps
               <p className="bottom-sheet-trait-desc">{trait.description}</p>
             </div>
           ))
-        ) : !detailsLoading && (
+        ) : (
           <p className="origins-error-text">{ancestry.description}</p>
         )}
       </BottomSheet>

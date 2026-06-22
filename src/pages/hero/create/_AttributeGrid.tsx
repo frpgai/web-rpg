@@ -1,4 +1,3 @@
-import React from 'react';
 import './_AttributeGrid.css';
 import type { HeroAttributes } from '../../../types';
 import { POINT_BUY_COST } from '../../../constants/rules';

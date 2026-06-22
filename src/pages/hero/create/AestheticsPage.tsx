@@ -16,6 +16,9 @@ export default function AestheticsPage() {
     characterClass,
     background,
     baseAttributes,
+    asiPlus2,
+    asiPlus1,
+    asiAllPlus1,
     name,
     backstory,
     avatarId,
@@ -108,7 +111,12 @@ export default function AestheticsPage() {
   // ─── Derived key attribute ────────────────────────────────────────────────
   const keyAttrLabel = characterClass?.key_attribute?.toUpperCase() ?? '—';
   const keyAttrRaw = characterClass?.key_attribute;
-  const backgroundBonus = keyAttrRaw ? (background?.attribute_bonuses?.[keyAttrRaw] ?? 0) : 0;
+  const backgroundBonus = keyAttrRaw ? (() => {
+    if (asiAllPlus1 && background?.eligible_attributes?.includes(keyAttrRaw)) return 1;
+    if (asiPlus2 === keyAttrRaw) return 2;
+    if (asiPlus1 === keyAttrRaw) return 1;
+    return 0;
+  })() : 0;
   const baseVal = keyAttrRaw ? (baseAttributes[keyAttrRaw as keyof typeof baseAttributes] ?? 10) : 10;
   const keyAttrValue = baseVal + backgroundBonus;
 

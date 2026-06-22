@@ -8,7 +8,7 @@ import { POINT_BUY_BUDGET, POINT_BUY_COST, totalCost } from '../../../constants/
 import { AttributeGrid } from './_AttributeGrid';
 import { PointPoolCard } from './_PointPoolCard';
 import { CharacterPreviewSummary } from './_CharacterPreviewSummary';
-import type { HeroAttributes } from '../../types';
+import type { HeroAttributes } from '../../../types';
 import './AttributesPage.css';
 
 export default function AttributesPage() {
@@ -18,6 +18,9 @@ export default function AttributesPage() {
     characterClass,
     background,
     baseAttributes: attrs,
+    asiPlus2,
+    asiPlus1,
+    asiAllPlus1,
     setAttribute,
     rollAttributes,
   } = useHeroCreationStore();
@@ -29,7 +32,7 @@ export default function AttributesPage() {
     }
   }, [ancestry, characterClass, background, setLocation]);
 
-  const spent = useMemo(() => totalCost(attrs), [attrs]);
+  const spent = useMemo(() => totalCost(attrs as unknown as Record<string, number>), [attrs]);
   const remaining = POINT_BUY_BUDGET - spent;
   const canNext = spent === POINT_BUY_BUDGET;
 
@@ -63,13 +66,18 @@ export default function AttributesPage() {
         <AttributeGrid
           attrs={attrs}
           remaining={remaining}
-          attributeBonuses={
-            Object.fromEntries(
-              Object.entries(background.attribute_bonuses ?? {})
-                .filter(([k, v]) => k !== 'eligible' && typeof v === 'number')
-                .map(([k, v]) => [k, v as number])
-            )
-          }
+          attributeBonuses={(() => {
+            const bonuses: Record<string, number> = {};
+            if (asiAllPlus1 && background) {
+              for (const attr of background.eligible_attributes) {
+                bonuses[attr] = 1;
+              }
+            } else {
+              if (asiPlus2) bonuses[asiPlus2] = 2;
+              if (asiPlus1) bonuses[asiPlus1] = 1;
+            }
+            return bonuses;
+          })()}
           onSetAttr={handleSetAttr}
         />
 

@@ -553,7 +553,6 @@
  *   leading-relaxed → line-height: 1.625
  */
 
-/* Container principal — idêntico ao glass-panel do Stitch */
 /* ── ASI Section — glass-panel p-lg rounded-xl per Stitch ──────────────────── */
 .origins-asi-section {
   background: rgba(19, 19, 24, 0.8);
@@ -569,15 +568,17 @@
   overflow: hidden;
 }
 
-/* Header: material-symbol + font-label-mono uppercase tracking-widest — gap-sm mb-lg */
 .origins-asi-header {
   display: flex;
   align-items: center;
   gap: var(--space-sm);
-  margin-bottom: var(--space-lg);
 }
 
-/* Título: font-label-mono text-label-mono uppercase tracking-widest text-on-surface */
+.origins-asi-header-icon {
+  font-size: 20px;
+  color: var(--color-secondary);
+}
+
 .origins-asi-title {
   font-family: var(--font-mono);
   font-size: 12px;
@@ -588,27 +589,17 @@
   margin: 0;
 }
 
-/* Descrição: text-[11px] text-on-surface-variant leading-relaxed */
-.origins-asi-desc {
-  font-family: var(--font-sans);
-  font-size: 11px;
-  line-height: 1.625;
-  color: var(--color-text-muted);
-  margin: 0;
-}
-
-/* Wrapper das opções — space-y-sm (8px) */
 .origins-asi-options {
   display: flex;
   flex-direction: column;
   gap: var(--space-sm);
 }
 
-/* Opção A — flex col gap-xs p-md rounded-lg border border-white/5 bg-surface-container-low */
+/* Opção A card */
 .origins-asi-option-row {
   display: flex;
   flex-direction: column;
-  gap: var(--space-xs);
+  gap: var(--space-sm);
   padding: var(--space-md);
   border-radius: var(--radius-sm);
   border: 1px solid rgba(255, 255, 255, 0.05);
@@ -616,114 +607,138 @@
   transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
-/* active-glow: box-shadow 0 0 15px rgba(primary,0.3) + border rgba(primary,0.6) */
 .origins-asi-option-active {
-  box-shadow: 0 0 15px rgba(215, 186, 255, 0.3);
-  border-color: rgba(215, 186, 255, 0.6);
+  box-shadow: 0 0 15px rgba(215, 186, 255, 0.2);
+  border-color: rgba(215, 186, 255, 0.4);
 }
 
-/* "Opção A" label — font-label-mono text-[10px] text-on-surface-variant uppercase */
 .origins-asi-option-label {
   font-family: var(--font-mono);
   font-size: 10px;
   color: var(--color-text-muted);
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  margin-bottom: var(--space-xs);
 }
 
-/* Grid 2 colunas — grid-cols-2 gap-md (16px) per Stitch */
-.origins-asi-dropdowns {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--space-md);
-}
-
-/* Cada coluna: flex col gap-sm (8px) */
-.origins-asi-dropdown-group {
+/* Chip group: label + row of chips */
+.origins-asi-chip-group {
   display: flex;
   flex-direction: column;
-  gap: var(--space-sm);
+  gap: var(--space-xs);
 }
 
-/*
- * Label badge "+2 em:": inline-flex items-center gap-xs px-2 py-0.5
- * bg-primary/10 border border-primary/20 rounded text-[10px] text-primary
- * Espelha o badge de antecedente do Stitch ("+2 FOR, +1 CON")
- */
-.origins-asi-dropdown-label-plus2 {
+/* Label badge "+2 em" / "+1 em" — espelha badge de antecedente Stitch */
+.origins-asi-chip-label {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-xs);
   padding: 2px var(--space-sm);
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  align-self: flex-start;
+}
+
+.origins-asi-chip-label-plus2 {
   background-color: rgba(215, 186, 255, 0.1);
   border: 1px solid rgba(215, 186, 255, 0.2);
-  border-radius: var(--radius-sm);
-  font-family: var(--font-mono);
-  font-size: 10px;
   color: var(--color-primary);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  align-self: flex-start;
 }
 
-/*
- * Label badge "+1 em:": inline-flex items-center
- * bg-secondary/10 border border-secondary/20 text-secondary
- */
-.origins-asi-dropdown-label-plus1 {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-xs);
-  padding: 2px var(--space-sm);
+.origins-asi-chip-label-plus1 {
   background-color: rgba(255, 184, 108, 0.1);
   border: 1px solid rgba(255, 184, 108, 0.2);
-  border-radius: var(--radius-sm);
-  font-family: var(--font-mono);
-  font-size: 10px;
   color: var(--color-secondary);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  align-self: flex-start;
 }
 
-/* Alias de compatibilidade */
-.origins-asi-dropdown-label {
+/* Chip row */
+.origins-asi-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+}
+
+.origins-asi-chips-b {
+  margin-top: var(--space-xs);
+}
+
+/* Clickable chip — espelha badge de vocação Stitch (inline-flex px-2 py-0.5 rounded) */
+.origins-asi-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px var(--space-sm);
+  border-radius: 4px;
   font-family: var(--font-mono);
   font-size: 10px;
-  color: var(--color-text-muted);
-  text-transform: uppercase;
   letter-spacing: 0.05em;
-}
-
-/*
- * Select: bg-surface-container-low border border-white/10 rounded-lg p-sm
- *         text-on-surface font-label-mono text-[12px] focus:border-primary
- * rounded-lg = var(--radius-sm) 4px per Stitch config
- * padding: py-sm px-sm (8px)
- */
-.origins-asi-select {
-  width: 100%;
-  background-color: var(--color-surface-low);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: var(--radius-sm);
-  color: var(--color-text);
-  font-family: var(--font-mono);
-  font-size: 12px;
-  padding: var(--space-sm) var(--space-md);
   cursor: pointer;
-  outline: none;
-  appearance: none;
-  -webkit-appearance: none;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  border: 1px solid transparent;
+  transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
+  background: none;
 }
 
-.origins-asi-select:focus {
-  border-color: var(--color-primary);
-  box-shadow: 0 0 0 1px rgba(215, 186, 255, 0.2);
+.origins-asi-chip:active {
+  transform: scale(0.95);
 }
 
-/* Divisor "ou" — linha com texto centralizado */
+/* +2 chip unselected */
+.origins-asi-chip-plus2 {
+  background-color: rgba(215, 186, 255, 0.07);
+  border-color: rgba(215, 186, 255, 0.15);
+  color: var(--color-text-muted);
+}
+
+.origins-asi-chip-plus2:hover {
+  background-color: rgba(215, 186, 255, 0.12);
+  border-color: rgba(215, 186, 255, 0.3);
+  color: var(--color-primary);
+}
+
+/* +2 chip selected — espelha selected state do Stitch */
+.origins-asi-chip-selected-plus2 {
+  background-color: rgba(215, 186, 255, 0.15);
+  border-color: rgba(215, 186, 255, 0.6);
+  color: var(--color-primary);
+  box-shadow: 0 0 8px rgba(215, 186, 255, 0.3);
+}
+
+/* +1 chip unselected */
+.origins-asi-chip-plus1 {
+  background-color: rgba(255, 184, 108, 0.07);
+  border-color: rgba(255, 184, 108, 0.15);
+  color: var(--color-text-muted);
+}
+
+.origins-asi-chip-plus1:hover {
+  background-color: rgba(255, 184, 108, 0.12);
+  border-color: rgba(255, 184, 108, 0.3);
+  color: var(--color-secondary);
+}
+
+/* +1 chip selected */
+.origins-asi-chip-selected-plus1 {
+  background-color: rgba(255, 184, 108, 0.15);
+  border-color: rgba(255, 184, 108, 0.6);
+  color: var(--color-secondary);
+  box-shadow: 0 0 8px rgba(255, 184, 108, 0.3);
+}
+
+/* Static chip (opção B eligible list) — não clicável */
+.origins-asi-chip-static {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px var(--space-sm);
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.05em;
+  background-color: rgba(215, 186, 255, 0.07);
+  border: 1px solid rgba(215, 186, 255, 0.12);
+  color: var(--color-text-muted);
+}
+
+/* Divisor "ou" */
 .origins-asi-or-divider {
   display: flex;
   align-items: center;
@@ -747,11 +762,7 @@
   letter-spacing: 0.1em;
 }
 
-/*
- * Opção B — mesmo visual que Opção A: surface-container-low border-white/5
- * rounded-lg p-md + active-glow quando selecionado
- * active:scale-95 transition-all per Stitch
- */
+/* Opção B card */
 .origins-asi-option-b {
   background-color: var(--color-surface-low);
   border: 1px solid rgba(255, 255, 255, 0.05);
@@ -775,46 +786,36 @@
 }
 
 .origins-asi-option-b-selected {
-  box-shadow: 0 0 15px rgba(215, 186, 255, 0.3);
+  box-shadow: 0 0 15px rgba(215, 186, 255, 0.2);
   border-color: rgba(215, 186, 255, 0.6);
   background-color: rgba(215, 186, 255, 0.07);
 }
 
-/*
- * Badge "+1/+1/+1" — inline-flex items-center gap-xs px-2 py-0.5
- * bg-primary/10 border border-primary/20 rounded text-[10px] text-primary
- * Espelha exatamente o badge de vocação do Stitch (ex: "FOR +2")
- */
-.origins-asi-option-b-label {
-  display: inline-flex;
+.origins-asi-option-b-header {
+  display: flex;
   align-items: center;
   gap: var(--space-xs);
+}
+
+/* Badge "+1/+1/+1" — espelha badge de vocação Stitch */
+.origins-asi-option-b-badge {
+  display: inline-flex;
+  align-items: center;
   padding: 2px var(--space-sm);
   background-color: rgba(215, 186, 255, 0.1);
   border: 1px solid rgba(215, 186, 255, 0.2);
-  border-radius: var(--radius-sm);
+  border-radius: 4px;
   font-family: var(--font-mono);
   font-size: 10px;
-  line-height: 16px;
   color: var(--color-primary);
   letter-spacing: 0.08em;
-  align-self: flex-start;
 }
 
-/* Descrição da opção B — text-[11px] text-on-surface-variant leading-tight */
 .origins-asi-option-b-desc {
   font-family: var(--font-sans);
   font-size: 11px;
   color: var(--color-text-muted);
   line-height: 1.4;
-}
-
-/* Lista de atributos elegíveis — text-secondary font-label-mono */
-.origins-asi-eligible-list {
-  font-family: var(--font-mono);
-  font-size: 10px;
-  color: var(--color-secondary);
-  letter-spacing: 0.05em;
 }
 
 /* ── Spell slots badge ─────────────────────────────────────────────────────── */
