@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { catalogApi } from '../api/services/catalog';
+import { heroApi } from '../api/services/hero';
 import { useSystemStore } from '../stores/systemStore';
 import type { Ancestry, Background, PreviewResult, Vocation } from '../types';
 
@@ -66,7 +67,7 @@ export function useOriginsStep() {
     ) => {
       setState((prev) => ({ ...prev, previewLoading: true, previewError: null }));
       try {
-        const result = await catalogApi.previewHeroV2({
+        const result = await heroApi.previewHeroV2({
           ancestry_id: ancestryId,
           vocation_id: vocationId,
           background_id: backgroundId,

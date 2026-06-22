@@ -1,5 +1,5 @@
 import { apiClient } from '../client';
-import type { Ancestry, AncestryDetails, Background, BackgroundDetails, CharacterClass, AvatarPreset, PreviewResult, Vocation, VocationDetails } from '../../types';
+import type { Ancestry, AncestryDetails, Background, BackgroundDetails, CharacterClass, AvatarPreset, Vocation, VocationDetails } from '../../types';
 
 export const catalogApi = {
   ancestries: (systemId: string) => apiClient.get(`api/v1/ancestries?system_id=${systemId}`).json<Ancestry[]>(),
@@ -18,29 +18,5 @@ export const catalogApi = {
     });
     if (backgroundId) params.append('background_id', backgroundId);
     return apiClient.get(`api/v1/avatars?${params.toString()}`).json<AvatarPreset[]>();
-  },
-  previewHero: (input: {
-    ancestry_id: string | null;
-    characterClass_id: string | null;
-    background_id: string | null;
-  }) => {
-    const params = new URLSearchParams();
-    if (input.ancestry_id)       params.set('ancestry_id',       input.ancestry_id);
-    if (input.characterClass_id) params.set('characterClass_id', input.characterClass_id);
-    if (input.background_id)     params.set('background_id',     input.background_id);
-    const qs = params.toString();
-    return apiClient.get(`api/v1/hero/preview${qs ? '?' + qs : ''}`).json<PreviewResult>();
-  },
-  previewHeroV2: (input: {
-    ancestry_id: string | null;
-    vocation_id: string | null;
-    background_id: string | null;
-  }) => {
-    const params = new URLSearchParams();
-    if (input.ancestry_id)    params.set('ancestry_id',   input.ancestry_id);
-    if (input.vocation_id)    params.set('vocation_id',   input.vocation_id);
-    if (input.background_id) params.set('background_id', input.background_id);
-    const qs = params.toString();
-    return apiClient.get(`api/v1/hero/preview${qs ? '?' + qs : ''}`).json<PreviewResult>();
   },
 };
