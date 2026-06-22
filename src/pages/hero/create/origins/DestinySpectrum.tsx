@@ -2,7 +2,7 @@ import { SvgIcon } from '../../../../components/ui/SvgIcon';
 import { Tooltip } from '../../../../components/ui/Tooltip';
 import type { Ancestry, Background, Vocation } from '../../../../types';
 import type { PreviewResult } from '../../../../types';
-import { ATTR_LABELS, KEY_ATTR_PT, SECONDARY, formatBonuses } from './origins.utils';
+import { ATTR_LABELS, KEY_ATTR_PT, SECONDARY } from './origins.utils';
 
 interface DestinySpectrumProps {
   ancestry: Ancestry | null;
@@ -28,9 +28,7 @@ export function DestinySpectrum({
   previewLoading,
   previewError,
 }: DestinySpectrumProps) {
-  const eligibleAttrs = background?.eligible_attributes
-    ?? background?.attribute_bonuses?.eligible
-    ?? [];
+  const eligibleAttrs = background?.eligible_attributes ?? [];
 
   const eligibleLabel = eligibleAttrs.length > 0
     ? eligibleAttrs.map((a) => ATTR_LABELS[a] ?? a.toUpperCase()).join(' / ')
@@ -93,22 +91,22 @@ export function DestinySpectrum({
               )}
             </div>
             <div className="origins-spectrum-stat-box">
+              <span className="origins-spectrum-stat-label">MP</span>
+              {previewLoading ? (
+                <div className="origins-spectrum-stat-skeleton" />
+              ) : (
+                <span className="origins-spectrum-stat-value">
+                  {preview?.base_mp != null ? String(preview.base_mp).padStart(2, '0') : '—'}
+                </span>
+              )}
+            </div>
+            <div className="origins-spectrum-stat-box">
               <span className="origins-spectrum-stat-label">DEF</span>
               {previewLoading ? (
                 <div className="origins-spectrum-stat-skeleton" />
               ) : (
                 <span className="origins-spectrum-stat-value">
                   {preview?.base_def != null ? String(preview.base_def).padStart(2, '0') : '—'}
-                </span>
-              )}
-            </div>
-            <div className="origins-spectrum-stat-box">
-              <span className="origins-spectrum-stat-label">DADO HP</span>
-              {previewLoading ? (
-                <div className="origins-spectrum-stat-skeleton" />
-              ) : (
-                <span className="origins-spectrum-stat-value">
-                  {vocation?.hit_die ? `d${vocation.hit_die}` : '—'}
                 </span>
               )}
             </div>

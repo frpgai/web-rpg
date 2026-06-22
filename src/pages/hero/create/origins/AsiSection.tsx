@@ -1,5 +1,13 @@
+import { useState } from 'react';
 import type { Background } from '../../../../types';
-import { ATTR_LABELS } from './origins.utils';
+import { ATTR_LABELS, ATTR_TOOLTIP } from './origins.utils';
+import './AsiSection.css';
+
+// Tooltip constants
+const ASI_TOOLTIP =
+  'Aumento de Atributo — pontos extras que o antecedente concede; não consomem o pool de point-buy';
+const PLUS_TOOLTIP =
+  '+2 em um atributo, +1 em outro — ou +1 nos três; você escolhe como distribuir';
 
 interface AsiSectionProps {
   background: Background;
@@ -8,7 +16,28 @@ interface AsiSectionProps {
   asiAllPlus1: boolean;
   onSetPlus2: (attr: string | null) => void;
   onSetPlus1: (attr: string | null) => void;
-  onSetAllPlus1: (val: boolean) => void;
+  onSetAllPlus1: (v: boolean) => void;
+}
+
+function Tooltip({ text, children }: { text: string; children: React.ReactNode }) {
+  const [visible, setVisible] = useState(false);
+  return (
+    <span
+      className="origins-asi-tooltip-anchor"
+      onMouseEnter={() => setVisible(true)}
+      onMouseLeave={() => setVisible(false)}
+      onFocus={() => setVisible(true)}
+      onBlur={() => setVisible(false)}
+      tabIndex={0}
+    >
+      {children}
+      {visible && (
+        <span className="origins-asi-tooltip-bubble" role="tooltip">
+          {text}
+        </span>
+      )}
+    </span>
+  );
 }
 
 export function AsiSection({
@@ -20,104 +49,123 @@ export function AsiSection({
   onSetPlus1,
   onSetAllPlus1,
 }: AsiSectionProps) {
-  const eligible = background.eligible_attributes
-    ?? background.attribute_bonuses?.eligible
-    ?? Object.keys(background.attribute_bonuses ?? {}).filter((k) => k !== 'eligible');
+  // Determine eligible attributes from background
+  const eligible: string[] = background.eligible_attributes ?? [];
 
-  function handleOptionB() {
-    onSetAllPlus1(true);
-    onSetPlus2(null);
-    onSetPlus1(null);
+  // If no eligible (fixed bonuses only), don't render
+  if (eligible.length === 0) return null;
+
+  function handleToggleAllPlus1() {
+    if (asiAllPlus1) {
+      onSetAllPlus1(false);
+    } else {
+      onSetAllPlus1(true);
+      onSetPlus2(null);
+      onSetPlus1(null);
+    }
   }
 
-  function handleSelectPlus2(attr: string) {
-    onSetAllPlus1(false);
-    onSetPlus2(attr);
+  function handlePlus2(attr: string) {
+    if (asiAllPlus1) return;
+    onSetPlus2(attr === asiPlus2 ? null : attr);
+    // Clear plus1 if it's the same attr
     if (asiPlus1 === attr) onSetPlus1(null);
   }
 
-  function handleSelectPlus1(attr: string) {
-    onSetAllPlus1(false);
-    onSetPlus1(attr);
+  function handlePlus1(attr: string) {
+    if (asiAllPlus1) return;
+    onSetPlus1(attr === asiPlus1 ? null : attr);
+    // Clear plus2 if it's the same attr
     if (asiPlus2 === attr) onSetPlus2(null);
   }
 
-  const availableForPlus1 = eligible.filter((a) => a !== asiPlus2);
-  const availableForPlus2 = eligible.filter((a) => a !== asiPlus1);
-
   return (
     <div className="origins-asi-section">
+      {/* Header */}
       <div className="origins-asi-header">
-        <span className="material-symbols-outlined" style={{ fontSize: 20, color: 'var(--color-secondary)' }}>
-          auto_fix_high
-        </span>
-        <p className="origins-asi-title">Distribuir Atributos (ASI)</p>
+        <span className="origins-asi-icon">⚡</span>
+        <h4 className="origins-asi-title">
+          Distribuição de&nbsp;
+          <Tooltip text={ASI_TOOLTIP}>
+            <span className="origins-asi-title-abbr">ASI</span>
+          </Tooltip>
+        </h4>
       </div>
 
-      <p className="origins-asi-desc">
-        Escolha como manifestar seu poder inato. Distribua +2 em um atributo e +1 em outro diferente.
-      </p>
+      {/* Opção B — all +1 */}
+      <button
+        type="button"
+        className={`origins-asi-allplus1-btn${asiAllPlus1 ? ' origins-asi-allplus1-btn-active' : ''}`}
+        onClick={handleToggleAllPlus1}
+        aria-pressed={asiAllPlus1}
+      >
+        <span className="origins-asi-allplus1-label">Distribuir +1/+1/+1</span>
+        <span className="origins-asi-allplus1-hint">+1 em todos os elegíveis</span>
+      </button>
 
-      <div className="origins-asi-options">
-        {/* Opção A */}
-        <div className={`origins-asi-option-row ${!asiAllPlus1 ? 'origins-asi-option-active' : ''}`}>
-          <span className="origins-asi-option-label">Opção A</span>
-          <div className="origins-asi-dropdowns">
-            <div className="origins-asi-dropdown-group">
-              <label className="origins-asi-dropdown-label-plus2">+2 em:</label>
-              <select
-                className="origins-asi-select"
-                value={asiPlus2 ?? ''}
-                onChange={(e) => handleSelectPlus2(e.target.value || '')}
-                onClick={() => onSetAllPlus1(false)}
-              >
-                <option value="">Selecionar Atributo</option>
-                {availableForPlus2.map((attr) => (
-                  <option key={attr} value={attr}>
-                    {ATTR_LABELS[attr] ?? attr.toUpperCase()}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="origins-asi-dropdown-group">
-              <label className="origins-asi-dropdown-label-plus1">+1 em:</label>
-              <select
-                className="origins-asi-select"
-                value={asiPlus1 ?? ''}
-                onChange={(e) => handleSelectPlus1(e.target.value || '')}
-                onClick={() => onSetAllPlus1(false)}
-              >
-                <option value="">Selecionar Atributo</option>
-                {availableForPlus1.map((attr) => (
-                  <option key={attr} value={attr}>
-                    {ATTR_LABELS[attr] ?? attr.toUpperCase()}
-                  </option>
-                ))}
-              </select>
-            </div>
+      {/* Opção A — +2 e +1 */}
+      <div className={`origins-asi-selectors${asiAllPlus1 ? ' origins-asi-selectors-disabled' : ''}`}>
+        {/* +2 */}
+        <div className="origins-asi-selector-group">
+          <div className="origins-asi-selector-label">
+            <Tooltip text={PLUS_TOOLTIP}>
+              <span className="origins-asi-selector-label-text">+2 em:</span>
+            </Tooltip>
+          </div>
+          <div className="origins-asi-chips">
+            {eligible.map((attr) => {
+              const label = ATTR_LABELS[attr] ?? attr.toUpperCase();
+              const tip = ATTR_TOOLTIP[attr] ?? label;
+              const selected = asiPlus2 === attr;
+              const disabled = asiAllPlus1 || asiPlus1 === attr;
+              return (
+                <Tooltip key={attr} text={tip}>
+                  <button
+                    type="button"
+                    className={`origins-asi-chip${selected ? ' origins-asi-chip-selected' : ''}${disabled ? ' origins-asi-chip-disabled' : ''}`}
+                    onClick={() => handlePlus2(attr)}
+                    disabled={disabled}
+                    aria-pressed={selected}
+                    aria-label={`+2 em ${label}: ${tip}`}
+                  >
+                    {label}
+                  </button>
+                </Tooltip>
+              );
+            })}
           </div>
         </div>
 
-        <div className="origins-asi-or-divider">
-          <span className="origins-asi-or-text">ou</span>
+        {/* +1 */}
+        <div className="origins-asi-selector-group">
+          <div className="origins-asi-selector-label">
+            <Tooltip text={PLUS_TOOLTIP}>
+              <span className="origins-asi-selector-label-text">+1 em:</span>
+            </Tooltip>
+          </div>
+          <div className="origins-asi-chips">
+            {eligible.map((attr) => {
+              const label = ATTR_LABELS[attr] ?? attr.toUpperCase();
+              const tip = ATTR_TOOLTIP[attr] ?? label;
+              const selected = asiPlus1 === attr;
+              const disabled = asiAllPlus1 || asiPlus2 === attr;
+              return (
+                <Tooltip key={attr} text={tip}>
+                  <button
+                    type="button"
+                    className={`origins-asi-chip${selected ? ' origins-asi-chip-selected' : ''}${disabled ? ' origins-asi-chip-disabled' : ''}`}
+                    onClick={() => handlePlus1(attr)}
+                    disabled={disabled}
+                    aria-pressed={selected}
+                    aria-label={`+1 em ${label}: ${tip}`}
+                  >
+                    {label}
+                  </button>
+                </Tooltip>
+              );
+            })}
+          </div>
         </div>
-
-        {/* Opção B */}
-        <button
-          className={`origins-asi-option-b ${asiAllPlus1 ? 'origins-asi-option-b-selected' : ''}`}
-          onClick={handleOptionB}
-          type="button"
-        >
-          <span className="origins-asi-option-b-label">+1 / +1 / +1</span>
-          <span className="origins-asi-option-b-desc">
-            Distribui +1 igualmente nos 3 atributos elegíveis
-          </span>
-          {eligible.length > 0 && (
-            <span className="origins-asi-eligible-list">
-              {eligible.map((a) => ATTR_LABELS[a] ?? a.toUpperCase()).join(' / ')}
-            </span>
-          )}
-        </button>
       </div>
     </div>
   );

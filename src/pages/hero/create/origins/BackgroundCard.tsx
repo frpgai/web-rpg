@@ -1,9 +1,8 @@
 import { useState } from 'react';
 import { SvgIcon } from '../../../../components/ui/SvgIcon';
 import { BottomSheet } from '../../../../components/ui/BottomSheet';
-import type { Background, BackgroundDetails } from '../../../../types';
+import type { Background } from '../../../../types';
 import { ATTR_LABELS, SECONDARY, formatBonuses } from './origins.utils';
-import { catalogApi } from '../../../../api/services/catalog';
 
 interface BackgroundCardProps {
   background: Background;
@@ -12,33 +11,15 @@ interface BackgroundCardProps {
 }
 
 export function BackgroundCard({ background, selected, onSelect }: BackgroundCardProps) {
-  const bonusStr = formatBonuses(background.attribute_bonuses);
+  const bonusStr = formatBonuses(background.bonuses);
   const [sheetOpen, setSheetOpen] = useState(false);
-  const [details, setDetails] = useState<BackgroundDetails | null>(null);
-  const [detailsLoading, setDetailsLoading] = useState(false);
 
-  async function handleInfo(e: React.MouseEvent) {
+  function handleInfo(e: React.MouseEvent) {
     e.stopPropagation();
     setSheetOpen(true);
-    if (!details) {
-      setDetailsLoading(true);
-      try {
-        const d = await catalogApi.backgroundDetails(background.id);
-        setDetails(d);
-      } catch {
-        // ignore
-      } finally {
-        setDetailsLoading(false);
-      }
-    }
   }
 
-  const eligible = details?.eligible_attributes
-    ?? background.eligible_attributes
-    ?? background.attribute_bonuses?.eligible
-    ?? [];
-
-  const traitsToShow = details?.traits_detail ?? [];
+  const eligible = background.eligible_attributes ?? [];
 
   return (
     <>
@@ -89,19 +70,7 @@ export function BackgroundCard({ background, selected, onSelect }: BackgroundCar
             </div>
           </>
         )}
-        {detailsLoading && (
-          <p className="origins-error-text">Carregando traços…</p>
-        )}
-        {traitsToShow.length > 0 ? (
-          traitsToShow.map((trait) => (
-            <div key={trait.id} className="bottom-sheet-trait-item">
-              <p className="bottom-sheet-trait-name">{trait.name}</p>
-              <p className="bottom-sheet-trait-desc">{trait.description}</p>
-            </div>
-          ))
-        ) : !detailsLoading && traitsToShow.length === 0 && (
-          <p className="origins-error-text">{background.description}</p>
-        )}
+        <p className="origins-error-text">{background.description}</p>
       </BottomSheet>
     </>
   );
