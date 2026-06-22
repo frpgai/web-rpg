@@ -4,13 +4,14 @@ import { useHeroCreationStore } from '../../../../stores/heroCreationStore';
 import { CreationStepHeader } from '../../../../components/hero-creation/CreationStepHeader';
 import { CreationFooter } from '../../../../components/hero-creation/CreationFooter';
 import { OracleButton } from '../../../../components/hero-creation/OracleButton';
-import type { Ancestry, Background, CharacterClass } from '../../../../types';
+import type { Ancestry, Background, Vocation } from '../../../../types';
 import { SECONDARY, TERTIARY } from './origins.utils';
 import { SectionPanel } from './SectionPanel';
 import { AncestryCard } from './AncestryCard';
 import { BackgroundCard } from './BackgroundCard';
 import { VocationCard } from './VocationCard';
 import { DestinySpectrum } from './DestinySpectrum';
+import { AsiSection } from './AsiSection';
 import './OriginsPage.css';
 
 // ── Componente interno: linha de erro com retry ───────────────────────────────
@@ -28,7 +29,7 @@ export default function OriginsPage() {
   const [, setLocation] = useLocation();
   const {
     ancestries,
-    classes,
+    vocations,
     backgrounds,
     preview,
     catalogLoading: loading,
@@ -41,19 +42,23 @@ export default function OriginsPage() {
 
   const {
     ancestry, characterClass, background,
+    asiPlus2, asiPlus1, asiAllPlus1,
     setAncestry, setCharacterClass, setBackground, reset,
     setAsiPlus2, setAsiPlus1, setAsiAllPlus1,
   } = useHeroCreationStore();
 
+  // characterClass now accepts StoredClass (Vocation | CharacterClass)
+  const vocation = characterClass as Vocation | null;
+
   function handleOracle() {
-    if (ancestries.length === 0 || classes.length === 0 || backgrounds.length === 0) return;
+    if (ancestries.length === 0 || vocations.length === 0 || backgrounds.length === 0) return;
     const randAncestry = ancestries[Math.floor(Math.random() * ancestries.length)];
-    const randCharacterClass = classes[Math.floor(Math.random() * classes.length)];
+    const randVocation = vocations[Math.floor(Math.random() * vocations.length)];
     const randBackground = backgrounds[Math.floor(Math.random() * backgrounds.length)];
     setAncestry(randAncestry);
-    setCharacterClass(randCharacterClass);
+    setCharacterClass(randVocation);
     setBackground(randBackground);
-    fetchPreview(randAncestry.id, randCharacterClass.id, randBackground.id);
+    fetchPreview(randAncestry.id, randVocation.id, randBackground.id);
   }
 
   function handleNext() {
@@ -72,14 +77,15 @@ export default function OriginsPage() {
     }
   }
 
-  const canNext = ancestry !== null && characterClass !== null && background !== null;
+  const asiComplete = asiAllPlus1 || (asiPlus2 !== null && asiPlus1 !== null && asiPlus2 !== asiPlus1);
+  const canNext = ancestry !== null && vocation !== null && background !== null && asiComplete;
 
   function handleSelectAncestry(a: Ancestry) {
     setAncestry(a);
-    fetchPreview(a.id, characterClass?.id ?? null, background?.id ?? null);
+    fetchPreview(a.id, vocation?.id ?? null, background?.id ?? null);
   }
 
-  function handleSelectCharacterClass(v: CharacterClass) {
+  function handleSelectVocation(v: Vocation) {
     setCharacterClass(v);
     fetchPreview(ancestry?.id ?? null, v.id, background?.id ?? null);
   }
@@ -90,7 +96,7 @@ export default function OriginsPage() {
     setAsiPlus2(null);
     setAsiPlus1(null);
     setAsiAllPlus1(false);
-    fetchPreview(ancestry?.id ?? null, characterClass?.id ?? null, bg.id);
+    fetchPreview(ancestry?.id ?? null, vocation?.id ?? null, bg.id);
   }
 
   return (
@@ -139,6 +145,18 @@ export default function OriginsPage() {
               onSelect={handleSelectBackground}
             />
           ))}
+          {/* ASI Sub-seção: aparece após selecionar antecedente */}
+          {background && (
+            <AsiSection
+              background={background}
+              asiPlus2={asiPlus2}
+              asiPlus1={asiPlus1}
+              asiAllPlus1={asiAllPlus1}
+              onSetPlus2={setAsiPlus2}
+              onSetPlus1={setAsiPlus1}
+              onSetAllPlus1={setAsiAllPlus1}
+            />
+          )}
         </SectionPanel>
 
         {/* ── Vocação ──────────────────────────────────────────────────────── */}
@@ -149,12 +167,12 @@ export default function OriginsPage() {
           loading={loading}
           gridClassName="origins-row-grid"
         >
-          {classes.map((v: CharacterClass) => (
+          {vocations.map((v: Vocation) => (
             <VocationCard
               key={v.id}
               vocation={v}
-              selected={characterClass?.id === v.id}
-              onSelect={handleSelectCharacterClass}
+              selected={vocation?.id === v.id}
+              onSelect={handleSelectVocation}
             />
           ))}
         </SectionPanel>
@@ -163,7 +181,7 @@ export default function OriginsPage() {
         <DestinySpectrum
           ancestry={ancestry}
           background={background}
-          characterClass={characterClass}
+          vocation={vocation}
           preview={preview}
           previewLoading={previewLoading}
           previewError={previewError}
@@ -173,7 +191,7 @@ export default function OriginsPage() {
         <OracleButton
           onPress={handleOracle}
           disabled={loading}
-          hint={canNext ? 'Rolar origens aleatórias' : 'Selecione ancestralidade, antecedente e vocação'}
+          hint={canNext ? 'Rolar origens aleatórias' : 'Selecione ancestralidade, antecedente, vocação e distribua os atributos'}
         />
       </div>
 
