@@ -231,6 +231,50 @@
   letter-spacing: 0.03em;
 }
 
+/* Badges row do card de antecedente */
+.origins-bg-badges-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.origins-bg-attr-chips {
+  display: flex;
+  gap: 4px;
+}
+
+.origins-bg-attr-chip {
+  padding: 2px 8px;
+  background-color: rgba(255, 184, 108, 0.1);
+  border: 1px solid rgba(255, 184, 108, 0.2);
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--color-secondary);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.origins-bg-divider {
+  height: 16px;
+  width: 1px;
+  background-color: rgba(255, 255, 255, 0.1);
+  margin: 0 4px;
+}
+
+.origins-bg-distrib-badge {
+  padding: 2px 8px;
+  background-color: rgba(215, 186, 255, 0.1);
+  border: 1px solid rgba(215, 186, 255, 0.2);
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--color-primary);
+  letter-spacing: 0.05em;
+}
+
 .origins-attr-badge {
   display: flex;
   flex-direction: row;

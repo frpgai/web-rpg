@@ -11,7 +11,6 @@ import { AncestryCard } from './AncestryCard';
 import { BackgroundCard } from './BackgroundCard';
 import { VocationCard } from './VocationCard';
 import { DestinySpectrum } from './DestinySpectrum';
-import { AsiSection } from './AsiSection';
 import './OriginsPage.css';
 
 // ── Componente interno: linha de erro com retry ───────────────────────────────
@@ -42,9 +41,7 @@ export default function OriginsPage() {
 
   const {
     ancestry, characterClass, background,
-    asiPlus2, asiPlus1, asiAllPlus1,
     setAncestry, setCharacterClass, setBackground, reset,
-    setAsiPlus2, setAsiPlus1, setAsiAllPlus1,
   } = useHeroCreationStore();
 
   // characterClass now accepts StoredClass (Vocation | CharacterClass)
@@ -58,9 +55,6 @@ export default function OriginsPage() {
     setAncestry(randAncestry);
     setCharacterClass(randVocation);
     setBackground(randBackground);
-    setAsiPlus2(null);
-    setAsiPlus1(null);
-    setAsiAllPlus1(false);
     fetchPreview(randAncestry.id, randVocation.id, randBackground.id);
   }
 
@@ -80,8 +74,7 @@ export default function OriginsPage() {
     }
   }
 
-  const asiComplete = asiAllPlus1 || (asiPlus2 !== null && asiPlus1 !== null && asiPlus2 !== asiPlus1);
-  const canNext = ancestry !== null && vocation !== null && background !== null && asiComplete;
+  const canNext = ancestry !== null && vocation !== null && background !== null;
 
   function handleSelectAncestry(a: Ancestry) {
     setAncestry(a);
@@ -95,10 +88,6 @@ export default function OriginsPage() {
 
   function handleSelectBackground(bg: Background) {
     setBackground(bg);
-    // Reset ASI ao trocar antecedente
-    setAsiPlus2(null);
-    setAsiPlus1(null);
-    setAsiAllPlus1(false);
     fetchPreview(ancestry?.id ?? null, vocation?.id ?? null, bg.id);
   }
 
@@ -148,18 +137,6 @@ export default function OriginsPage() {
               onSelect={handleSelectBackground}
             />
           ))}
-          {/* ASI Sub-seção: aparece após selecionar antecedente */}
-          {background && (
-            <AsiSection
-              background={background}
-              asiPlus2={asiPlus2}
-              asiPlus1={asiPlus1}
-              asiAllPlus1={asiAllPlus1}
-              onSetPlus2={setAsiPlus2}
-              onSetPlus1={setAsiPlus1}
-              onSetAllPlus1={setAsiAllPlus1}
-            />
-          )}
         </SectionPanel>
 
         {/* ── Vocação ──────────────────────────────────────────────────────── */}
@@ -194,7 +171,7 @@ export default function OriginsPage() {
         <OracleButton
           onPress={handleOracle}
           disabled={loading}
-          hint={canNext ? 'Rolar origens aleatórias' : 'Selecione ancestralidade, antecedente, vocação e distribua os atributos'}
+          hint={canNext ? 'Rolar origens aleatórias' : 'Selecione ancestralidade, antecedente e vocação'}
         />
       </div>
 

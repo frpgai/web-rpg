@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { SvgIcon } from '../../../../components/ui/SvgIcon';
 import { BottomSheet } from '../../../../components/ui/BottomSheet';
 import type { Background } from '../../../../types';
-import { ATTR_LABELS, SECONDARY, formatBonuses } from './origins.utils';
+import { ATTR_LABELS, SECONDARY } from './origins.utils';
 
 interface BackgroundCardProps {
   background: Background;
@@ -11,7 +11,6 @@ interface BackgroundCardProps {
 }
 
 export function BackgroundCard({ background, selected, onSelect }: BackgroundCardProps) {
-  const bonusStr = formatBonuses(background.bonuses);
   const [sheetOpen, setSheetOpen] = useState(false);
 
   function handleInfo(e: React.MouseEvent) {
@@ -38,8 +37,16 @@ export function BackgroundCard({ background, selected, onSelect }: BackgroundCar
           <h3 className={`origins-row-card-name ${selected ? 'origins-row-card-name-secondary' : ''}`}>
             {background.name}
           </h3>
-          <div className="origins-bg-bonus-badge">
-            <span className="origins-bg-bonus-badge-text">{bonusStr}</span>
+          <div className="origins-bg-badges-row">
+            <div className="origins-bg-attr-chips">
+              {eligible.map((attr) => (
+                <span key={attr} className="origins-bg-attr-chip">
+                  {ATTR_LABELS[attr] ?? attr.toUpperCase()}
+                </span>
+              ))}
+            </div>
+            {eligible.length > 0 && <div className="origins-bg-divider" />}
+            <span className="origins-bg-distrib-badge">+2 / +1</span>
           </div>
         </div>
         <button
