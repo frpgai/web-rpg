@@ -33,12 +33,12 @@ export const catalogApi = {
   },
   previewHeroV2: (input: {
     ancestry_id: string | null;
-    class_id: string | null;
+    vocation_id: string | null;
     background_id: string | null;
   }) => {
     const params = new URLSearchParams();
-    if (input.ancestry_id)   params.set('ancestry_id',   input.ancestry_id);
-    if (input.class_id)      params.set('class_id',      input.class_id);
+    if (input.ancestry_id)    params.set('ancestry_id',   input.ancestry_id);
+    if (input.vocation_id)    params.set('vocation_id',   input.vocation_id);
     if (input.background_id) params.set('background_id', input.background_id);
     const qs = params.toString();
     return apiClient.get(`api/v1/hero/preview${qs ? '?' + qs : ''}`).json<PreviewResult>();

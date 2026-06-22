@@ -68,7 +68,7 @@ export function useOriginsStep() {
       try {
         const result = await catalogApi.previewHeroV2({
           ancestry_id: ancestryId,
-          class_id: vocationId,
+          vocation_id: vocationId,
           background_id: backgroundId,
         });
         setState((prev) => ({
