@@ -9,6 +9,7 @@ import DashboardPage from './pages/dashboard/DashboardPage';
 import OriginsPage from './pages/hero/create/origins';
 import AttributesPage from './pages/hero/create/AttributesPage';
 import AestheticsPage from './pages/hero/create/AestheticsPage';
+import SelectSystemPage from './pages/SelectSystemPage';
 import { PrivateRoute } from './components/common/PrivateRoute';
 import { useAuthStore } from './stores/authStore';
 import { systemService } from './api/services/systemService';
@@ -50,6 +51,10 @@ export default function App() {
         </Route>
         <Route path="/hero/create/aesthetics">
           <PrivateRoute><AestheticsPage /></PrivateRoute>
+        </Route>
+
+        <Route path="/select-system">
+          <PrivateRoute><SelectSystemPage /></PrivateRoute>
         </Route>
 
         {/* Fallback */}
