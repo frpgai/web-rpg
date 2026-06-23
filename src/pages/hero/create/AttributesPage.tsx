@@ -1,10 +1,13 @@
 import { useLocation } from 'wouter';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { CreationStepHeader } from '../../../components/hero-creation/CreationStepHeader';
 import { CreationFooter } from '../../../components/hero-creation/CreationFooter';
 import { OracleButton } from '../../../components/hero-creation/OracleButton';
 import { useHeroCreationStore } from '../../../stores/heroCreationStore';
-import { POINT_BUY_BUDGET, POINT_BUY_COST, totalCost } from '../../../constants/rules';
+import { useSystemStore } from '../../../stores/systemStore';
+import { usePointBuyRules } from '../../../hooks/usePointBuyRules';
+import { getSystemAttributes, previewAttributes } from '../../../api/services/attributes';
+import type { SystemAttribute } from '../../../api/services/attributes';
 import { AttributeGrid } from './_AttributeGrid';
 import { PointPoolCard } from './_PointPoolCard';
 import { CharacterPreviewSummary } from './_CharacterPreviewSummary';
@@ -14,6 +17,14 @@ import './AttributesPage.css';
 export default function AttributesPage() {
   const [, setLocation] = useLocation();
   const [helpOpen, setHelpOpen] = useState(false);
+  const [systemAttributes, setSystemAttributes] = useState<SystemAttribute[]>([]);
+  const [modifiers, setModifiers] = useState<Record<string, number>>({});
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const currentSystem = useSystemStore((s) => s.currentSystem);
+  const systemId = currentSystem?.id ?? '';
+
+  const { rules } = usePointBuyRules(systemId);
 
   const {
     ancestry,
@@ -34,9 +45,53 @@ export default function AttributesPage() {
     }
   }, [ancestry, characterClass, background, setLocation]);
 
-  const spent = useMemo(() => totalCost(attrs as unknown as Record<string, number>), [attrs]);
-  const remaining = POINT_BUY_BUDGET - spent;
-  const canNext = spent === POINT_BUY_BUDGET;
+  // Load system attributes dynamically
+  useEffect(() => {
+    if (!systemId) return;
+    getSystemAttributes(systemId)
+      .then((attrs) => setSystemAttributes(attrs))
+      .catch(() => {
+        // fallback: attributes will be empty, grid falls back to static order
+      });
+  }, [systemId]);
+
+  // Debounced preview call — 300ms after any attribute change
+  useEffect(() => {
+    if (!background) return;
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      previewAttributes({
+        backgroundId: background.id,
+        str: attrs.str,
+        dex: attrs.dex,
+        con: attrs.con,
+        int: attrs.int,
+        wis: attrs.wis,
+        cha: attrs.cha,
+      })
+        .then((result) => {
+          const mods: Record<string, number> = {};
+          for (const [slug, data] of Object.entries(result.attributes)) {
+            mods[slug] = data.modifier;
+          }
+          setModifiers(mods);
+        })
+        .catch(() => {
+          // non-critical — modifiers remain from last successful call
+        });
+    }, 300);
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, [attrs, background]);
+
+  function totalCost(a: Record<string, number>): number {
+    return Object.values(a).reduce((sum, v) => sum + (rules.costTable[v] ?? 0), 0);
+  }
+
+  const spent = useMemo(() => totalCost(attrs as unknown as Record<string, number>), [attrs, rules.costTable]);
+  const remaining = rules.budget - spent;
+  const canNext = spent === rules.budget;
 
   const eligibleAttributes = background?.eligible_attributes ?? [];
   // Total ASI pool: +1/+1/+1 mode = 3, +2/+1 mode = 3 (2+1), +2 only = 2, +1 only = 1
@@ -48,14 +103,6 @@ export default function AttributesPage() {
 
   // Max bonus a single eligible attribute can receive
   const asiMaxPerAttr = asiAllPlus1 ? 1 : 2;
-
-  // Remaining = total pool minus sum of allocated bonuses on eligible attrs
-  const asiAllocated = useMemo(() => {
-    return eligibleAttributes.reduce((sum, attr) => {
-      return sum + (attributeBonuses[attr as keyof typeof attributeBonuses] ?? 0);
-    }, 0);
-  }, [eligibleAttributes, attributeBonuses]);
-  const asiPoolRemaining = asiPoolTotal - asiAllocated;
 
   const attributeBonuses = useMemo<Partial<Record<keyof HeroAttributes, number>>>(() => {
     const bonuses: Partial<Record<keyof HeroAttributes, number>> = {};
@@ -70,6 +117,14 @@ export default function AttributesPage() {
     return bonuses;
   }, [asiPlus2, asiPlus1, asiAllPlus1, background]);
 
+  // Remaining = total pool minus sum of allocated bonuses on eligible attrs
+  const asiAllocated = useMemo(() => {
+    return eligibleAttributes.reduce((sum, attr) => {
+      return sum + (attributeBonuses[attr as keyof typeof attributeBonuses] ?? 0);
+    }, 0);
+  }, [eligibleAttributes, attributeBonuses]);
+  const asiPoolRemaining = asiPoolTotal - asiAllocated;
+
   // Describe bonus for display
   const bonusDescription = useMemo(() => {
     if (asiAllPlus1) return '+1 / +1 / +1';
@@ -82,10 +137,10 @@ export default function AttributesPage() {
   }, [asiPlus2, asiPlus1, asiAllPlus1]);
 
   function handleSetAttr(key: keyof HeroAttributes, val: number) {
-    if (val < 8 || val > 15) return;
+    if (val < rules.min || val > rules.max) return;
     const currentVal = attrs[key];
-    const diff = POINT_BUY_COST[val] - POINT_BUY_COST[currentVal];
-    if (spent + diff > POINT_BUY_BUDGET) return;
+    const diff = (rules.costTable[val] ?? 0) - (rules.costTable[currentVal] ?? 0);
+    if (spent + diff > rules.budget) return;
     setAttribute(key, val);
   }
 
@@ -108,7 +163,7 @@ export default function AttributesPage() {
 
         <PointPoolCard
           remaining={remaining}
-          budget={POINT_BUY_BUDGET}
+          budget={rules.budget}
           bonusDescription={bonusDescription}
         />
 
@@ -152,6 +207,9 @@ export default function AttributesPage() {
           asiPoolRemaining={asiPoolRemaining}
           asiMaxPerAttr={asiMaxPerAttr}
           onSetAttr={handleSetAttr}
+          rules={rules}
+          systemAttributes={systemAttributes}
+          modifiers={modifiers}
         />
 
         <OracleButton
