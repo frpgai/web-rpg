@@ -1,5 +1,5 @@
 import { useLocation } from 'wouter';
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { CreationStepHeader } from '../../../components/hero-creation/CreationStepHeader';
 import { CreationFooter } from '../../../components/hero-creation/CreationFooter';
 import { OracleButton } from '../../../components/hero-creation/OracleButton';
@@ -13,6 +13,8 @@ import './AttributesPage.css';
 
 export default function AttributesPage() {
   const [, setLocation] = useLocation();
+  const [helpOpen, setHelpOpen] = useState(false);
+
   const {
     ancestry,
     characterClass,
@@ -36,6 +38,30 @@ export default function AttributesPage() {
   const remaining = POINT_BUY_BUDGET - spent;
   const canNext = spent === POINT_BUY_BUDGET;
 
+  const attributeBonuses = useMemo<Partial<Record<keyof HeroAttributes, number>>>(() => {
+    const bonuses: Partial<Record<keyof HeroAttributes, number>> = {};
+    if (asiAllPlus1 && background) {
+      for (const attr of (background.eligible_attributes ?? [])) {
+        bonuses[attr as keyof HeroAttributes] = 1;
+      }
+    } else {
+      if (asiPlus2) bonuses[asiPlus2 as keyof HeroAttributes] = 2;
+      if (asiPlus1) bonuses[asiPlus1 as keyof HeroAttributes] = 1;
+    }
+    return bonuses;
+  }, [asiPlus2, asiPlus1, asiAllPlus1, background]);
+
+  // Describe bonus for display
+  const bonusDescription = useMemo(() => {
+    if (asiAllPlus1) return '+1 / +1 / +1';
+    const hasPlus2 = !!asiPlus2;
+    const hasPlus1 = !!asiPlus1;
+    if (hasPlus2 && hasPlus1) return '+2 / +1';
+    if (hasPlus2) return '+2';
+    if (hasPlus1) return '+1';
+    return undefined;
+  }, [asiPlus2, asiPlus1, asiAllPlus1]);
+
   function handleSetAttr(key: keyof HeroAttributes, val: number) {
     if (val < 8 || val > 15) return;
     const currentVal = attrs[key];
@@ -47,8 +73,8 @@ export default function AttributesPage() {
   if (!ancestry || !characterClass || !background) return null;
 
   return (
-    <div className="attributes-page-root">
-      <div className="attributes-page-scroll">
+    <div className="attr-page-root">
+      <div className="attr-page-scroll">
         <CreationStepHeader
           stepLabel="PASSO 02: ATRIBUTOS"
           headline="ESSÊNCIA DO HERÓI"
@@ -61,23 +87,48 @@ export default function AttributesPage() {
           characterClass={characterClass}
         />
 
-        <PointPoolCard remaining={remaining} />
+        <PointPoolCard
+          remaining={remaining}
+          budget={POINT_BUY_BUDGET}
+          bonusDescription={bonusDescription}
+        />
+
+        {/* Collapsible help card */}
+        <div className="attr-help-card">
+          <button
+            type="button"
+            className="attr-help-toggle"
+            onClick={() => setHelpOpen((o) => !o)}
+            aria-expanded={helpOpen}
+          >
+            <span className="attr-help-toggle-label">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
+                <circle cx="12" cy="12" r="10" />
+                <line x1="12" y1="8" x2="12" y2="12" />
+                <line x1="12" y1="16" x2="12.01" y2="16" />
+              </svg>
+              COMO FUNCIONA O POINT BUY?
+            </span>
+            <svg
+              className={`attr-help-chevron ${helpOpen ? 'attr-help-chevron--open' : ''}`}
+              width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true"
+            >
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
+          </button>
+          {helpOpen && (
+            <div className="attr-help-body">
+              <p>Você tem <strong>27 pontos</strong> para gastar. Todo atributo começa em 8.</p>
+              <p>Atributos mais altos custam mais pontos: 14 custa 7 pts e 15 custa 9 pts.</p>
+              <p>Os bônus de antecedente são aplicados automaticamente e não consomem pontos.</p>
+            </div>
+          )}
+        </div>
 
         <AttributeGrid
           attrs={attrs}
           remaining={remaining}
-          attributeBonuses={(() => {
-            const bonuses: Record<string, number> = {};
-            if (asiAllPlus1 && background) {
-              for (const attr of (background.eligible_attributes ?? [])) {
-                bonuses[attr] = 1;
-              }
-            } else {
-              if (asiPlus2) bonuses[asiPlus2] = 2;
-              if (asiPlus1) bonuses[asiPlus1] = 1;
-            }
-            return bonuses;
-          })()}
+          attributeBonuses={attributeBonuses}
           onSetAttr={handleSetAttr}
         />
 
@@ -87,6 +138,7 @@ export default function AttributesPage() {
           hint="O Oráculo sugere o melhor caminho para sua classe"
         />
       </div>
+
       <CreationFooter
         onBack={() => setLocation('/hero/create/origins')}
         onNext={() => setLocation('/hero/create/aesthetics')}

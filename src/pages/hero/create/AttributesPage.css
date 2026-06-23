@@ -1,111 +1,82 @@
-/* Attributes Page Styles (scoped) */
-.attributes-page-root {
+/* AttributesPage — scoped with attr-page- prefix */
+.attr-page-root {
   min-height: 100vh;
-  background-color: var(--color-bg); /* colors.bg */
-  color: var(--color-text); /* colors.text */
+  background-color: var(--color-bg);
+  color: var(--color-text);
   padding-bottom: 120px;
   box-sizing: border-box;
 }
 
-.attributes-page-scroll {
-  max-width: 800px;
+.attr-page-scroll {
+  max-width: 480px;
   margin: 0 auto;
-  padding: 24px 16px;
+  padding: var(--space-lg) var(--space-md);
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: var(--space-lg);
 }
 
-/* CharacterPreviewSummary Styles */
-.char-preview-summary-card {
-  background-color: rgba(31, 31, 36, 0.6);
-  border: 1px solid rgba(215, 186, 255, 0.1);
-  border-radius: 8px;
-  padding: 24px;
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
+/* Help card */
+.attr-help-card {
+  background: rgba(31, 31, 36, 0.6);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.attr-help-toggle {
   width: 100%;
-  box-sizing: border-box;
-}
-
-.char-preview-summary-row {
   display: flex;
-  flex-direction: row;
-  align-items: center;
   justify-content: space-between;
-  width: 100%;
-}
-
-.char-preview-summary-col {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 8px;
+  padding: var(--space-md);
+  background: transparent;
+  border: none;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  text-align: left;
 }
 
-.char-preview-summary-label {
+.attr-help-toggle:hover {
+  color: var(--color-text);
+}
+
+.attr-help-toggle-label {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
   font-family: var(--font-mono);
   font-size: 10px;
-  color: rgba(204, 195, 211, 0.6);
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 0.1em;
+  font-weight: 700;
 }
 
-.char-preview-summary-value {
-  font-family: var(--font-display);
-  font-size: 18px;
-  color: var(--color-text);
-  text-align: center;
+.attr-help-chevron {
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
 }
 
-.char-preview-summary-divider-v {
-  width: 1px;
-  height: 32px;
-  background-color: rgba(255, 255, 255, 0.1);
+.attr-help-chevron--open {
+  transform: rotate(180deg);
 }
 
-.char-preview-summary-divider-h {
-  height: 1px;
-  background-color: rgba(255, 255, 255, 0.05);
-}
-
-.char-preview-summary-trait-badges {
+.attr-help-body {
+  padding: 0 var(--space-md) var(--space-md);
   display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 8px;
+  flex-direction: column;
+  gap: var(--space-sm);
 }
 
-.char-preview-summary-trait-badge {
-  padding: 4px 12px;
-  border-radius: 12px;
-  border: 1px solid transparent;
+.attr-help-body p {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  color: rgba(204, 195, 211, 0.7);
+  line-height: 1.6;
+  margin: 0;
 }
 
-.char-preview-summary-trait-badge.trait-tertiary {
-  border-color: rgba(49, 227, 104, 0.3);
-  background-color: rgba(49, 227, 104, 0.08);
-  color: var(--color-tertiary);
-}
-
-.char-preview-summary-trait-badge.trait-primary {
-  border-color: rgba(215, 186, 255, 0.3);
-  background-color: rgba(215, 186, 255, 0.08);
+.attr-help-body strong {
   color: var(--color-primary);
 }
-
-.char-preview-summary-trait-badge.trait-secondary {
-  border-color: rgba(255, 184, 108, 0.3);
-  background-color: rgba(255, 184, 108, 0.08);
-  color: var(--color-secondary);
-}
-
-.char-preview-summary-trait-badge-text {
-  font-family: var(--font-mono);
-  font-size: 9px;
-  letter-spacing: 1px;
-}
-
