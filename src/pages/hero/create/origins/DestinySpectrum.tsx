@@ -96,7 +96,7 @@ export function DestinySpectrum({
                 <div className="origins-spectrum-stat-skeleton" />
               ) : (
                 <span className="origins-spectrum-stat-value">
-                  {preview?.base_mp != null ? String(preview.base_mp).padStart(2, '0') : '—'}
+                  {'—'}
                 </span>
               )}
             </div>
@@ -159,7 +159,7 @@ export function DestinySpectrum({
               <div className="origins-spectrum-traits-list">
                 {preview.traits.map((trait, idx) => (
                   <div key={idx} className="origins-spectrum-trait-badge">
-                    <span className="origins-spectrum-trait-text">{trait}</span>
+                    <span className="origins-spectrum-trait-text">{typeof trait === 'string' ? trait : trait.name}</span>
                   </div>
                 ))}
               </div>

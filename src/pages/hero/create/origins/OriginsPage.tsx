@@ -5,7 +5,7 @@ import { useHeroCreationStore } from '../../../../stores/heroCreationStore';
 import { CreationStepHeader } from '../../../../components/hero-creation/CreationStepHeader';
 import { CreationFooter } from '../../../../components/hero-creation/CreationFooter';
 import { OracleButton } from '../../../../components/hero-creation/OracleButton';
-import type { Ancestry, Background, Vocation, DraftData } from '../../../../types';
+import type { Ancestry, Background, Vocation, DraftHero } from '../../../../types';
 import { heroApi } from '../../../../api/services/hero';
 import { SECONDARY, TERTIARY } from './origins.utils';
 import { SectionPanel } from './SectionPanel';
@@ -50,13 +50,13 @@ export default function OriginsPage() {
   const vocation = characterClass as Vocation | null;
 
   const [hasDraft, setHasDraft] = useState(false);
-  const [draftData, setDraftData] = useState<DraftData | null>(null);
+  const [draftData, setDraftData] = useState<DraftHero | null>(null);
 
   // Load draft on mount
   useEffect(() => {
     heroApi.getDraft().then((draft) => {
       if (draft) {
-        setDraftData(draft.draft_data);
+        setDraftData(draft);
         setHasDraft(true);
       }
     }).catch(() => {
@@ -64,11 +64,8 @@ export default function OriginsPage() {
     });
   }, []);
 
-  // Restore selections from draft when catalogs are ready
-  useEffect(() => {
-    if (!hasDraft || !draftData) return;
-    if (ancestries.length === 0 || vocations.length === 0 || backgrounds.length === 0) return;
-
+  function handleContinueDraft() {
+    if (!draftData) return;
     const foundAncestry = draftData.ancestry_id ? ancestries.find((a) => a.id === draftData.ancestry_id) : undefined;
     const foundVocation = draftData.vocation_id ? vocations.find((v) => v.id === draftData.vocation_id) : undefined;
     const foundBackground = draftData.background_id ? backgrounds.find((bg) => bg.id === draftData.background_id) : undefined;
@@ -85,12 +82,6 @@ export default function OriginsPage() {
       );
     }
 
-    setHasDraft(false);
-    setDraftData(null);
-  }, [hasDraft, draftData, ancestries, vocations, backgrounds]);
-
-  function handleContinueDraft() {
-    // selections already restored in useEffect above once catalogs loaded
     setHasDraft(false);
     setDraftData(null);
   }
@@ -122,11 +113,9 @@ export default function OriginsPage() {
     try {
       await heroApi.saveDraft({
         draft_step: 'origins',
-        draft_data: {
-          ancestry_id: ancestry.id,
-          vocation_id: vocation.id,
-          background_id: background.id,
-        },
+        ancestry_id: ancestry.id,
+        vocation_id: vocation.id,
+        background_id: background.id,
       });
     } catch {
       console.error('Failed to save draft');
@@ -135,15 +124,7 @@ export default function OriginsPage() {
   }
 
   function handleBack() {
-    const hasProgress = ancestry !== null || characterClass !== null || background !== null;
-    if (!hasProgress) {
-      setLocation('/dashboard');
-      return;
-    }
-    if (window.confirm('Descartar herói? O progresso da criação será perdido.')) {
-      reset();
-      setLocation('/dashboard');
-    }
+    setLocation('/dashboard');
   }
 
   const canNext = ancestry !== null && vocation !== null && background !== null;

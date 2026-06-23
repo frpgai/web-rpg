@@ -20,9 +20,9 @@ export const heroApi = {
   },
 
   getDraft: (): Promise<DraftHero | null> =>
-    apiClient.get('api/v1/heroes/draft').json<DraftHero>().catch((err: { response?: { status?: number } }) => {
-      if (err?.response?.status === 404) return null;
-      throw err;
+    apiClient.get('api/v1/heroes/draft').then(async (res) => {
+      if (res.status === 204) return null;
+      return res.json<DraftHero>();
     }),
 
   saveDraft: (data: SaveDraftRequest): Promise<SaveDraftResponse> =>

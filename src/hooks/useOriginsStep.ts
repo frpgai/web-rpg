@@ -67,7 +67,7 @@ export function useOriginsStep() {
     ) => {
       setState((prev) => ({ ...prev, previewLoading: true, previewError: null }));
       try {
-        const result = await heroApi.previewHeroV2({
+        const result = await heroApi.preview({
           ancestry_id: ancestryId,
           vocation_id: vocationId,
           background_id: backgroundId,
