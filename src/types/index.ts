@@ -1,18 +1,16 @@
-export interface DraftData {
-  ancestry_id?: string;
-  vocation_id?: string;
-  background_id?: string;
-}
-
 export interface DraftHero {
   id: string;
   draft_step: string;
-  draft_data: DraftData;
+  ancestry_id: string | null;
+  vocation_id: string | null;
+  background_id: string | null;
 }
 
 export interface SaveDraftRequest {
   draft_step: string;
-  draft_data: DraftData;
+  ancestry_id?: string | null;
+  vocation_id?: string | null;
+  background_id?: string | null;
 }
 
 export interface SaveDraftResponse {
@@ -206,14 +204,26 @@ export interface HeroDetail {
   active_session: { id: string; name: string } | null;
 }
 
+export interface PreviewTrait {
+  id: string;
+  slug: string;
+  name: string;
+  description: string;
+}
+
+export interface PreviewAttributeBonuses {
+  bonuses: number[];
+  eligible_attributes: string[];
+}
+
 export interface PreviewResult {
   base_hp: number | null;
-  base_mp?: number | null;
   base_def: number | null;
   is_spellcaster?: boolean | null;
   key_attribute: string | null;
-  attribute_bonuses: Record<string, number> & { eligible?: string[] };
-  traits: string[];
+  spell_slots?: Record<string, number> | null;
+  attribute_bonuses: PreviewAttributeBonuses | null;
+  traits: PreviewTrait[];
 }
 
 export interface CreateHeroRequest {

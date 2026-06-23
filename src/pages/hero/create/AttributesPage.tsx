@@ -69,7 +69,7 @@ export default function AttributesPage() {
           attributeBonuses={(() => {
             const bonuses: Record<string, number> = {};
             if (asiAllPlus1 && background) {
-              for (const attr of background.eligible_attributes) {
+              for (const attr of (background.eligible_attributes ?? [])) {
                 bonuses[attr] = 1;
               }
             } else {

@@ -7,6 +7,7 @@ import LoginPage from './pages/auth/LoginPage';
 import RegisterPage from './pages/auth/RegisterPage';
 import DashboardPage from './pages/dashboard/DashboardPage';
 import OriginsPage from './pages/hero/create/origins';
+import AttributesPage from './pages/hero/create/AttributesPage';
 import AestheticsPage from './pages/hero/create/AestheticsPage';
 import { PrivateRoute } from './components/common/PrivateRoute';
 import { useAuthStore } from './stores/authStore';
@@ -43,6 +44,9 @@ export default function App() {
         </Route>
         <Route path="/hero/create/origins">
           <PrivateRoute><OriginsPage /></PrivateRoute>
+        </Route>
+        <Route path="/hero/create/attributes">
+          <PrivateRoute><AttributesPage /></PrivateRoute>
         </Route>
         <Route path="/hero/create/aesthetics">
           <PrivateRoute><AestheticsPage /></PrivateRoute>
