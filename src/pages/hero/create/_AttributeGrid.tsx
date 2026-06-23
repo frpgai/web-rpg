@@ -74,11 +74,6 @@ export function AttributeGrid({
         const canDecrement = purchased > rules.min;
         const canIncrement = purchased < rules.max && remaining >= costToInc;
 
-        const modifier = modifiers[key];
-        const modifierLabel = modifier !== undefined
-          ? (modifier >= 0 ? `+${modifier}` : `${modifier}`)
-          : null;
-
         return (
           <div
             key={key}
@@ -116,9 +111,6 @@ export function AttributeGrid({
 
                 <span className="attr-card-value">
                   {total}
-                  {modifierLabel !== null && (
-                    <span className="attr-card-modifier">({modifierLabel})</span>
-                  )}
                 </span>
 
                 <button

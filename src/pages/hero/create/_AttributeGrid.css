@@ -27,7 +27,7 @@
 }
 
 .attr-card--eligible {
-  border-color: rgba(255, 184, 108, 0.25);
+  border-color: rgba(255, 255, 255, 0.05);
 }
 
 /* Eligible badge (top-right absolute) */
