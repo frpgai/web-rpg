@@ -38,6 +38,25 @@ export default function AttributesPage() {
   const remaining = POINT_BUY_BUDGET - spent;
   const canNext = spent === POINT_BUY_BUDGET;
 
+  const eligibleAttributes = background?.eligible_attributes ?? [];
+  // Total ASI pool: +1/+1/+1 mode = 3, +2/+1 mode = 3 (2+1), +2 only = 2, +1 only = 1
+  const asiPoolTotal = useMemo(() => {
+    if (!background) return 0;
+    if (asiAllPlus1) return eligibleAttributes.length; // one +1 per eligible attr
+    return (asiPlus2 ? 2 : 0) + (asiPlus1 ? 1 : 0);
+  }, [background, asiAllPlus1, asiPlus2, asiPlus1, eligibleAttributes.length]);
+
+  // Max bonus a single eligible attribute can receive
+  const asiMaxPerAttr = asiAllPlus1 ? 1 : 2;
+
+  // Remaining = total pool minus sum of allocated bonuses on eligible attrs
+  const asiAllocated = useMemo(() => {
+    return eligibleAttributes.reduce((sum, attr) => {
+      return sum + (attributeBonuses[attr as keyof typeof attributeBonuses] ?? 0);
+    }, 0);
+  }, [eligibleAttributes, attributeBonuses]);
+  const asiPoolRemaining = asiPoolTotal - asiAllocated;
+
   const attributeBonuses = useMemo<Partial<Record<keyof HeroAttributes, number>>>(() => {
     const bonuses: Partial<Record<keyof HeroAttributes, number>> = {};
     if (asiAllPlus1 && background) {
@@ -129,6 +148,9 @@ export default function AttributesPage() {
           attrs={attrs}
           remaining={remaining}
           attributeBonuses={attributeBonuses}
+          eligibleAttributes={eligibleAttributes}
+          asiPoolRemaining={asiPoolRemaining}
+          asiMaxPerAttr={asiMaxPerAttr}
           onSetAttr={handleSetAttr}
         />
 

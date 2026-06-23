@@ -6,6 +6,9 @@ interface Props {
   attrs: HeroAttributes;
   remaining: number;
   attributeBonuses: Partial<Record<keyof HeroAttributes, number>>;
+  eligibleAttributes: string[];
+  asiPoolRemaining: number;
+  asiMaxPerAttr: number;
   onSetAttr: (key: keyof HeroAttributes, val: number) => void;
 }
 
@@ -38,7 +41,7 @@ const ATTR_DESC: Record<keyof HeroAttributes, string> = {
 
 const ATTR_KEYS: (keyof HeroAttributes)[] = ['str', 'dex', 'con', 'int', 'wis', 'cha'];
 
-export function AttributeGrid({ attrs, remaining, attributeBonuses, onSetAttr }: Props) {
+export function AttributeGrid({ attrs, remaining, attributeBonuses, eligibleAttributes, asiPoolRemaining, asiMaxPerAttr, onSetAttr }: Props) {
   return (
     <div className="attr-grid">
       {ATTR_KEYS.map((key) => {
@@ -47,7 +50,8 @@ export function AttributeGrid({ attrs, remaining, attributeBonuses, onSetAttr }:
         const total = purchased + bonus;
         const isTalent = total >= 14;
         const isWeakness = purchased === 8;
-        const isEligible = bonus > 0;
+        const isEligible = eligibleAttributes.includes(key);
+        const isHighlighted = isEligible && asiPoolRemaining > 0 && bonus < asiMaxPerAttr;
 
         const costToInc = (POINT_BUY_COST[purchased + 1] ?? 99) - POINT_BUY_COST[purchased];
         const canDecrement = purchased > 8;
@@ -56,10 +60,10 @@ export function AttributeGrid({ attrs, remaining, attributeBonuses, onSetAttr }:
         return (
           <div
             key={key}
-            className={`attr-card ${isEligible ? 'attr-card--eligible' : ''}`}
+            className={`attr-card ${isHighlighted ? 'attr-card--eligible' : ''}`}
           >
             {/* Eligible badge */}
-            {isEligible && (
+            {isHighlighted && (
               <div className="attr-card-eligible-badge">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                   <path d="M12 2L4 6v6c0 5.25 3.5 10.15 8 11.5C17.5 22.15 21 17.25 21 12V6l-8-4z" />
