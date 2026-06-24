@@ -2,12 +2,12 @@ import { apiClient } from '../client';
 import type { Ancestry, AncestryDetails, Background, BackgroundDetails, CharacterClass, AvatarPreset, Vocation, VocationDetails } from '../../types';
 
 export const catalogApi = {
-  ancestries: (systemId: string) => apiClient.get(`api/v1/ancestries?system_id=${systemId}`).json<Ancestry[]>(),
+  ancestries: () => apiClient.get('api/v1/ancestries').json<Ancestry[]>(),
   ancestryDetails: (id: string) => apiClient.get(`api/v1/ancestries/${id}`).json<AncestryDetails>(),
   classes: () => apiClient.get('api/v1/classes').json<CharacterClass[]>(),
-  backgrounds: (systemId: string) => apiClient.get(`api/v1/backgrounds?system_id=${systemId}`).json<Background[]>(),
+  backgrounds: () => apiClient.get('api/v1/backgrounds').json<Background[]>(),
   backgroundDetails: (id: string) => apiClient.get(`api/v1/backgrounds/${id}`).json<BackgroundDetails>(),
-  vocations: (systemId: string) => apiClient.get(`api/v1/vocations?system_id=${systemId}`).json<Vocation[]>(),
+  vocations: () => apiClient.get('api/v1/vocations').json<Vocation[]>(),
   vocationDetails: (id: string) => apiClient.get(`api/v1/vocations/${id}`).json<VocationDetails>(),
   avatars: (ancestry: string, classSlug: string) =>
     apiClient.get(`api/v1/avatars?ancestry=${ancestry}&characterClass=${classSlug}`).json<AvatarPreset[]>(),
