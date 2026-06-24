@@ -4,7 +4,6 @@ import { CreationStepHeader } from '../../../components/hero-creation/CreationSt
 import { CreationFooter } from '../../../components/hero-creation/CreationFooter';
 import { OracleButton } from '../../../components/hero-creation/OracleButton';
 import { useHeroCreationStore } from '../../../stores/heroCreationStore';
-import { useSystemStore } from '../../../stores/systemStore';
 import { usePointBuyRules } from '../../../hooks/usePointBuyRules';
 import { getSystemAttributes, previewAttributes } from '../../../api/services/attributes';
 import type { SystemAttribute } from '../../../api/services/attributes';
@@ -21,10 +20,7 @@ export default function AttributesPage() {
   const [modifiers, setModifiers] = useState<Record<string, number>>({});
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const currentSystem = useSystemStore((s) => s.currentSystem);
-  const systemId = currentSystem?.id ?? '';
-
-  const { rules } = usePointBuyRules(systemId);
+  const { rules } = usePointBuyRules();
 
   const {
     ancestry,
@@ -47,13 +43,12 @@ export default function AttributesPage() {
 
   // Load system attributes dynamically
   useEffect(() => {
-    if (!systemId) return;
-    getSystemAttributes(systemId)
+    getSystemAttributes()
       .then((attrs) => setSystemAttributes(attrs))
       .catch(() => {
         // fallback: attributes will be empty, grid falls back to static order
       });
-  }, [systemId]);
+  }, []);
 
   // Debounced preview call — 300ms after any attribute change
   useEffect(() => {

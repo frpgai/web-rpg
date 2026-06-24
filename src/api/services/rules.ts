@@ -9,8 +9,6 @@ export interface PointBuyRulesResponse {
   point_buy_costs: Record<string, number>;
 }
 
-export async function getPointBuyRules(systemId: string): Promise<PointBuyRulesResponse> {
-  return apiClient.get('api/v1/rules', {
-    searchParams: { system_id: systemId }
-  }).json<PointBuyRulesResponse>();
+export async function getPointBuyRules(): Promise<PointBuyRulesResponse> {
+  return apiClient.get('api/v1/rules').json<PointBuyRulesResponse>();
 }

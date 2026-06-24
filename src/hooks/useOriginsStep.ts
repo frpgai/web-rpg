@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { catalogApi } from '../api/services/catalog';
 import { heroApi } from '../api/services/hero';
-import { useSystemStore } from '../stores/systemStore';
 import type { Ancestry, Background, PreviewResult, Vocation } from '../types';
 
 interface OriginsStepState {
@@ -16,7 +15,6 @@ interface OriginsStepState {
 }
 
 export function useOriginsStep() {
-  const { currentSystem } = useSystemStore();
   const [state, setState] = useState<OriginsStepState>({
     ancestries: [],
     vocations: [],
@@ -29,14 +27,12 @@ export function useOriginsStep() {
   });
 
   const loadCatalog = useCallback(async () => {
-    if (!currentSystem?.id) return;
     setState((prev) => ({ ...prev, catalogLoading: true, catalogError: null }));
     try {
-      const systemId = currentSystem.id;
       const [ancestries, vocations, backgrounds] = await Promise.all([
-        catalogApi.ancestries(systemId),
-        catalogApi.vocations(systemId),
-        catalogApi.backgrounds(systemId),
+        catalogApi.ancestries(),
+        catalogApi.vocations(),
+        catalogApi.backgrounds(),
       ]);
       setState((prev) => ({
         ...prev,
@@ -53,7 +49,7 @@ export function useOriginsStep() {
         catalogError: 'Não foi possível carregar o catálogo.',
       }));
     }
-  }, [currentSystem?.id]);
+  }, []);
 
   useEffect(() => {
     loadCatalog();

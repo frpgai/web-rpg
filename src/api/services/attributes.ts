@@ -20,10 +20,8 @@ export interface AttributePreviewResult {
   }>;
 }
 
-export async function getSystemAttributes(systemId: string): Promise<SystemAttribute[]> {
-  return apiClient.get('api/v1/attributes', {
-    searchParams: { system_id: systemId }
-  }).json<SystemAttribute[]>();
+export async function getSystemAttributes(): Promise<SystemAttribute[]> {
+  return apiClient.get('api/v1/attributes').json<SystemAttribute[]>();
 }
 
 export async function previewAttributes(params: {

@@ -15,14 +15,13 @@ const FALLBACK: PointBuyRules = {
   costTable: { 8: 0, 9: 1, 10: 2, 11: 3, 12: 4, 13: 5, 14: 7, 15: 9 },
 };
 
-export function usePointBuyRules(systemId: string) {
+export function usePointBuyRules() {
   const [rules, setRules] = useState<PointBuyRules>(FALLBACK);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!systemId) return;
-    getPointBuyRules(systemId)
+    getPointBuyRules()
       .then((data) => {
         const costTable: Record<number, number> = {};
         for (const [k, v] of Object.entries(data.point_buy_costs)) {
@@ -37,7 +36,7 @@ export function usePointBuyRules(systemId: string) {
       })
       .catch(() => setError('Não foi possível carregar as regras. Usando valores padrão.'))
       .finally(() => setLoading(false));
-  }, [systemId]);
+  }, []);
 
   return { rules, loading, error };
 }
