@@ -17,7 +17,9 @@
   position: relative;
   background: rgba(31, 31, 36, 0.6);
   backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  /* Stitch screen 345f3db306fc481fb02d85fc1365eb91 — .surface_glass: border: 1px solid rgba(215,186,255,0.1)
+     #d7baff = var(--color-primary); sem variante RGB no projeto, usando color-mix para preservar semântica */
+  border: 1px solid color-mix(in srgb, var(--color-primary) 10%, transparent);
   border-radius: 12px;
   padding: var(--space-lg);
   display: flex;
@@ -27,7 +29,9 @@
 }
 
 .attr-card--eligible {
-  border-color: rgba(255, 255, 255, 0.05);
+  /* Stitch screen 345f3db306fc481fb02d85fc1365eb91 — .active-attribute: border: 1px solid #ffb86c
+     #ffb86c = var(--color-secondary) exato */
+  border-color: var(--color-secondary);
 }
 
 /* Eligible badge (top-right absolute) */

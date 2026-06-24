@@ -5,6 +5,8 @@ import { postLogin, postGoogleAuth } from '../api/services/auth';
 import { useAuthStore } from '../stores/authStore';
 import { systemService } from '../api/services/systemService';
 import { useSystemStore } from '../stores/systemStore';
+import { userService } from '../api/services/userService';
+import { useUserStore } from '../stores/userStore';
 
 type LoginForm = {
   email: string;
@@ -24,14 +26,43 @@ type LoginState = {
   renderGoogleButton: (elementId: string) => void;
 };
 
-async function loadDefaultSystem() {
+/**
+ * Executa o fluxo de seleção de sistema pós-login conforme spec A00090.
+ * Retorna a rota para a qual o usuário deve ser redirecionado.
+ */
+async function resolveSystemAndGetRedirect(): Promise<string> {
   try {
-    const systems = await systemService.list();
+    const [systems, me] = await Promise.all([
+      systemService.list(),
+      userService.getMe(),
+    ]);
+
+    // Atualiza o userStore com os dados do usuário logado
+    useUserStore.getState().setUser(me);
+
     if (systems.length === 1) {
+      // Único sistema: selecionar automaticamente
+      const updated = await userService.patchMe({ current_system_id: systems[0].id });
+      useUserStore.getState().setUser(updated);
       useSystemStore.getState().setCurrentSystem(systems[0]);
+      return '/';
     }
+
+    if (systems.length > 1 && !me.current_system_id) {
+      // Múltiplos sistemas e usuário sem sistema selecionado: redirecionar
+      return '/select-system';
+    }
+
+    // Já tem sistema selecionado ou lista vazia
+    if (me.current_system_id) {
+      const active = systems.find((s) => s.id === me.current_system_id);
+      if (active) useSystemStore.getState().setCurrentSystem(active);
+    }
+
+    return '/';
   } catch {
-    // non-critical — ignore errors
+    // non-critical — fallback para home
+    return '/';
   }
 }
 
@@ -67,8 +98,8 @@ export function useLogin(): LoginState {
     try {
       const resp = await postLogin({ email: form.email, password: form.password });
       setAuth(resp.token, resp.user);
-      await loadDefaultSystem();
-      setLocation('/');
+      const redirect = await resolveSystemAndGetRedirect();
+      setLocation(redirect);
     } catch (err: unknown) {
       console.error('Login failed error:', err);
       const status = getHttpStatus(err);
@@ -94,8 +125,8 @@ export function useLogin(): LoginState {
         marketing_opt_in: false,
       });
       setAuth(resp.token, resp.user);
-      await loadDefaultSystem();
-      setLocation('/');
+      const redirect = await resolveSystemAndGetRedirect();
+      setLocation(redirect);
     } catch (err) {
       setGeneralError('Não foi possível entrar com Google. Tente novamente.');
     } finally {
