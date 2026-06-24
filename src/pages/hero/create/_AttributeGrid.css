@@ -1,67 +1,187 @@
+/* AttributeGrid — scoped with attr- prefix */
 .attr-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: var(--space-sm);
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-lg);
+  width: 100%;
 }
 
-.attr-grid-cell {
-  background: var(--color-surface-low);
-  border: 1px solid var(--color-outline-variant);
-  border-radius: 10px;
-  padding: var(--space-sm) var(--space-xs);
+@media (max-width: 480px) {
+  .attr-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Attribute Card */
+.attr-card {
+  position: relative;
+  background: rgba(31, 31, 36, 0.6);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: var(--space-lg);
   display: flex;
   flex-direction: column;
+  gap: var(--space-sm);
+  transition: border-color 0.2s ease;
+}
+
+.attr-card--eligible {
+  border-color: rgba(255, 255, 255, 0.05);
+}
+
+/* Eligible badge (top-right absolute) */
+.attr-card-eligible-badge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: flex;
   align-items: center;
   gap: 4px;
-}
-
-.attr-grid-cell.attr-boosted {
-  border-color: var(--color-secondary);
-}
-
-.attr-grid-label {
+  padding: 2px 8px;
+  background: rgba(255, 184, 108, 0.2);
+  border: 1px solid rgba(255, 184, 108, 0.4);
+  border-radius: 999px;
+  color: var(--color-secondary);
   font-family: var(--font-mono);
-  font-size: 11px;
-  color: var(--color-text-muted);
-  letter-spacing: 0.1em;
-}
-
-.attr-grid-value {
-  font-family: var(--font-mono);
-  font-size: 22px;
+  font-size: 9px;
   font-weight: 700;
-  color: var(--color-text);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Card header: title left, controls right */
+.attr-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.attr-card-title {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.attr-card-abbrev {
+  font-family: var(--font-mono);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--color-primary);
+  letter-spacing: -0.02em;
+  margin: 0;
   line-height: 1;
 }
 
-.attr-grid-bonus {
-  font-family: var(--font-sans);
-  font-size: 11px;
-  color: var(--color-secondary);
+.attr-card-name {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: rgba(204, 195, 211, 0.6);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin: 0;
 }
 
-.attr-grid-controls {
+/* Controls: - VALUE + */
+.attr-card-controls {
   display: flex;
   align-items: center;
-  gap: var(--space-xs);
+  gap: var(--space-md);
 }
 
-.attr-grid-btn {
-  background: var(--color-surface-high);
-  border: none;
-  border-radius: 6px;
+.attr-card-value {
+  font-family: var(--font-mono);
+  font-size: 24px;
+  font-weight: 700;
   color: var(--color-text);
-  width: 24px;
-  height: 24px;
+  min-width: 32px;
+  text-align: center;
+  line-height: 1;
+}
+
+.attr-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  font-size: 16px;
-  line-height: 1;
+  transition: all 0.15s ease;
+  background: transparent;
+  flex-shrink: 0;
 }
 
-.attr-grid-btn:disabled {
+.attr-btn:active:not(:disabled) {
+  transform: scale(0.9);
+}
+
+.attr-btn--dec {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--color-text-muted);
+}
+
+.attr-btn--dec:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.attr-btn--inc {
+  border: 1px solid rgba(215, 186, 255, 0.3);
+  color: var(--color-primary);
+}
+
+.attr-btn--inc:hover:not(:disabled) {
+  background: rgba(215, 186, 255, 0.1);
+}
+
+.attr-btn:disabled {
   opacity: 0.3;
   cursor: not-allowed;
+}
+
+/* Description */
+.attr-card-desc {
+  font-size: 12px;
+  color: rgba(204, 195, 211, 0.7);
+  font-style: italic;
+  font-family: var(--font-sans);
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* Badges row */
+.attr-card-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+  margin-top: 2px;
+}
+
+.attr-badge {
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border: 1px solid transparent;
+}
+
+.attr-badge--bonus {
+  background: rgba(255, 184, 108, 0.1);
+  border-color: rgba(255, 184, 108, 0.3);
+  color: var(--color-secondary);
+}
+
+.attr-badge--talent {
+  background: rgba(49, 227, 104, 0.1);
+  border-color: rgba(49, 227, 104, 0.3);
+  color: var(--color-tertiary);
+}
+
+.attr-badge--weakness {
+  background: rgba(255, 180, 171, 0.1);
+  border-color: rgba(255, 180, 171, 0.3);
+  color: #ffb4ab;
 }

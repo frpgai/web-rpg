@@ -1,39 +1,81 @@
-.point-pool-card {
-  background: var(--color-surface-low);
-  border: 1px solid var(--color-outline-variant);
+/* PointPoolCard — scoped with attr-pool- prefix */
+.attr-pool-card {
+  background: rgba(31, 31, 36, 0.6);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(215, 186, 255, 0.3);
   border-radius: 12px;
-  padding: var(--space-md);
+  padding: var(--space-lg);
   display: flex;
   flex-direction: column;
-  gap: var(--space-xs);
+  align-items: center;
+  gap: var(--space-sm);
+  text-align: center;
+  box-shadow: 0 0 15px rgba(215, 186, 255, 0.3);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-.point-pool-card .label {
-  font-family: var(--font-sans);
-  font-size: 12px;
-  color: var(--color-text-muted);
+.attr-pool-card--done {
+  border-color: rgba(49, 227, 104, 0.4);
+  box-shadow: 0 0 15px rgba(49, 227, 104, 0.25);
+}
+
+.attr-pool-card--error {
+  border-color: rgba(255, 180, 171, 0.5);
+  box-shadow: 0 0 15px rgba(255, 180, 171, 0.2);
+}
+
+.attr-pool-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: rgba(204, 195, 211, 0.8);
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.1em;
 }
 
-.point-pool-card .value-row {
+.attr-pool-value-row {
   display: flex;
   align-items: baseline;
   gap: var(--space-sm);
+  justify-content: center;
 }
 
-.point-pool-card .value {
+.attr-pool-value {
   font-family: var(--font-mono);
-  font-size: 40px;
+  font-size: 48px;
   font-weight: 700;
   color: var(--color-primary);
   line-height: 1;
+  transition: color 0.2s ease;
 }
 
-.point-pool-card .restantes {
-  font-family: var(--font-sans);
-  font-size: 11px;
-  color: var(--color-text-muted);
+.attr-pool-value--error {
+  color: #ffb4ab;
+}
+
+.attr-pool-unit {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: rgba(204, 195, 211, 0.5);
+}
+
+.attr-pool-bonus-badge {
+  padding: 4px 12px;
+  background: rgba(255, 184, 108, 0.2);
+  border: 1px solid rgba(255, 184, 108, 0.5);
+  border-radius: 999px;
+  color: var(--color-secondary);
+  font-family: var(--font-mono);
+  font-size: 10px;
   text-transform: uppercase;
   letter-spacing: 0.1em;
+}
+
+.attr-pool-hint {
+  font-size: 10px;
+  color: rgba(204, 195, 211, 0.4);
+  font-style: italic;
+  font-family: var(--font-sans);
+  max-width: 280px;
+  line-height: 1.5;
+  margin: 0;
 }

@@ -1,0 +1,87 @@
+/* CharacterPreviewSummary — scoped with attr- prefix */
+.attr-preview-card {
+  background: rgba(31, 31, 36, 0.6);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(215, 186, 255, 0.1);
+  border-radius: 12px;
+  padding: var(--space-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.attr-preview-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.attr-preview-col {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.attr-preview-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: rgba(204, 195, 211, 0.6);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.attr-preview-value {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-text);
+  margin-top: 4px;
+}
+
+.attr-preview-divider-v {
+  width: 1px;
+  height: 32px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.attr-preview-divider-h {
+  width: 100%;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.attr-preview-traits {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-md);
+}
+
+.attr-preview-trait-badge {
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.05em;
+  border: 1px solid transparent;
+}
+
+.attr-preview-trait-badge.attr-trait-tertiary {
+  background: rgba(49, 227, 104, 0.1);
+  border-color: rgba(49, 227, 104, 0.3);
+  color: var(--color-tertiary);
+}
+
+.attr-preview-trait-badge.attr-trait-primary {
+  background: rgba(215, 186, 255, 0.1);
+  border-color: rgba(215, 186, 255, 0.3);
+  color: var(--color-primary);
+}
+
+.attr-preview-trait-badge.attr-trait-secondary {
+  background: rgba(255, 184, 108, 0.1);
+  border-color: rgba(255, 184, 108, 0.3);
+  color: var(--color-secondary);
+}

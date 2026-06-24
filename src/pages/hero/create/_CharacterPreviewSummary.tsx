@@ -1,3 +1,4 @@
+import './_CharacterPreviewSummary.css';
 import type { Ancestry, Background, CharacterClass, Vocation } from '../../../types';
 
 interface Props {
@@ -7,43 +8,46 @@ interface Props {
 }
 
 export function CharacterPreviewSummary({ ancestry, background, characterClass }: Props) {
-  // Extract trait names. Ancestry traits in the new schema might be objects or strings.
-  const traitNames = (ancestry.traits || []).map((t: any) => typeof t === 'string' ? t : t.name);
+  const traitNames = (ancestry.traits || []).map((t: any) =>
+    typeof t === 'string' ? t : t.name
+  );
+
+  const colorClasses = ['attr-trait-tertiary', 'attr-trait-primary', 'attr-trait-secondary'];
 
   return (
-    <div className="char-preview-summary-card">
-      <div className="char-preview-summary-row">
-        <div className="char-preview-summary-col">
-          <span className="char-preview-summary-label">Ancestralidade</span>
-          <span className="char-preview-summary-value">{ancestry.name}</span>
+    <div className="attr-preview-card">
+      <div className="attr-preview-row">
+        <div className="attr-preview-col">
+          <span className="attr-preview-label">Ancestralidade</span>
+          <span className="attr-preview-value">{ancestry.name}</span>
         </div>
-        <div className="char-preview-summary-divider-v" />
-        <div className="char-preview-summary-col">
-          <span className="char-preview-summary-label">Antecedente</span>
-          <span className="char-preview-summary-value">{background.name}</span>
+        <div className="attr-preview-divider-v" />
+        <div className="attr-preview-col">
+          <span className="attr-preview-label">Antecedente</span>
+          <span className="attr-preview-value">{background.name}</span>
         </div>
-        <div className="char-preview-summary-divider-v" />
-        <div className="char-preview-summary-col">
-          <span className="char-preview-summary-label">Vocação</span>
-          <span className="char-preview-summary-value">{characterClass.name}</span>
+        <div className="attr-preview-divider-v" />
+        <div className="attr-preview-col">
+          <span className="attr-preview-label">Vocação</span>
+          <span className="attr-preview-value">{characterClass.name}</span>
         </div>
       </div>
 
-      <div className="char-preview-summary-divider-h" />
-
-      <div className="char-preview-summary-trait-badges">
-        {traitNames.map((traitName: string, i: number) => {
-          const classes = ['trait-tertiary', 'trait-primary', 'trait-secondary'];
-          const colorClass = classes[i % 3];
-          return (
-            <div key={traitName} className={`char-preview-summary-trait-badge ${colorClass}`}>
-              <span className="char-preview-summary-trait-badge-text">
-                {traitName.toUpperCase()}
+      {traitNames.length > 0 && (
+        <>
+          <div className="attr-preview-divider-h" />
+          <div className="attr-preview-traits">
+            {traitNames.map((name: string, i: number) => (
+              <span
+                key={name}
+                className={`attr-preview-trait-badge ${colorClasses[i % 3]}`}
+              >
+                {name.toUpperCase()}
               </span>
-            </div>
-          );
-        })}
-      </div>
+            ))}
+          </div>
+        </>
+      )}
     </div>
   );
 }
