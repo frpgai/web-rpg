@@ -46,31 +46,49 @@ export default function AttributesPage() {
     rollAttributes,
   } = useHeroCreationStore();
 
-  // On refresh with heroId: restore store from draft + catalog data
+  // On refresh with heroId: restore store from draft + catalog data sequentially
   useEffect(() => {
     if (!heroId) {
       setHeroInitialized(true);
       return;
     }
-    Promise.all([
-      heroApi.getDraft(),
-      catalogApi.ancestries(),
-      catalogApi.vocations(),
-      catalogApi.backgrounds(),
-    ])
-      .then(([draft, ancestries, vocations, backgrounds]) => {
-        if (!draft) return;
-        const foundAncestry = draft.ancestry_id ? ancestries.find((a) => a.id === draft.ancestry_id) : undefined;
-        const foundVocation = draft.vocation_id ? vocations.find((v) => v.id === draft.vocation_id) : undefined;
-        const foundBackground = draft.background_id ? backgrounds.find((bg) => bg.id === draft.background_id) : undefined;
+
+    let cancelled = false;
+
+    async function init() {
+      try {
+        const draft = await heroApi.getDraft();
+        if (cancelled || !draft) return;
+
+        const ancestriesList = await catalogApi.ancestries();
+        if (cancelled) return;
+        const foundAncestry = draft.ancestry_id
+          ? ancestriesList.find((a) => a.id === draft.ancestry_id)
+          : undefined;
         if (foundAncestry) setAncestry(foundAncestry);
+
+        const vocationsList = await catalogApi.vocations();
+        if (cancelled) return;
+        const foundVocation = draft.vocation_id
+          ? vocationsList.find((v) => v.id === draft.vocation_id)
+          : undefined;
         if (foundVocation) setCharacterClass(foundVocation);
+
+        const backgroundsList = await catalogApi.backgrounds();
+        if (cancelled) return;
+        const foundBackground = draft.background_id
+          ? backgroundsList.find((bg) => bg.id === draft.background_id)
+          : undefined;
         if (foundBackground) setBackground(foundBackground);
-      })
-      .catch(() => {
-        // non-critical — guard will redirect to origins if store remains empty
-      })
-      .finally(() => setHeroInitialized(true));
+      } catch {
+        // failure → guard will redirect to origins
+      } finally {
+        if (!cancelled) setHeroInitialized(true);
+      }
+    }
+
+    init();
+    return () => { cancelled = true; };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [heroId]);
 
