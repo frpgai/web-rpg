@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useLocation } from 'wouter';
+import { useLocation, useParams } from 'wouter';
 import { Tooltip } from '../../../components/ui/Tooltip';
 import { CreationStepHeader } from '../../../components/hero-creation/CreationStepHeader';
 import { CreationFooter } from '../../../components/hero-creation/CreationFooter';
@@ -10,6 +10,8 @@ import './AestheticsPage.css';
 
 export default function AestheticsPage() {
   const [, setLocation] = useLocation();
+  const params = useParams<{ id?: string }>();
+  const heroId = params?.id ?? null;
 
   const {
     ancestry,
@@ -107,11 +109,19 @@ export default function AestheticsPage() {
   const canNext = nameIsValid && !!avatarId;
 
   const handleBack = () => {
-    setLocation('/hero/create/attributes');
+    if (heroId) {
+      setLocation(`/heroes/create/attributes/${heroId}`);
+    } else {
+      setLocation('/hero/create/attributes');
+    }
   };
 
   const handleNext = () => {
-    setLocation('/hero/create/summary');
+    if (heroId) {
+      setLocation(`/hero/create/summary/${heroId}`);
+    } else {
+      setLocation('/hero/create/summary');
+    }
   };
 
   if (!ancestry || !characterClass) return null;

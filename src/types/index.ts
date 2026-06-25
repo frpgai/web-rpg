@@ -185,6 +185,8 @@ export interface HeroStats {
 
 export interface HeroSheet {
   attributes: HeroAttributes;
+  base_attributes?: HeroAttributes;
+  bonuses?: Record<string, number>;
   stats: HeroStats;
   traits: string[];
   abilities: ClassAbility[];

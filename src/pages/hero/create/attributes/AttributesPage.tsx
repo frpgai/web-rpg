@@ -12,6 +12,7 @@ import { PointPoolCard } from './_PointPoolCard';
 import { CharacterPreviewSummary } from './_CharacterPreviewSummary';
 import type { HeroAttributes, HeroDetail } from '../../../../types';
 import type { PointBuyRules } from '../../../../hooks/usePointBuyRules';
+import { ConfirmDialog } from '../../../../components/common/ConfirmDialog';
 import './AttributesPage.css';
 
 function rollRandomAttributes(rules: PointBuyRules, keys: string[]): HeroAttributes {
@@ -63,18 +64,79 @@ export default function AttributesPage() {
   const [heroInitialized, setHeroInitialized] = useState(false);
   const [heroLoading, setHeroLoading] = useState(true);
   const [attrsLoading, setAttrsLoading] = useState(true);
+  const [showConfirm, setShowConfirm] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Step 2 local state — 8 matches FALLBACK.min in usePointBuyRules
   const [attrs, setAttrs] = useState<HeroAttributes>({
     str: 8, dex: 8, con: 8, int: 8, wis: 8, cha: 8,
   });
-  const [asiPlus2, setAsiPlus2] = useState<string | null>(null);
-  const [asiPlus1, setAsiPlus1] = useState<string | null>(null);
+  const [allocatedBonuses, setAllocatedBonuses] = useState<Record<string, number>>({});
   const [asiAllPlus1, setAsiAllPlus1] = useState(false);
+
+  const asiPlus2 = useMemo(() => {
+    return Object.entries(allocatedBonuses).find(([, v]) => v === 2)?.[0] ?? null;
+  }, [allocatedBonuses]);
+
+  const asiPlus1 = useMemo(() => {
+    return Object.entries(allocatedBonuses).find(([, v]) => v === 1)?.[0] ?? null;
+  }, [allocatedBonuses]);
 
   // Hero data from API (replaces store for origins context)
   const [hero, setHero] = useState<HeroDetail | null>(null);
+  const hydratedRef = useRef(false);
+
+  // Hydrate attributes and bonuses from loaded draft hero
+  useEffect(() => {
+    if (hydratedRef.current || !hero || systemAttributes.length === 0) return;
+
+    // Check if we have top-level attributes (from backend Go model)
+    const backendAttrs = (hero as any).attributes;
+    // Check if we have sheet-level attributes (fallback)
+    const baseAttrs = hero.sheet?.base_attributes;
+    const bonuses = hero.sheet?.bonuses;
+
+    if (backendAttrs) {
+      setAttrs({
+        str: backendAttrs.str?.base ?? 8,
+        dex: backendAttrs.dex?.base ?? 8,
+        con: backendAttrs.con?.base ?? 8,
+        int: backendAttrs.int?.base ?? 8,
+        wis: backendAttrs.wis?.base ?? 8,
+        cha: backendAttrs.cha?.base ?? 8,
+      });
+
+      const nonZeroBonuses: Record<string, number> = {};
+      for (const [k, v] of Object.entries(backendAttrs)) {
+        const bonusVal = (v as any).bonus ?? 0;
+        if (bonusVal > 0) {
+          nonZeroBonuses[k] = bonusVal;
+        }
+      }
+      setAllocatedBonuses(nonZeroBonuses);
+      hydratedRef.current = true;
+    } else if (baseAttrs) {
+      setAttrs({
+        str: baseAttrs.str ?? 8,
+        dex: baseAttrs.dex ?? 8,
+        con: baseAttrs.con ?? 8,
+        int: baseAttrs.int ?? 8,
+        wis: baseAttrs.wis ?? 8,
+        cha: baseAttrs.cha ?? 8,
+      });
+
+      if (bonuses) {
+        const nonZeroBonuses: Record<string, number> = {};
+        for (const [k, v] of Object.entries(bonuses)) {
+          if (v > 0) {
+            nonZeroBonuses[k] = v;
+          }
+        }
+        setAllocatedBonuses(nonZeroBonuses);
+      }
+      hydratedRef.current = true;
+    }
+  }, [hero, systemAttributes]);
 
   const { rules, loading: pointBuyLoading } = usePointBuyRules();
 
@@ -196,51 +258,130 @@ export default function AttributesPage() {
   const asiPoolTotal = useMemo(() => {
     if (!background) return 0;
     if (asiAllPlus1) return eligibleAttributes.length;
-    return (asiPlus2 ? 2 : 0) + (asiPlus1 ? 1 : 0);
-  }, [background, asiAllPlus1, asiPlus2, asiPlus1, eligibleAttributes.length]);
+    return (background.bonuses ?? []).reduce((sum, v) => sum + v, 0);
+  }, [background, asiAllPlus1, eligibleAttributes.length]);
 
   const asiMaxPerAttr = asiAllPlus1 ? 1 : 2;
 
   const attributeBonuses = useMemo<Partial<Record<keyof HeroAttributes, number>>>(() => {
     const bonuses: Partial<Record<keyof HeroAttributes, number>> = {};
     if (asiAllPlus1 && background) {
-      for (const attr of (background.eligible_attributes ?? [])) {
-        bonuses[attr as keyof HeroAttributes] = 1;
+      for (const attrId of (background.eligible_attributes ?? [])) {
+        const slug = systemAttributes.find((a) => a.id === attrId)?.slug;
+        if (slug) {
+          bonuses[slug as keyof HeroAttributes] = 1;
+        }
       }
     } else {
-      if (asiPlus2) bonuses[asiPlus2 as keyof HeroAttributes] = 2;
-      if (asiPlus1) bonuses[asiPlus1 as keyof HeroAttributes] = 1;
+      for (const [k, v] of Object.entries(allocatedBonuses)) {
+        bonuses[k as keyof HeroAttributes] = v;
+      }
     }
     return bonuses;
-  }, [asiPlus2, asiPlus1, asiAllPlus1, background]);
+  }, [allocatedBonuses, asiAllPlus1, background, systemAttributes]);
 
   const asiAllocated = useMemo(() => {
-    return eligibleAttributes.reduce((sum, attr) => {
-      return sum + (attributeBonuses[attr as keyof typeof attributeBonuses] ?? 0);
+    return eligibleAttributes.reduce((sum, attrId) => {
+      const slug = systemAttributes.find((a) => a.id === attrId)?.slug;
+      if (!slug) return sum;
+      return sum + (attributeBonuses[slug as keyof typeof attributeBonuses] ?? 0);
     }, 0);
-  }, [eligibleAttributes, attributeBonuses]);
+  }, [eligibleAttributes, attributeBonuses, systemAttributes]);
   const asiPoolRemaining = asiPoolTotal - asiAllocated;
 
   const bonusDescription = useMemo(() => {
+    if (!background) return undefined;
     if (asiAllPlus1) return '+1 / +1 / +1';
-    const hasPlus2 = !!asiPlus2;
-    const hasPlus1 = !!asiPlus1;
-    if (hasPlus2 && hasPlus1) return '+2 / +1';
-    if (hasPlus2) return '+2';
-    if (hasPlus1) return '+1';
-    return undefined;
-  }, [asiPlus2, asiPlus1, asiAllPlus1]);
+    const formatted = (background.bonuses ?? [])
+      .map((b) => `+${b}`)
+      .join(' / ');
+    return formatted || undefined;
+  }, [background, asiAllPlus1]);
 
   function handleSetAttr(key: keyof HeroAttributes, val: number) {
-    if (val < rules.min || val > rules.max) return;
+    if (!background) return;
     const currentVal = attrs[key];
-    const diff = (rules.costTable[val] ?? 0) - (rules.costTable[currentVal] ?? 0);
-    if (spent + diff > rules.budget) return;
-    setAttrs((prev) => ({ ...prev, [key]: val }));
+    const isIncrement = val > currentVal;
+
+    const attrId = systemAttributes.find((a) => a.slug === key)?.id;
+    const isEligible = attrId ? eligibleAttributes.includes(attrId) : false;
+
+    if (isIncrement) {
+      if (val > rules.max) return;
+
+      if (isEligible) {
+        const currentBonus = allocatedBonuses[key] ?? 0;
+        const numAllocatedAttrs = Object.keys(allocatedBonuses).length;
+        const maxAllocatedBonus = Object.values(allocatedBonuses).reduce((m, v) => Math.max(m, v), 0);
+
+        let canAllocate = false;
+        if (currentBonus < 2 && asiAllocated < 3) {
+          if (currentBonus > 0) {
+            if (asiAllocated + 1 <= 3) {
+              canAllocate = true;
+            }
+          } else {
+            if (numAllocatedAttrs < 2) {
+              canAllocate = true;
+            } else if (numAllocatedAttrs === 2 && maxAllocatedBonus <= 1) {
+              canAllocate = true;
+            }
+          }
+        }
+
+        if (canAllocate) {
+          setAllocatedBonuses((prev) => ({
+            ...prev,
+            [key]: currentBonus + 1,
+          }));
+          return;
+        }
+      }
+
+      const diff = (rules.costTable[val] ?? 0) - (rules.costTable[currentVal] ?? 0);
+      if (spent + diff > rules.budget) return;
+      setAttrs((prev) => ({ ...prev, [key]: val }));
+    } else {
+      const currentBonus = allocatedBonuses[key] ?? 0;
+      if (currentVal === rules.min && currentBonus === 0) return;
+
+      if (currentVal > rules.min) {
+        setAttrs((prev) => ({ ...prev, [key]: val }));
+      } else {
+        if (currentBonus > 0) {
+          setAllocatedBonuses((prev) => {
+            const next = { ...prev };
+            if (currentBonus > 1) {
+              next[key] = currentBonus - 1;
+            } else {
+              delete next[key];
+            }
+            return next;
+          });
+        }
+      }
+    }
   }
 
   function handleRollAttributes() {
     setAttrs(rollRandomAttributes(rules, systemAttributes.map((a) => a.slug)));
+    if (background && eligibleAttributes.length > 0) {
+      const eligibleSlugs = systemAttributes
+        .filter((a) => eligibleAttributes.includes(a.id))
+        .map((a) => a.slug);
+
+      const bonuses = [...(background.bonuses ?? [])].sort((a, b) => b - a);
+      const newBonuses: Record<string, number> = {};
+
+      if (eligibleSlugs.length > 0) {
+        const shuffled = [...eligibleSlugs].sort(() => Math.random() - 0.5);
+        bonuses.forEach((bonusVal, idx) => {
+          const targetSlug = shuffled[idx % shuffled.length];
+          newBonuses[targetSlug] = (newBonuses[targetSlug] ?? 0) + bonusVal;
+        });
+      }
+      setAllocatedBonuses(newBonuses);
+    }
   }
 
   async function handleNext() {
@@ -256,13 +397,23 @@ export default function AttributesPage() {
           return { attribute_id: sysAttr.id, value: purchased, bonus };
         });
         await saveDraftAttributes(heroId, attributesPayload);
+      } catch (err) {
+        console.error('Failed to save draft attributes:', err);
+      } finally {
         setLocation(`/hero/create/aesthetics/${heroId}`);
-      } catch {
-        setSaveError('Não foi possível salvar os atributos. Tente novamente.');
       }
     } else {
       setLocation('/hero/create/aesthetics');
     }
+  }
+
+  function handleBack() {
+    const hasChanges = spent > 0 || Object.keys(allocatedBonuses).length > 0;
+    if (hasChanges) {
+      setShowConfirm(true);
+      return;
+    }
+    setLocation('/hero/create/origins');
   }
 
   if (!ancestry || !characterClass || !background) return null;
@@ -348,9 +499,21 @@ export default function AttributesPage() {
       </div>
 
       <CreationFooter
-        onBack={() => setLocation('/hero/create/origins')}
+        onBack={handleBack}
         onNext={handleNext}
         canNext={canNext}
+      />
+      <ConfirmDialog
+        visible={showConfirm}
+        title="Alterações não salvas"
+        message="Você possui alterações não salvas nos atributos. Deseja realmente voltar e perder o progresso atual?"
+        confirmLabel="Voltar e Perder"
+        cancelLabel="Continuar Editando"
+        onConfirm={() => {
+          setShowConfirm(false);
+          setLocation('/hero/create/origins');
+        }}
+        onCancel={() => setShowConfirm(false)}
       />
     </div>
   );
