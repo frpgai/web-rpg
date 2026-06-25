@@ -8,6 +8,7 @@ import { usePointBuyRules } from '../../../../hooks/usePointBuyRules';
 import { getSystemAttributes, previewAttributes, saveDraftAttributes } from '../../../../api/services/attributes';
 import type { SystemAttribute } from '../../../../api/services/attributes';
 import { heroApi } from '../../../../api/services/hero';
+import { catalogApi } from '../../../../api/services/catalog';
 import { AttributeGrid } from './_AttributeGrid';
 import { PointPoolCard } from './_PointPoolCard';
 import { CharacterPreviewSummary } from './_CharacterPreviewSummary';
@@ -23,6 +24,7 @@ export default function AttributesPage() {
   const [modifiers, setModifiers] = useState<Record<string, number>>({});
   const [previewEligibleAttributes, setPreviewEligibleAttributes] = useState<string[]>([]);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [heroInitialized, setHeroInitialized] = useState(false);
   const [heroLoading, setHeroLoading] = useState(true);
   const [attrsLoading, setAttrsLoading] = useState(true);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -38,15 +40,52 @@ export default function AttributesPage() {
     asiPlus1,
     asiAllPlus1,
     setAttribute,
+    setAncestry,
+    setCharacterClass,
+    setBackground,
     rollAttributes,
   } = useHeroCreationStore();
 
-  // Guard: ensure previous steps are completed
+  // On refresh with heroId: restore store from draft + catalog data
   useEffect(() => {
+    if (!heroId) {
+      setHeroInitialized(true);
+      return;
+    }
+    // Store already populated (normal navigation flow) — skip re-fetch
+    if (ancestry && characterClass && background) {
+      setHeroInitialized(true);
+      return;
+    }
+    Promise.all([
+      heroApi.getDraft(),
+      catalogApi.ancestries(),
+      catalogApi.vocations(),
+      catalogApi.backgrounds(),
+    ])
+      .then(([draft, ancestries, vocations, backgrounds]) => {
+        if (!draft) return;
+        const foundAncestry = draft.ancestry_id ? ancestries.find((a) => a.id === draft.ancestry_id) : undefined;
+        const foundVocation = draft.vocation_id ? vocations.find((v) => v.id === draft.vocation_id) : undefined;
+        const foundBackground = draft.background_id ? backgrounds.find((bg) => bg.id === draft.background_id) : undefined;
+        if (foundAncestry) setAncestry(foundAncestry);
+        if (foundVocation) setCharacterClass(foundVocation);
+        if (foundBackground) setBackground(foundBackground);
+      })
+      .catch(() => {
+        // non-critical — guard will redirect to origins if store remains empty
+      })
+      .finally(() => setHeroInitialized(true));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [heroId]);
+
+  // Guard: ensure previous steps are completed — only after init
+  useEffect(() => {
+    if (!heroInitialized) return;
     if (!ancestry || !characterClass || !background) {
       setLocation('/hero/create/origins');
     }
-  }, [ancestry, characterClass, background, setLocation]);
+  }, [heroInitialized, ancestry, characterClass, background, setLocation]);
 
   // Load system attributes dynamically — controls attrsLoading
   useEffect(() => {
