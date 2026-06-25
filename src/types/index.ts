@@ -193,8 +193,9 @@ export interface HeroSheet {
 export interface HeroDetail {
   id: string;
   name: string;
-  ancestry: { id: string; slug: string; name: string };
-  characterClass: { id: string; slug: string; name: string };
+  ancestry: { id: string; slug: string; name: string } | null;
+  class: { id: string; slug: string; name: string } | null;
+  background: { id: string; slug: string; name: string } | null;
   level: number;
   xp: number;
   xp_next_level: number;
@@ -203,6 +204,8 @@ export interface HeroDetail {
   sheet: HeroSheet;
   active_session: { id: string; name: string } | null;
 }
+// Note: HeroDetail.ancestry/class/background are minimal refs (id, slug, name only).
+// For full objects with traits/eligible_attributes, use catalogApi.
 
 export interface PreviewTrait {
   id: string;
