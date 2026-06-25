@@ -29,9 +29,11 @@
 }
 
 .attr-card--eligible {
-  /* Stitch screen 345f3db306fc481fb02d85fc1365eb91 — .active-attribute: border: 1px solid #ffb86c
-     #ffb86c = var(--color-secondary) exato */
+  /* Stitch screen 345f3db306fc481fb02d85fc1365eb91 — .active-attribute:
+     border: 1px solid #ffb86c → var(--color-secondary)
+     box-shadow: 0 0 15px rgba(255,184,108,0.2) → color-mix 20% */
   border-color: var(--color-secondary);
+  box-shadow: 0 0 15px color-mix(in srgb, var(--color-secondary) 20%, transparent);
 }
 
 /* Eligible badge (top-right absolute) */
@@ -43,8 +45,8 @@
   align-items: center;
   gap: 4px;
   padding: 2px 8px;
-  background: rgba(255, 184, 108, 0.2);
-  border: 1px solid rgba(255, 184, 108, 0.4);
+  background: color-mix(in srgb, var(--color-secondary) 20%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-secondary) 40%, transparent);
   border-radius: 999px;
   color: var(--color-secondary);
   font-family: var(--font-mono);
