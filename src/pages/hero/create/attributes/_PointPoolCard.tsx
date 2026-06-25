@@ -4,9 +4,14 @@ interface Props {
   remaining: number;
   budget: number;
   bonusDescription?: string; // e.g. "+2 / +1"
+  loading?: boolean;
 }
 
-export function PointPoolCard({ remaining, budget, bonusDescription }: Props) {
+export function PointPoolCard({ remaining, budget, bonusDescription, loading }: Props) {
+  if (loading) {
+    return <div className="attr-pool-skeleton" />;
+  }
+
   const isExhausted = remaining === 0;
   const isOverspent = remaining < 0;
 
@@ -18,7 +23,6 @@ export function PointPoolCard({ remaining, budget, bonusDescription }: Props) {
         <span className={`attr-pool-value ${isOverspent ? 'attr-pool-value--error' : ''}`}>
           {remaining}
         </span>
-        <span className="attr-pool-unit">/ {budget}</span>
       </div>
 
       {bonusDescription && (
@@ -28,7 +32,7 @@ export function PointPoolCard({ remaining, budget, bonusDescription }: Props) {
       )}
 
       <p className="attr-pool-hint">
-        Os bônus de antecedente serão aplicados automaticamente nos atributos elegíveis.
+        Os bônus de antecedente {bonusDescription ? `(${bonusDescription})` : ''} serão aplicados automaticamente nos atributos elegíveis antes de consumir o pool de pontos.
       </p>
     </div>
   );

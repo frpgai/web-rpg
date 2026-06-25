@@ -1,13 +1,18 @@
 import './_CharacterPreviewSummary.css';
-import type { Ancestry, Background, CharacterClass, Vocation } from '../../../types';
+import type { Ancestry, Background, CharacterClass, Vocation } from '../../../../types';
 
 interface Props {
   ancestry: Ancestry;
   background: Background;
   characterClass: CharacterClass | Vocation;
+  loading?: boolean;
 }
 
-export function CharacterPreviewSummary({ ancestry, background, characterClass }: Props) {
+export function CharacterPreviewSummary({ ancestry, background, characterClass, loading }: Props) {
+  if (loading) {
+    return <div className="attr-preview-skeleton" />;
+  }
+
   const traitNames = (ancestry.traits || []).map((t: any) =>
     typeof t === 'string' ? t : t.name
   );

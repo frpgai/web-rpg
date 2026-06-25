@@ -56,6 +56,7 @@ export interface Ancestry {
   speed?: number;
   hp_bonus_per_level?: number;
   enabled?: boolean;
+  eligible_attributes?: string[];
   traits: Trait[];
 }
 
@@ -184,6 +185,8 @@ export interface HeroStats {
 
 export interface HeroSheet {
   attributes: HeroAttributes;
+  base_attributes?: HeroAttributes;
+  bonuses?: Record<string, number>;
   stats: HeroStats;
   traits: string[];
   abilities: ClassAbility[];
@@ -193,8 +196,21 @@ export interface HeroSheet {
 export interface HeroDetail {
   id: string;
   name: string;
-  ancestry: { id: string; slug: string; name: string };
-  characterClass: { id: string; slug: string; name: string };
+  ancestry: {
+    id: string;
+    slug: string;
+    name: string;
+    eligible_attributes: string[];
+    traits: Array<{ id: string; slug: string; name: string; description: string }>;
+  } | null;
+  class: { id: string; slug: string; name: string } | null;
+  background: {
+    id: string;
+    slug: string;
+    name: string;
+    eligible_attributes: string[];
+    attribute_bonuses: number[];
+  } | null;
   level: number;
   xp: number;
   xp_next_level: number;

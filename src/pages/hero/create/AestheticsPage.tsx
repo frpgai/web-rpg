@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useLocation } from 'wouter';
+import { useLocation, useParams } from 'wouter';
 import { Tooltip } from '../../../components/ui/Tooltip';
 import { CreationStepHeader } from '../../../components/hero-creation/CreationStepHeader';
 import { CreationFooter } from '../../../components/hero-creation/CreationFooter';
@@ -10,15 +10,13 @@ import './AestheticsPage.css';
 
 export default function AestheticsPage() {
   const [, setLocation] = useLocation();
+  const params = useParams<{ id?: string }>();
+  const heroId = params?.id ?? null;
 
   const {
     ancestry,
     characterClass,
     background,
-    baseAttributes,
-    asiPlus2,
-    asiPlus1,
-    asiAllPlus1,
     name,
     backstory,
     avatarId,
@@ -35,15 +33,10 @@ export default function AestheticsPage() {
 
   // ─── Guard: must have completed steps 1 and 2 ─────────────────────────────
   useEffect(() => {
-    const { ancestry: a, characterClass: v, background: b, baseAttributes: attrs } =
+    const { ancestry: a, characterClass: v, background: b } =
       useHeroCreationStore.getState();
-      
-    const spent = Object.values(attrs).reduce((sum, val) => {
-      const COST: Record<number, number> = { 8: 0, 9: 1, 10: 2, 11: 3, 12: 4, 13: 5, 14: 7, 15: 9 };
-      return sum + (COST[val] ?? 0);
-    }, 0);
 
-    if (!a || !v || !b || spent !== 27) {
+    if (!a || !v || !b) {
       setLocation('/hero/create/origins');
     }
   }, [setLocation]);
@@ -110,24 +103,25 @@ export default function AestheticsPage() {
 
   // ─── Derived key attribute ────────────────────────────────────────────────
   const keyAttrLabel = characterClass?.key_attribute?.toUpperCase() ?? '—';
-  const keyAttrRaw = characterClass?.key_attribute;
-  const backgroundBonus = keyAttrRaw ? (() => {
-    if (asiAllPlus1 && background?.eligible_attributes?.includes(keyAttrRaw)) return 1;
-    if (asiPlus2 === keyAttrRaw) return 2;
-    if (asiPlus1 === keyAttrRaw) return 1;
-    return 0;
-  })() : 0;
-  const baseVal = keyAttrRaw ? (baseAttributes[keyAttrRaw as keyof typeof baseAttributes] ?? 10) : 10;
-  const keyAttrValue = baseVal + backgroundBonus;
+  // keyAttrValue not available here — attributes state lives in AttributesPage (step 2)
+  const keyAttrValue: number | null = null;
 
   const canNext = nameIsValid && !!avatarId;
 
   const handleBack = () => {
-    setLocation('/hero/create/attributes');
+    if (heroId) {
+      setLocation(`/heroes/create/attributes/${heroId}`);
+    } else {
+      setLocation('/hero/create/attributes');
+    }
   };
 
   const handleNext = () => {
-    setLocation('/hero/create/summary');
+    if (heroId) {
+      setLocation(`/hero/create/summary/${heroId}`);
+    } else {
+      setLocation('/hero/create/summary');
+    }
   };
 
   if (!ancestry || !characterClass) return null;
@@ -271,12 +265,12 @@ export default function AestheticsPage() {
             <span className="aesthetics-context-box-value">{ancestry.name}</span>
           </div>
           <div className="aesthetics-context-box">
-            <Tooltip text="O atributo mais importante para sua vocação. O valor já inclui o bônus do antecedente.">
+            <Tooltip text="O atributo mais importante para sua vocação.">
               <span className="aesthetics-context-box-label">{keyAttrLabel}</span>
             </Tooltip>
             <Tooltip text="Número somado ao dado nos testes. Quanto maior o atributo, maior o bônus.">
               <span className="aesthetics-context-box-value aesthetics-context-box-value-accent">
-                {keyAttrValue}
+                {keyAttrValue ?? '—'}
               </span>
             </Tooltip>
           </div>

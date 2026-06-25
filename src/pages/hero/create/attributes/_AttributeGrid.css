@@ -1,0 +1,227 @@
+/* AttributeGrid — scoped with attr- prefix */
+.attr-grid {
+  display: grid;
+  grid-template-columns: 1fr; /* screen 345f3db306fc481fb02d85fc1365eb91 is single column or md:2 */
+  gap: var(--space-md);
+  width: 100%;
+}
+
+@media (min-width: 768px) {
+  .attr-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* Attribute Card */
+.attr-card {
+  background: color-mix(in srgb, var(--color-surface-container) 60%, transparent);
+  backdrop-filter: blur(12px);
+  border: 1px solid color-mix(in srgb, var(--color-text) 5%, transparent);
+  border-radius: 12px;
+  padding: var(--space-md) var(--space-lg);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-md);
+  transition: all 0.30s ease;
+}
+
+.attr-card--eligible {
+  border: 1px solid var(--color-secondary);
+  box-shadow: 0 0 15px color-mix(in srgb, var(--color-secondary) 20%, transparent);
+}
+
+/* Left side alignment: icon + info */
+.attr-card-left {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  flex-grow: 1;
+}
+
+/* Abbrev icon container */
+.attr-card-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background-color: color-mix(in srgb, var(--color-text) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-text) 10%, transparent);
+  color: var(--color-text-muted);
+}
+
+.attr-card-icon--eligible {
+  background: color-mix(in srgb, var(--color-secondary) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-secondary) 30%, transparent);
+  color: var(--color-secondary);
+}
+
+.attr-card-abbrev {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 700;
+  margin: 0;
+  line-height: 1;
+}
+
+/* Info Column */
+.attr-card-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.attr-card-name {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-text);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0;
+}
+
+.attr-card--eligible .attr-card-name {
+  color: var(--color-secondary);
+}
+
+.attr-card-desc {
+  font-size: 12px;
+  color: color-mix(in srgb, var(--color-text-muted) 60%, transparent);
+  font-family: var(--font-sans);
+  margin: 0;
+  line-height: 1.3;
+}
+
+/* Controls: - VALUE + */
+.attr-card-controls {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  flex-shrink: 0;
+}
+
+.attr-card-value {
+  font-family: var(--font-mono);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--color-text);
+  min-width: 24px;
+  text-align: center;
+  line-height: 1;
+}
+
+.attr-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 9999px; /* Circular buttons in screen 345f3db3 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  background: transparent;
+  flex-shrink: 0;
+}
+
+.attr-btn:active:not(:disabled) {
+  transform: scale(0.9);
+}
+
+.attr-btn--dec {
+  border: 1px solid color-mix(in srgb, var(--color-text-muted) 30%, transparent);
+  color: var(--color-text-muted);
+}
+
+.attr-btn--dec:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--color-text-muted) 10%, transparent);
+}
+
+.attr-btn--dec-eligible {
+  border-color: color-mix(in srgb, var(--color-secondary) 40%, transparent);
+  color: var(--color-secondary);
+}
+
+.attr-btn--inc {
+  border: 1px solid color-mix(in srgb, var(--color-text) 30%, transparent);
+  color: var(--color-text);
+}
+
+.attr-btn--inc:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--color-text) 10%, transparent);
+}
+
+.attr-btn--inc-eligible {
+  background: color-mix(in srgb, var(--color-secondary) 20%, transparent);
+  border-color: color-mix(in srgb, var(--color-secondary) 60%, transparent);
+  color: var(--color-secondary);
+}
+
+.attr-btn:disabled {
+  opacity: 0.2;
+  cursor: not-allowed;
+}
+
+/* Vertical alignment for Icon + sub-badges */
+.attr-card-icon-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+  width: 48px;
+}
+
+.attr-badge-sub {
+  font-family: var(--font-mono);
+  font-size: 8px;
+  font-weight: 700;
+  text-transform: uppercase;
+  text-align: center;
+  width: 100%;
+  white-space: nowrap;
+  letter-spacing: 0.02em;
+}
+
+.attr-badge-sub--bonus {
+  color: var(--color-secondary);
+}
+
+.attr-badge-sub--talent {
+  color: var(--color-tertiary);
+}
+
+.attr-badge-sub--weakness {
+  color: var(--color-error);
+}
+
+/* Skeleton — AttributeGrid loading state */
+@keyframes attr-grid-pulse {
+  0% { opacity: 0.6; }
+  50% { opacity: 0.3; }
+  100% { opacity: 0.6; }
+}
+
+.attr-grid-skeleton {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-md);
+  width: 100%;
+}
+
+@media (min-width: 768px) {
+  .attr-grid-skeleton {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.attr-grid-skeleton-card {
+  height: 80px;
+  background-color: color-mix(in srgb, var(--color-text) 4%, transparent);
+  border-radius: 12px;
+  border: 1px solid color-mix(in srgb, var(--color-text) 5%, transparent);
+  animation: attr-grid-pulse 1.5s infinite ease-in-out;
+}

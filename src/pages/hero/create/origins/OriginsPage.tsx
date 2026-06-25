@@ -13,6 +13,7 @@ import { AncestryCard } from './AncestryCard';
 import { BackgroundCard } from './BackgroundCard';
 import { VocationCard } from './VocationCard';
 import { DestinySpectrum } from './DestinySpectrum';
+import { ConfirmDialog } from '../../../../components/common/ConfirmDialog';
 import './OriginsPage.css';
 
 // ── Componente interno: linha de erro com retry ───────────────────────────────
@@ -146,24 +147,15 @@ export default function OriginsPage() {
 
   return (
     <div className="origins-page-root">
-      {hasDraft && (
-        <div className="origins-draft-overlay">
-          <div className="origins-draft-modal">
-            <h2 className="origins-draft-title">Criação em andamento</h2>
-            <p className="origins-draft-body">
-              Você possui uma criação de personagem em andamento. Deseja continuar de onde parou?
-            </p>
-            <div className="origins-draft-actions">
-              <button className="origins-draft-btn-primary" onClick={handleContinueDraft}>
-                Continuar
-              </button>
-              <button className="origins-draft-btn-secondary" onClick={handleDiscardDraft}>
-                Começar do zero
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ConfirmDialog
+        visible={hasDraft}
+        title="Criação em andamento"
+        message="Você possui uma criação de personagem em andamento. Deseja continuar de onde parou?"
+        confirmLabel="Continuar"
+        cancelLabel="Começar do zero"
+        onConfirm={handleContinueDraft}
+        onCancel={handleDiscardDraft}
+      />
       <div className="origins-page-scroll">
         <CreationStepHeader
           stepLabel="PASSO 01: ORIGENS"
