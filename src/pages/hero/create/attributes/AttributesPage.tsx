@@ -3,7 +3,6 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { CreationStepHeader } from '../../../../components/hero-creation/CreationStepHeader';
 import { CreationFooter } from '../../../../components/hero-creation/CreationFooter';
 import { OracleButton } from '../../../../components/hero-creation/OracleButton';
-import { useHeroCreationStore } from '../../../../stores/heroCreationStore';
 import { usePointBuyRules } from '../../../../hooks/usePointBuyRules';
 import { getSystemAttributes, previewAttributes, saveDraftAttributes } from '../../../../api/services/attributes';
 import type { SystemAttribute } from '../../../../api/services/attributes';
@@ -11,13 +10,54 @@ import { heroApi } from '../../../../api/services/hero';
 import { AttributeGrid } from './_AttributeGrid';
 import { PointPoolCard } from './_PointPoolCard';
 import { CharacterPreviewSummary } from './_CharacterPreviewSummary';
-import type { HeroAttributes } from '../../../../types';
+import type { HeroAttributes, HeroDetail } from '../../../../types';
+import { POINT_BUY_BUDGET, POINT_BUY_COST } from '../../../../constants/rules';
 import './AttributesPage.css';
+
+const DEFAULT_ATTRS: HeroAttributes = { str: 8, dex: 8, con: 8, int: 8, wis: 8, cha: 8 };
+
+function rollRandomAttributes(): HeroAttributes {
+  const KEYS: (keyof HeroAttributes)[] = ['str', 'dex', 'con', 'int', 'wis', 'cha'];
+  const MAX_RETRIES = 100;
+
+  for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+    const attrs: HeroAttributes = { str: 8, dex: 8, con: 8, int: 8, wis: 8, cha: 8 };
+    let remaining = POINT_BUY_BUDGET;
+    const shuffled = [...KEYS].sort(() => Math.random() - 0.5);
+
+    let valid = true;
+    for (let i = 0; i < shuffled.length; i++) {
+      const key = shuffled[i];
+      const isLast = i === shuffled.length - 1;
+
+      if (isLast) {
+        const target = Object.entries(POINT_BUY_COST).find(([, cost]) => cost === remaining);
+        if (!target) { valid = false; break; }
+        attrs[key] = Number(target[0]);
+        remaining = 0;
+      } else {
+        const affordable = Object.entries(POINT_BUY_COST)
+          .filter(([v, cost]) => Number(v) >= 8 && cost <= remaining)
+          .map(([v]) => Number(v));
+        if (affordable.length === 0) { valid = false; break; }
+        const pick = affordable[Math.floor(Math.random() * affordable.length)];
+        attrs[key] = pick;
+        remaining -= POINT_BUY_COST[pick];
+      }
+    }
+
+    if (valid && remaining === 0) return attrs;
+  }
+
+  // Fallback: balanced spread
+  return { str: 13, dex: 13, con: 13, int: 12, wis: 10, cha: 10 };
+}
 
 export default function AttributesPage() {
   const [, setLocation] = useLocation();
   const params = useParams<{ id?: string }>();
   const heroId = params?.id ?? null;
+
   const [helpOpen, setHelpOpen] = useState(false);
   const [systemAttributes, setSystemAttributes] = useState<SystemAttribute[]>([]);
   const [modifiers, setModifiers] = useState<Record<string, number>>({});
@@ -28,58 +68,32 @@ export default function AttributesPage() {
   const [attrsLoading, setAttrsLoading] = useState(true);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // Step 2 local state
+  const [attrs, setAttrs] = useState<HeroAttributes>(DEFAULT_ATTRS);
+  const [asiPlus2, setAsiPlus2] = useState<string | null>(null);
+  const [asiPlus1, setAsiPlus1] = useState<string | null>(null);
+  const [asiAllPlus1, setAsiAllPlus1] = useState(false);
+
+  // Hero data from API (replaces store for origins context)
+  const [hero, setHero] = useState<HeroDetail | null>(null);
+
   const { rules, loading: pointBuyLoading } = usePointBuyRules();
 
-  const {
-    ancestry,
-    characterClass,
-    background,
-    baseAttributes: attrs,
-    asiPlus2,
-    asiPlus1,
-    asiAllPlus1,
-    setAttribute,
-    setAncestry,
-    setCharacterClass,
-    setBackground,
-    rollAttributes,
-  } = useHeroCreationStore();
-
-  // On refresh with heroId: restore store from draft + catalog data
+  // On refresh with heroId: restore hero from API
   useEffect(() => {
     if (!heroId) {
       setHeroInitialized(true);
       return;
     }
 
+    const id = heroId;
     let cancelled = false;
 
     async function init() {
       try {
-        const hero = await heroApi.get(heroId);
+        const data = await heroApi.get(id);
         if (cancelled) return;
-        if (hero.ancestry) {
-          setAncestry({
-            id: hero.ancestry.id,
-            slug: hero.ancestry.slug,
-            name: hero.ancestry.name,
-            description: '',
-            traits: hero.ancestry.traits,
-            eligible_attributes: hero.ancestry.eligible_attributes,
-          });
-        }
-        if (hero.class) setCharacterClass(hero.class);
-        if (hero.background) {
-          setBackground({
-            id: hero.background.id,
-            slug: hero.background.slug,
-            name: hero.background.name,
-            description: '',
-            bonuses: hero.background.attribute_bonuses,
-            eligible_attributes: hero.background.eligible_attributes,
-            traits: [],
-          });
-        }
+        setHero(data);
       } catch {
         // failure → guard will redirect to origins
       } finally {
@@ -89,26 +103,41 @@ export default function AttributesPage() {
 
     init();
     return () => { cancelled = true; };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [heroId]);
 
   // Guard: ensure previous steps are completed — only after init
   useEffect(() => {
     if (!heroInitialized) return;
-    if (!ancestry || !characterClass || !background) {
+    if (!hero?.ancestry || !hero?.class || !hero?.background) {
       setLocation('/hero/create/origins');
     }
-  }, [heroInitialized, ancestry, characterClass, background, setLocation]);
+  }, [heroInitialized, hero, setLocation]);
 
   // Load system attributes dynamically — controls attrsLoading
   useEffect(() => {
     getSystemAttributes()
-      .then((attrs) => setSystemAttributes(attrs))
+      .then((a) => setSystemAttributes(a))
       .catch(() => {
         // fallback: attributes will be empty, grid falls back to static order
       })
       .finally(() => setAttrsLoading(false));
   }, []);
+
+  // Build ancestry/background/class from hero for downstream effects
+  const ancestry = hero?.ancestry ?? null;
+  const characterClass = hero?.class ?? null;
+  const background = useMemo(() => {
+    if (!hero?.background) return null;
+    return {
+      id: hero.background.id,
+      slug: hero.background.slug,
+      name: hero.background.name,
+      description: '',
+      bonuses: hero.background.attribute_bonuses,
+      eligible_attributes: hero.background.eligible_attributes,
+      traits: [],
+    };
+  }, [hero]);
 
   // Fetch hero preview to get eligible attributes — controls heroLoading
   useEffect(() => {
@@ -125,7 +154,6 @@ export default function AttributesPage() {
         setPreviewEligibleAttributes(eligible);
       })
       .catch(() => {
-        // fallback to store data — do not break the screen
         setPreviewEligibleAttributes([]);
       })
       .finally(() => setHeroLoading(false));
@@ -173,14 +201,13 @@ export default function AttributesPage() {
     previewEligibleAttributes.length > 0
       ? previewEligibleAttributes
       : (background?.eligible_attributes ?? []);
-  // Total ASI pool: +1/+1/+1 mode = 3, +2/+1 mode = 3 (2+1), +2 only = 2, +1 only = 1
+
   const asiPoolTotal = useMemo(() => {
     if (!background) return 0;
-    if (asiAllPlus1) return eligibleAttributes.length; // one +1 per eligible attr
+    if (asiAllPlus1) return eligibleAttributes.length;
     return (asiPlus2 ? 2 : 0) + (asiPlus1 ? 1 : 0);
   }, [background, asiAllPlus1, asiPlus2, asiPlus1, eligibleAttributes.length]);
 
-  // Max bonus a single eligible attribute can receive
   const asiMaxPerAttr = asiAllPlus1 ? 1 : 2;
 
   const attributeBonuses = useMemo<Partial<Record<keyof HeroAttributes, number>>>(() => {
@@ -196,7 +223,6 @@ export default function AttributesPage() {
     return bonuses;
   }, [asiPlus2, asiPlus1, asiAllPlus1, background]);
 
-  // Remaining = total pool minus sum of allocated bonuses on eligible attrs
   const asiAllocated = useMemo(() => {
     return eligibleAttributes.reduce((sum, attr) => {
       return sum + (attributeBonuses[attr as keyof typeof attributeBonuses] ?? 0);
@@ -204,7 +230,6 @@ export default function AttributesPage() {
   }, [eligibleAttributes, attributeBonuses]);
   const asiPoolRemaining = asiPoolTotal - asiAllocated;
 
-  // Describe bonus for display
   const bonusDescription = useMemo(() => {
     if (asiAllPlus1) return '+1 / +1 / +1';
     const hasPlus2 = !!asiPlus2;
@@ -220,7 +245,11 @@ export default function AttributesPage() {
     const currentVal = attrs[key];
     const diff = (rules.costTable[val] ?? 0) - (rules.costTable[currentVal] ?? 0);
     if (spent + diff > rules.budget) return;
-    setAttribute(key, val);
+    setAttrs((prev) => ({ ...prev, [key]: val }));
+  }
+
+  function handleRollAttributes() {
+    setAttrs(rollRandomAttributes());
   }
 
   async function handleNext() {
@@ -317,7 +346,7 @@ export default function AttributesPage() {
         />
 
         <OracleButton
-          onPress={rollAttributes}
+          onPress={handleRollAttributes}
           label="DISTRIBUIR AUTOMATICAMENTE"
           hint="O Oráculo sugere o melhor caminho para sua classe"
         />
