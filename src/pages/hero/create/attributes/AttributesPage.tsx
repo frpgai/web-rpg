@@ -11,18 +11,20 @@ import { AttributeGrid } from './_AttributeGrid';
 import { PointPoolCard } from './_PointPoolCard';
 import { CharacterPreviewSummary } from './_CharacterPreviewSummary';
 import type { HeroAttributes, HeroDetail } from '../../../../types';
-import { POINT_BUY_BUDGET, POINT_BUY_COST } from '../../../../constants/rules';
+import type { PointBuyRules } from '../../../../hooks/usePointBuyRules';
 import './AttributesPage.css';
 
-const DEFAULT_ATTRS: HeroAttributes = { str: 8, dex: 8, con: 8, int: 8, wis: 8, cha: 8 };
+function makeDefaultAttrs(min: number): HeroAttributes {
+  return { str: min, dex: min, con: min, int: min, wis: min, cha: min };
+}
 
-function rollRandomAttributes(): HeroAttributes {
+function rollRandomAttributes(rules: PointBuyRules): HeroAttributes {
   const KEYS: (keyof HeroAttributes)[] = ['str', 'dex', 'con', 'int', 'wis', 'cha'];
   const MAX_RETRIES = 100;
 
   for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
-    const attrs: HeroAttributes = { str: 8, dex: 8, con: 8, int: 8, wis: 8, cha: 8 };
-    let remaining = POINT_BUY_BUDGET;
+    const attrs = makeDefaultAttrs(rules.min);
+    let remaining = rules.budget;
     const shuffled = [...KEYS].sort(() => Math.random() - 0.5);
 
     let valid = true;
@@ -31,18 +33,18 @@ function rollRandomAttributes(): HeroAttributes {
       const isLast = i === shuffled.length - 1;
 
       if (isLast) {
-        const target = Object.entries(POINT_BUY_COST).find(([, cost]) => cost === remaining);
+        const target = Object.entries(rules.costTable).find(([, cost]) => cost === remaining);
         if (!target) { valid = false; break; }
         attrs[key] = Number(target[0]);
         remaining = 0;
       } else {
-        const affordable = Object.entries(POINT_BUY_COST)
-          .filter(([v, cost]) => Number(v) >= 8 && cost <= remaining)
+        const affordable = Object.entries(rules.costTable)
+          .filter(([v, cost]) => Number(v) >= rules.min && cost <= remaining)
           .map(([v]) => Number(v));
         if (affordable.length === 0) { valid = false; break; }
         const pick = affordable[Math.floor(Math.random() * affordable.length)];
         attrs[key] = pick;
-        remaining -= POINT_BUY_COST[pick];
+        remaining -= rules.costTable[pick];
       }
     }
 
@@ -68,8 +70,8 @@ export default function AttributesPage() {
   const [attrsLoading, setAttrsLoading] = useState(true);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Step 2 local state
-  const [attrs, setAttrs] = useState<HeroAttributes>(DEFAULT_ATTRS);
+  // Step 2 local state — initialised with fallback min (8); syncs when rules load
+  const [attrs, setAttrs] = useState<HeroAttributes>(() => makeDefaultAttrs(8));
   const [asiPlus2, setAsiPlus2] = useState<string | null>(null);
   const [asiPlus1, setAsiPlus1] = useState<string | null>(null);
   const [asiAllPlus1, setAsiAllPlus1] = useState(false);
@@ -249,7 +251,7 @@ export default function AttributesPage() {
   }
 
   function handleRollAttributes() {
-    setAttrs(rollRandomAttributes());
+    setAttrs(rollRandomAttributes(rules));
   }
 
   async function handleNext() {
