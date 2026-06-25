@@ -52,11 +52,6 @@ export default function AttributesPage() {
       setHeroInitialized(true);
       return;
     }
-    // Store already populated (normal navigation flow) — skip re-fetch
-    if (ancestry && characterClass && background) {
-      setHeroInitialized(true);
-      return;
-    }
     Promise.all([
       heroApi.getDraft(),
       catalogApi.ancestries(),
