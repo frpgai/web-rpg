@@ -7,6 +7,7 @@ import { useHeroCreationStore } from '../../../stores/heroCreationStore';
 import { usePointBuyRules } from '../../../hooks/usePointBuyRules';
 import { getSystemAttributes, previewAttributes } from '../../../api/services/attributes';
 import type { SystemAttribute } from '../../../api/services/attributes';
+import { heroApi } from '../../../api/services/hero';
 import { AttributeGrid } from './_AttributeGrid';
 import { PointPoolCard } from './_PointPoolCard';
 import { CharacterPreviewSummary } from './_CharacterPreviewSummary';
@@ -18,6 +19,7 @@ export default function AttributesPage() {
   const [helpOpen, setHelpOpen] = useState(false);
   const [systemAttributes, setSystemAttributes] = useState<SystemAttribute[]>([]);
   const [modifiers, setModifiers] = useState<Record<string, number>>({});
+  const [previewEligibleAttributes, setPreviewEligibleAttributes] = useState<string[]>([]);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const { rules } = usePointBuyRules();
@@ -49,6 +51,25 @@ export default function AttributesPage() {
         // fallback: attributes will be empty, grid falls back to static order
       });
   }, []);
+
+  // Fetch hero preview to get eligible attributes from the backend
+  useEffect(() => {
+    if (!ancestry || !characterClass || !background) return;
+    heroApi
+      .preview({
+        ancestry_id: ancestry.id,
+        vocation_id: characterClass.id,
+        background_id: background.id,
+      })
+      .then((result) => {
+        const eligible = result.attribute_bonuses?.eligible_attributes ?? [];
+        setPreviewEligibleAttributes(eligible);
+      })
+      .catch(() => {
+        // fallback to store data — do not break the screen
+        setPreviewEligibleAttributes([]);
+      });
+  }, [ancestry, characterClass, background]);
 
   // Debounced preview call — 300ms after any attribute change
   useEffect(() => {
@@ -88,7 +109,10 @@ export default function AttributesPage() {
   const remaining = rules.budget - spent;
   const canNext = spent === rules.budget;
 
-  const eligibleAttributes = background?.eligible_attributes ?? [];
+  const eligibleAttributes =
+    previewEligibleAttributes.length > 0
+      ? previewEligibleAttributes
+      : (background?.eligible_attributes ?? []);
   // Total ASI pool: +1/+1/+1 mode = 3, +2/+1 mode = 3 (2+1), +2 only = 2, +1 only = 1
   const asiPoolTotal = useMemo(() => {
     if (!background) return 0;
