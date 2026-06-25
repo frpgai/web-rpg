@@ -1,17 +1,17 @@
 import { useLocation, useParams } from 'wouter';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { CreationStepHeader } from '../../../components/hero-creation/CreationStepHeader';
-import { CreationFooter } from '../../../components/hero-creation/CreationFooter';
-import { OracleButton } from '../../../components/hero-creation/OracleButton';
-import { useHeroCreationStore } from '../../../stores/heroCreationStore';
-import { usePointBuyRules } from '../../../hooks/usePointBuyRules';
-import { getSystemAttributes, previewAttributes, saveDraftAttributes } from '../../../api/services/attributes';
-import type { SystemAttribute } from '../../../api/services/attributes';
-import { heroApi } from '../../../api/services/hero';
+import { CreationStepHeader } from '../../../../components/hero-creation/CreationStepHeader';
+import { CreationFooter } from '../../../../components/hero-creation/CreationFooter';
+import { OracleButton } from '../../../../components/hero-creation/OracleButton';
+import { useHeroCreationStore } from '../../../../stores/heroCreationStore';
+import { usePointBuyRules } from '../../../../hooks/usePointBuyRules';
+import { getSystemAttributes, previewAttributes, saveDraftAttributes } from '../../../../api/services/attributes';
+import type { SystemAttribute } from '../../../../api/services/attributes';
+import { heroApi } from '../../../../api/services/hero';
 import { AttributeGrid } from './_AttributeGrid';
 import { PointPoolCard } from './_PointPoolCard';
 import { CharacterPreviewSummary } from './_CharacterPreviewSummary';
-import type { HeroAttributes } from '../../../types';
+import type { HeroAttributes } from '../../../../types';
 import './AttributesPage.css';
 
 export default function AttributesPage() {
@@ -23,9 +23,11 @@ export default function AttributesPage() {
   const [modifiers, setModifiers] = useState<Record<string, number>>({});
   const [previewEligibleAttributes, setPreviewEligibleAttributes] = useState<string[]>([]);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [heroLoading, setHeroLoading] = useState(true);
+  const [attrsLoading, setAttrsLoading] = useState(true);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const { rules } = usePointBuyRules();
+  const { rules, loading: pointBuyLoading } = usePointBuyRules();
 
   const {
     ancestry,
@@ -46,16 +48,17 @@ export default function AttributesPage() {
     }
   }, [ancestry, characterClass, background, setLocation]);
 
-  // Load system attributes dynamically
+  // Load system attributes dynamically — controls attrsLoading
   useEffect(() => {
     getSystemAttributes()
       .then((attrs) => setSystemAttributes(attrs))
       .catch(() => {
         // fallback: attributes will be empty, grid falls back to static order
-      });
+      })
+      .finally(() => setAttrsLoading(false));
   }, []);
 
-  // Fetch hero preview to get eligible attributes from the backend
+  // Fetch hero preview to get eligible attributes — controls heroLoading
   useEffect(() => {
     if (!ancestry || !characterClass || !background) return;
     heroApi
@@ -72,7 +75,8 @@ export default function AttributesPage() {
       .catch(() => {
         // fallback to store data — do not break the screen
         setPreviewEligibleAttributes([]);
-      });
+      })
+      .finally(() => setHeroLoading(false));
   }, [ancestry, characterClass, background]);
 
   // Debounced preview call — 300ms after any attribute change
@@ -204,12 +208,14 @@ export default function AttributesPage() {
           ancestry={ancestry}
           background={background}
           characterClass={characterClass}
+          loading={heroLoading}
         />
 
         <PointPoolCard
           remaining={remaining}
           budget={rules.budget}
           bonusDescription={bonusDescription}
+          loading={pointBuyLoading}
         />
 
         {/* Collapsible help card */}
@@ -255,6 +261,7 @@ export default function AttributesPage() {
           rules={rules}
           systemAttributes={systemAttributes}
           modifiers={modifiers}
+          loading={attrsLoading}
         />
 
         <OracleButton

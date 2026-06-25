@@ -85,3 +85,19 @@
   border-color: rgba(255, 184, 108, 0.3);
   color: var(--color-secondary);
 }
+
+/* Skeleton — CharacterPreviewSummary loading state */
+@keyframes attr-preview-pulse {
+  0% { opacity: 0.6; }
+  50% { opacity: 0.3; }
+  100% { opacity: 0.6; }
+}
+
+.attr-preview-skeleton {
+  height: 80px;
+  background-color: rgba(255, 255, 255, 0.04);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  animation: attr-preview-pulse 1.5s infinite ease-in-out;
+  width: 100%;
+}

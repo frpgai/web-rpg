@@ -1,7 +1,7 @@
 import './_AttributeGrid.css';
-import type { HeroAttributes } from '../../../types';
-import type { PointBuyRules } from '../../../hooks/usePointBuyRules';
-import type { SystemAttribute } from '../../../api/services/attributes';
+import type { HeroAttributes } from '../../../../types';
+import type { PointBuyRules } from '../../../../hooks/usePointBuyRules';
+import type { SystemAttribute } from '../../../../api/services/attributes';
 
 // Static fallbacks used when API data is unavailable
 const ATTR_ABBREV_FALLBACK: Record<keyof HeroAttributes, string> = {
@@ -35,12 +35,23 @@ interface Props {
   rules: PointBuyRules;
   systemAttributes: SystemAttribute[];
   modifiers: Record<string, number>;
+  loading?: boolean;
 }
 
 export function AttributeGrid({
   attrs, remaining, attributeBonuses, eligibleAttributes,
-  asiPoolRemaining, asiMaxPerAttr, onSetAttr, rules, systemAttributes, modifiers,
+  asiPoolRemaining, asiMaxPerAttr, onSetAttr, rules, systemAttributes, modifiers, loading,
 }: Props) {
+  if (loading) {
+    return (
+      <div className="attr-grid-skeleton">
+        {ATTR_KEYS_FALLBACK.map((key) => (
+          <div key={key} className="attr-grid-skeleton-card" />
+        ))}
+      </div>
+    );
+  }
+
   // Build ordered attribute keys from API data or fall back to static order
   const attrKeys: (keyof HeroAttributes)[] = systemAttributes.length > 0
     ? systemAttributes.map((a) => a.slug as keyof HeroAttributes)

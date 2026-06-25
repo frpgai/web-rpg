@@ -4,9 +4,14 @@ interface Props {
   remaining: number;
   budget: number;
   bonusDescription?: string; // e.g. "+2 / +1"
+  loading?: boolean;
 }
 
-export function PointPoolCard({ remaining, budget, bonusDescription }: Props) {
+export function PointPoolCard({ remaining, budget, bonusDescription, loading }: Props) {
+  if (loading) {
+    return <div className="attr-pool-skeleton" />;
+  }
+
   const isExhausted = remaining === 0;
   const isOverspent = remaining < 0;
 
