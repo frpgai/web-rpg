@@ -15,7 +15,7 @@
 /* Attribute Card */
 .attr-card {
   position: relative;
-  background: rgba(31, 31, 36, 0.6);
+  background: color-mix(in srgb, var(--color-surface-container) 60%, transparent);
   backdrop-filter: blur(12px);
   /* Stitch screen 345f3db306fc481fb02d85fc1365eb91 — .surface_glass: border: 1px solid rgba(215,186,255,0.1)
      #d7baff = var(--color-primary); sem variante RGB no projeto, usando color-mix para preservar semântica */
@@ -36,24 +36,20 @@
   box-shadow: 0 0 15px color-mix(in srgb, var(--color-secondary) 20%, transparent);
 }
 
-/* Eligible badge (top-right absolute) */
-.attr-card-eligible-badge {
-  position: absolute;
-  top: 12px;
-  right: 12px;
+/* Abbrev icon container */
+.attr-card-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
   display: flex;
   align-items: center;
-  gap: 4px;
-  padding: 2px 8px;
-  background: color-mix(in srgb, var(--color-secondary) 20%, transparent);
-  border: 1px solid color-mix(in srgb, var(--color-secondary) 40%, transparent);
-  border-radius: 999px;
-  color: var(--color-secondary);
-  font-family: var(--font-mono);
-  font-size: 9px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.attr-card-icon--eligible {
+  background: color-mix(in srgb, var(--color-secondary) 10%, transparent);
+  outline: 1px solid color-mix(in srgb, var(--color-secondary) 30%, transparent);
 }
 
 /* Card header: title left, controls right */
@@ -65,13 +61,14 @@
 
 .attr-card-title {
   display: flex;
-  flex-direction: column;
-  gap: 2px;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--space-md);
 }
 
 .attr-card-abbrev {
   font-family: var(--font-mono);
-  font-size: 20px;
+  font-size: 14px;
   font-weight: 700;
   color: var(--color-primary);
   letter-spacing: -0.02em;
@@ -79,13 +76,22 @@
   line-height: 1;
 }
 
+.attr-card--eligible .attr-card-abbrev {
+  color: var(--color-secondary);
+}
+
 .attr-card-name {
   font-family: var(--font-mono);
-  font-size: 10px;
-  color: rgba(204, 195, 211, 0.6);
+  font-size: 11px;
+  font-weight: 700;
+  color: color-mix(in srgb, var(--color-text-muted) 70%, transparent);
   text-transform: uppercase;
   letter-spacing: 0.1em;
   margin: 0;
+}
+
+.attr-card--eligible .attr-card-name {
+  color: var(--color-secondary);
 }
 
 /* Controls: - VALUE + */
@@ -123,21 +129,31 @@
 }
 
 .attr-btn--dec {
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid color-mix(in srgb, var(--color-text) 10%, transparent);
   color: var(--color-text-muted);
 }
 
 .attr-btn--dec:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.05);
+  background: color-mix(in srgb, var(--color-text) 5%, transparent);
+}
+
+.attr-btn--dec-eligible {
+  border-color: color-mix(in srgb, var(--color-secondary) 40%, transparent);
 }
 
 .attr-btn--inc {
-  border: 1px solid rgba(215, 186, 255, 0.3);
+  border: 1px solid color-mix(in srgb, var(--color-primary) 30%, transparent);
   color: var(--color-primary);
 }
 
 .attr-btn--inc:hover:not(:disabled) {
-  background: rgba(215, 186, 255, 0.1);
+  background: color-mix(in srgb, var(--color-primary) 10%, transparent);
+}
+
+.attr-btn--inc-eligible {
+  background: color-mix(in srgb, var(--color-secondary) 20%, transparent);
+  border-color: color-mix(in srgb, var(--color-secondary) 60%, transparent);
+  color: var(--color-secondary);
 }
 
 .attr-btn:disabled {
@@ -148,7 +164,7 @@
 /* Description */
 .attr-card-desc {
   font-size: 12px;
-  color: rgba(204, 195, 211, 0.7);
+  color: color-mix(in srgb, var(--color-text-muted) 70%, transparent);
   font-style: italic;
   font-family: var(--font-sans);
   margin: 0;
@@ -175,21 +191,21 @@
 }
 
 .attr-badge--bonus {
-  background: rgba(255, 184, 108, 0.1);
-  border-color: rgba(255, 184, 108, 0.3);
+  background: color-mix(in srgb, var(--color-secondary) 10%, transparent);
+  border-color: color-mix(in srgb, var(--color-secondary) 30%, transparent);
   color: var(--color-secondary);
 }
 
 .attr-badge--talent {
-  background: rgba(49, 227, 104, 0.1);
-  border-color: rgba(49, 227, 104, 0.3);
+  background: color-mix(in srgb, var(--color-tertiary) 10%, transparent);
+  border-color: color-mix(in srgb, var(--color-tertiary) 30%, transparent);
   color: var(--color-tertiary);
 }
 
 .attr-badge--weakness {
-  background: rgba(255, 180, 171, 0.1);
-  border-color: rgba(255, 180, 171, 0.3);
-  color: #ffb4ab;
+  background: color-mix(in srgb, var(--color-error) 10%, transparent);
+  border-color: color-mix(in srgb, var(--color-error) 30%, transparent);
+  color: var(--color-error);
 }
 
 /* Skeleton — AttributeGrid loading state */
@@ -214,8 +230,8 @@
 
 .attr-grid-skeleton-card {
   height: 140px;
-  background-color: rgba(255, 255, 255, 0.04);
+  background-color: color-mix(in srgb, var(--color-text) 4%, transparent);
   border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid color-mix(in srgb, var(--color-text) 5%, transparent);
   animation: attr-grid-pulse 1.5s infinite ease-in-out;
 }

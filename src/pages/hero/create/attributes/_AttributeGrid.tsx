@@ -57,27 +57,22 @@ export function AttributeGrid({
             key={key}
             className={`attr-card ${isHighlighted ? 'attr-card--eligible' : ''}`}
           >
-            {/* Eligible badge */}
-            {isHighlighted && (
-              <div className="attr-card-eligible-badge">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                  <path d="M12 2L4 6v6c0 5.25 3.5 10.15 8 11.5C17.5 22.15 21 17.25 21 12V6l-8-4z" />
-                </svg>
-                <span>ELEGÍVEL</span>
-              </div>
-            )}
-
-            {/* Header: abbrev + name + controls */}
+            {/* Header: abbrev icon + name + controls */}
             <div className="attr-card-header">
               <div className="attr-card-title">
-                <h3 className="attr-card-abbrev">{abbrevMap[key]}</h3>
-                <p className="attr-card-name">{nameMap[key]}</p>
+                <div className={`attr-card-icon${isHighlighted ? ' attr-card-icon--eligible' : ''}`}>
+                  <h3 className="attr-card-abbrev">{abbrevMap[key]}</h3>
+                </div>
+                <div>
+                  <p className="attr-card-name">{nameMap[key]}</p>
+                  <p className="attr-card-desc">{descMap[key]}</p>
+                </div>
               </div>
 
               <div className="attr-card-controls">
                 <button
                   type="button"
-                  className="attr-btn attr-btn--dec"
+                  className={`attr-btn attr-btn--dec${isHighlighted ? ' attr-btn--dec-eligible' : ''}`}
                   disabled={!canDecrement}
                   onClick={() => onSetAttr(key, purchased - 1)}
                   aria-label={`Diminuir ${abbrevMap[key]}`}
@@ -93,7 +88,7 @@ export function AttributeGrid({
 
                 <button
                   type="button"
-                  className="attr-btn attr-btn--inc"
+                  className={`attr-btn attr-btn--inc${isHighlighted ? ' attr-btn--inc-eligible' : ''}`}
                   disabled={!canIncrement}
                   onClick={() => onSetAttr(key, purchased + 1)}
                   aria-label={`Aumentar ${abbrevMap[key]}`}
@@ -105,9 +100,6 @@ export function AttributeGrid({
                 </button>
               </div>
             </div>
-
-            {/* Description */}
-            <p className="attr-card-desc">{descMap[key]}</p>
 
             {/* Status badges */}
             <div className="attr-card-badges">
