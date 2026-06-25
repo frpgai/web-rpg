@@ -1,11 +1,11 @@
-import { useLocation } from 'wouter';
+import { useLocation, useParams } from 'wouter';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { CreationStepHeader } from '../../../components/hero-creation/CreationStepHeader';
 import { CreationFooter } from '../../../components/hero-creation/CreationFooter';
 import { OracleButton } from '../../../components/hero-creation/OracleButton';
 import { useHeroCreationStore } from '../../../stores/heroCreationStore';
 import { usePointBuyRules } from '../../../hooks/usePointBuyRules';
-import { getSystemAttributes, previewAttributes } from '../../../api/services/attributes';
+import { getSystemAttributes, previewAttributes, saveDraftAttributes } from '../../../api/services/attributes';
 import type { SystemAttribute } from '../../../api/services/attributes';
 import { heroApi } from '../../../api/services/hero';
 import { AttributeGrid } from './_AttributeGrid';
@@ -16,10 +16,13 @@ import './AttributesPage.css';
 
 export default function AttributesPage() {
   const [, setLocation] = useLocation();
+  const params = useParams<{ id?: string }>();
+  const heroId = params?.id ?? null;
   const [helpOpen, setHelpOpen] = useState(false);
   const [systemAttributes, setSystemAttributes] = useState<SystemAttribute[]>([]);
   const [modifiers, setModifiers] = useState<Record<string, number>>({});
   const [previewEligibleAttributes, setPreviewEligibleAttributes] = useState<string[]>([]);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const { rules } = usePointBuyRules();
@@ -63,6 +66,7 @@ export default function AttributesPage() {
       })
       .then((result) => {
         const eligible = result.attribute_bonuses?.eligible_attributes ?? [];
+        console.log('Preview eligible attributes:', eligible);
         setPreviewEligibleAttributes(eligible);
       })
       .catch(() => {
@@ -163,6 +167,28 @@ export default function AttributesPage() {
     setAttribute(key, val);
   }
 
+  async function handleNext() {
+    if (!canNext) return;
+    setSaveError(null);
+
+    if (heroId && systemAttributes.length > 0) {
+      try {
+        const attributesPayload = systemAttributes.map((sysAttr) => {
+          const key = sysAttr.slug as keyof HeroAttributes;
+          const purchased = attrs[key] ?? rules.min;
+          const bonus = attributeBonuses[key] ?? 0;
+          return { attribute_id: sysAttr.id, value: purchased, bonus };
+        });
+        await saveDraftAttributes(heroId, attributesPayload);
+        setLocation(`/hero/create/aesthetics/${heroId}`);
+      } catch {
+        setSaveError('Não foi possível salvar os atributos. Tente novamente.');
+      }
+    } else {
+      setLocation('/hero/create/aesthetics');
+    }
+  }
+
   if (!ancestry || !characterClass || !background) return null;
 
   return (
@@ -236,11 +262,15 @@ export default function AttributesPage() {
           label="DISTRIBUIR AUTOMATICAMENTE"
           hint="O Oráculo sugere o melhor caminho para sua classe"
         />
+
+        {saveError && (
+          <p className="attr-page-save-error">{saveError}</p>
+        )}
       </div>
 
       <CreationFooter
         onBack={() => setLocation('/hero/create/origins')}
-        onNext={() => setLocation('/hero/create/aesthetics')}
+        onNext={handleNext}
         canNext={canNext}
       />
     </div>

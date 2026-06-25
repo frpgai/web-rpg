@@ -49,7 +49,13 @@ export default function App() {
         <Route path="/hero/create/attributes">
           <PrivateRoute><AttributesPage /></PrivateRoute>
         </Route>
+        <Route path="/heroes/create/attributes/:id">
+          <PrivateRoute><AttributesPage /></PrivateRoute>
+        </Route>
         <Route path="/hero/create/aesthetics">
+          <PrivateRoute><AestheticsPage /></PrivateRoute>
+        </Route>
+        <Route path="/hero/create/aesthetics/:id">
           <PrivateRoute><AestheticsPage /></PrivateRoute>
         </Route>
 
