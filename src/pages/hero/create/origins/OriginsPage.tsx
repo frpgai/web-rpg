@@ -111,16 +111,16 @@ export default function OriginsPage() {
   async function handleNext() {
     if (!ancestry || !vocation || !background) return;
     try {
-      await heroApi.saveDraft({
+      const draft = await heroApi.saveDraft({
         draft_step: 'origins',
         ancestry_id: ancestry.id,
         vocation_id: vocation.id,
         background_id: background.id,
       });
+      setLocation(`/heroes/create/attributes/${draft.id}`);
     } catch {
       console.error('Failed to save draft');
     }
-    setLocation('/hero/create/attributes');
   }
 
   function handleBack() {
