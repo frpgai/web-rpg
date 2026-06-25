@@ -8,7 +8,7 @@ import RegisterPage from './pages/auth/RegisterPage';
 import DashboardPage from './pages/dashboard/DashboardPage';
 import OriginsPage from './pages/hero/create/origins';
 import AttributesPage from './pages/hero/create/attributes/AttributesPage';
-import AestheticsPage from './pages/hero/create/AestheticsPage';
+import AestheticsPage from './pages/hero/create/aesthetics/AestheticsPage';
 import SelectSystemPage from './pages/SelectSystemPage';
 import { PrivateRoute } from './components/common/PrivateRoute';
 import { useAuthStore } from './stores/authStore';
