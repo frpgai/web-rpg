@@ -26,13 +26,14 @@ export async function getSystemAttributes(): Promise<SystemAttribute[]> {
 
 export async function previewAttributes(params: {
   backgroundId?: string;
-  str: number; dex: number; con: number; int: number; wis: number; cha: number;
+  [slug: string]: number | string | undefined;
 }): Promise<AttributePreviewResult> {
-  const searchParams: Record<string, string | number> = {
-    str: params.str, dex: params.dex, con: params.con,
-    int: params.int, wis: params.wis, cha: params.cha,
-  };
-  if (params.backgroundId) searchParams.background_id = params.backgroundId;
+  const searchParams: Record<string, string | number> = {};
+  for (const [key, val] of Object.entries(params)) {
+    if (key === 'backgroundId') continue;
+    if (typeof val === 'number') searchParams[key] = val;
+  }
+  if (params.backgroundId) searchParams.background_id = params.backgroundId as string;
   return apiClient.get('api/v1/heroes/preview/attributes', { searchParams }).json<AttributePreviewResult>();
 }
 

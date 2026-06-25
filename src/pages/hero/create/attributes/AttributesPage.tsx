@@ -14,15 +14,13 @@ import type { HeroAttributes, HeroDetail } from '../../../../types';
 import type { PointBuyRules } from '../../../../hooks/usePointBuyRules';
 import './AttributesPage.css';
 
-function rollRandomAttributes(rules: PointBuyRules): HeroAttributes {
-  const KEYS: (keyof HeroAttributes)[] = ['str', 'dex', 'con', 'int', 'wis', 'cha'];
+function rollRandomAttributes(rules: PointBuyRules, keys: string[]): HeroAttributes {
   const MAX_RETRIES = 100;
 
   for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
-    const min = rules.min;
-    const attrs: HeroAttributes = { str: min, dex: min, con: min, int: min, wis: min, cha: min };
+    const attrs = Object.fromEntries(keys.map((k) => [k, rules.min])) as HeroAttributes;
     let remaining = rules.budget;
-    const shuffled = [...KEYS].sort(() => Math.random() - 0.5);
+    const shuffled = [...keys].sort(() => Math.random() - 0.5);
 
     let valid = true;
     for (let i = 0; i < shuffled.length; i++) {
@@ -32,7 +30,7 @@ function rollRandomAttributes(rules: PointBuyRules): HeroAttributes {
       if (isLast) {
         const target = Object.entries(rules.costTable).find(([, cost]) => cost === remaining);
         if (!target) { valid = false; break; }
-        attrs[key] = Number(target[0]);
+        attrs[key as keyof HeroAttributes] = Number(target[0]);
         remaining = 0;
       } else {
         const affordable = Object.entries(rules.costTable)
@@ -40,7 +38,7 @@ function rollRandomAttributes(rules: PointBuyRules): HeroAttributes {
           .map(([v]) => Number(v));
         if (affordable.length === 0) { valid = false; break; }
         const pick = affordable[Math.floor(Math.random() * affordable.length)];
-        attrs[key] = pick;
+        attrs[key as keyof HeroAttributes] = pick;
         remaining -= rules.costTable[pick];
       }
     }
@@ -48,8 +46,8 @@ function rollRandomAttributes(rules: PointBuyRules): HeroAttributes {
     if (valid && remaining === 0) return attrs;
   }
 
-  // Fallback: balanced spread
-  return { str: 13, dex: 13, con: 13, int: 12, wis: 10, cha: 10 };
+  // Fallback: all attributes at min
+  return Object.fromEntries(keys.map((k) => [k, rules.min])) as HeroAttributes;
 }
 
 export default function AttributesPage() {
@@ -165,15 +163,7 @@ export default function AttributesPage() {
     if (!background) return;
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
-      previewAttributes({
-        backgroundId: background.id,
-        str: attrs.str,
-        dex: attrs.dex,
-        con: attrs.con,
-        int: attrs.int,
-        wis: attrs.wis,
-        cha: attrs.cha,
-      })
+      previewAttributes({ backgroundId: background.id, ...attrs })
         .then((result) => {
           const mods: Record<string, number> = {};
           for (const [slug, data] of Object.entries(result.attributes)) {
@@ -250,7 +240,7 @@ export default function AttributesPage() {
   }
 
   function handleRollAttributes() {
-    setAttrs(rollRandomAttributes(rules));
+    setAttrs(rollRandomAttributes(rules, systemAttributes.map((a) => a.slug)));
   }
 
   async function handleNext() {
@@ -325,7 +315,7 @@ export default function AttributesPage() {
           </button>
           {helpOpen && (
             <div className="attr-help-body">
-              <p>Você tem <strong>27 pontos</strong> para gastar. Todo atributo começa em 8.</p>
+              <p>Você tem <strong>{rules.budget} pontos</strong> para gastar. Todo atributo começa em {rules.min}.</p>
               <p>Atributos mais altos custam mais pontos: 14 custa 7 pts e 15 custa 9 pts.</p>
               <p>Os bônus de antecedente são aplicados automaticamente e não consomem pontos.</p>
             </div>
