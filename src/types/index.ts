@@ -56,6 +56,7 @@ export interface Ancestry {
   speed?: number;
   hp_bonus_per_level?: number;
   enabled?: boolean;
+  eligible_attributes?: string[];
   traits: Trait[];
 }
 
@@ -193,9 +194,21 @@ export interface HeroSheet {
 export interface HeroDetail {
   id: string;
   name: string;
-  ancestry: { id: string; slug: string; name: string } | null;
+  ancestry: {
+    id: string;
+    slug: string;
+    name: string;
+    eligible_attributes: string[];
+    traits: Array<{ id: string; slug: string; name: string; description: string }>;
+  } | null;
   class: { id: string; slug: string; name: string } | null;
-  background: { id: string; slug: string; name: string } | null;
+  background: {
+    id: string;
+    slug: string;
+    name: string;
+    eligible_attributes: string[];
+    attribute_bonuses: number[];
+  } | null;
   level: number;
   xp: number;
   xp_next_level: number;
@@ -204,8 +217,6 @@ export interface HeroDetail {
   sheet: HeroSheet;
   active_session: { id: string; name: string } | null;
 }
-// Note: HeroDetail.ancestry/class/background are minimal refs (id, slug, name only).
-// For full objects with traits/eligible_attributes, use catalogApi.
 
 export interface PreviewTrait {
   id: string;

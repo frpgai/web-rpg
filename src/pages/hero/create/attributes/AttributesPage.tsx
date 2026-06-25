@@ -8,7 +8,6 @@ import { usePointBuyRules } from '../../../../hooks/usePointBuyRules';
 import { getSystemAttributes, previewAttributes, saveDraftAttributes } from '../../../../api/services/attributes';
 import type { SystemAttribute } from '../../../../api/services/attributes';
 import { heroApi } from '../../../../api/services/hero';
-import { catalogApi } from '../../../../api/services/catalog';
 import { AttributeGrid } from './_AttributeGrid';
 import { PointPoolCard } from './_PointPoolCard';
 import { CharacterPreviewSummary } from './_CharacterPreviewSummary';
@@ -57,22 +56,30 @@ export default function AttributesPage() {
 
     async function init() {
       try {
-        const draft = await heroApi.getDraft();
-        if (cancelled || !draft) return;
-
-        const [ancestriesList, vocationsList, backgroundsList] = await Promise.all([
-          catalogApi.ancestries(),
-          catalogApi.vocations(),
-          catalogApi.backgrounds(),
-        ]);
+        const hero = await heroApi.get(heroId);
         if (cancelled) return;
-
-        const foundAncestry = ancestriesList.find((a) => a.id === draft.ancestry_id);
-        const foundVocation = vocationsList.find((v) => v.id === draft.vocation_id);
-        const foundBackground = backgroundsList.find((bg) => bg.id === draft.background_id);
-        if (foundAncestry) setAncestry(foundAncestry);
-        if (foundVocation) setCharacterClass(foundVocation);
-        if (foundBackground) setBackground(foundBackground);
+        if (hero.ancestry) {
+          setAncestry({
+            id: hero.ancestry.id,
+            slug: hero.ancestry.slug,
+            name: hero.ancestry.name,
+            description: '',
+            traits: hero.ancestry.traits,
+            eligible_attributes: hero.ancestry.eligible_attributes,
+          });
+        }
+        if (hero.class) setCharacterClass(hero.class);
+        if (hero.background) {
+          setBackground({
+            id: hero.background.id,
+            slug: hero.background.slug,
+            name: hero.background.name,
+            description: '',
+            bonuses: hero.background.attribute_bonuses,
+            eligible_attributes: hero.background.eligible_attributes,
+            traits: [],
+          });
+        }
       } catch {
         // failure → guard will redirect to origins
       } finally {
