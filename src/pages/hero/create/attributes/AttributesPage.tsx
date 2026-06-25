@@ -57,16 +57,19 @@ export default function AttributesPage() {
 
     async function init() {
       try {
-        const [draft, ancestries, vocations, backgrounds] = await Promise.all([
-          heroApi.getDraft(),
+        const draft = await heroApi.getDraft();
+        if (cancelled || !draft) return;
+
+        const [ancestriesList, vocationsList, backgroundsList] = await Promise.all([
           catalogApi.ancestries(),
           catalogApi.vocations(),
           catalogApi.backgrounds(),
         ]);
-        if (cancelled || !draft) return;
-        const foundAncestry = draft.ancestry_id ? ancestries.find((a) => a.id === draft.ancestry_id) : undefined;
-        const foundVocation = draft.vocation_id ? vocations.find((v) => v.id === draft.vocation_id) : undefined;
-        const foundBackground = draft.background_id ? backgrounds.find((bg) => bg.id === draft.background_id) : undefined;
+        if (cancelled) return;
+
+        const foundAncestry = ancestriesList.find((a) => a.id === draft.ancestry_id);
+        const foundVocation = vocationsList.find((v) => v.id === draft.vocation_id);
+        const foundBackground = backgroundsList.find((bg) => bg.id === draft.background_id);
         if (foundAncestry) setAncestry(foundAncestry);
         if (foundVocation) setCharacterClass(foundVocation);
         if (foundBackground) setBackground(foundBackground);
