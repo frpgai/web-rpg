@@ -14,16 +14,13 @@ import type { HeroAttributes, HeroDetail } from '../../../../types';
 import type { PointBuyRules } from '../../../../hooks/usePointBuyRules';
 import './AttributesPage.css';
 
-function makeDefaultAttrs(min: number): HeroAttributes {
-  return { str: min, dex: min, con: min, int: min, wis: min, cha: min };
-}
-
 function rollRandomAttributes(rules: PointBuyRules): HeroAttributes {
   const KEYS: (keyof HeroAttributes)[] = ['str', 'dex', 'con', 'int', 'wis', 'cha'];
   const MAX_RETRIES = 100;
 
   for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
-    const attrs = makeDefaultAttrs(rules.min);
+    const min = rules.min;
+    const attrs: HeroAttributes = { str: min, dex: min, con: min, int: min, wis: min, cha: min };
     let remaining = rules.budget;
     const shuffled = [...KEYS].sort(() => Math.random() - 0.5);
 
@@ -70,8 +67,10 @@ export default function AttributesPage() {
   const [attrsLoading, setAttrsLoading] = useState(true);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Step 2 local state — initialised with fallback min (8); syncs when rules load
-  const [attrs, setAttrs] = useState<HeroAttributes>(() => makeDefaultAttrs(8));
+  // Step 2 local state — 8 matches FALLBACK.min in usePointBuyRules
+  const [attrs, setAttrs] = useState<HeroAttributes>({
+    str: 8, dex: 8, con: 8, int: 8, wis: 8, cha: 8,
+  });
   const [asiPlus2, setAsiPlus2] = useState<string | null>(null);
   const [asiPlus1, setAsiPlus1] = useState<string | null>(null);
   const [asiAllPlus1, setAsiAllPlus1] = useState(false);
