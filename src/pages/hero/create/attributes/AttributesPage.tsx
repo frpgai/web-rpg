@@ -46,7 +46,7 @@ export default function AttributesPage() {
     rollAttributes,
   } = useHeroCreationStore();
 
-  // On refresh with heroId: restore store from draft + catalog data sequentially
+  // On refresh with heroId: restore store from draft + catalog data
   useEffect(() => {
     if (!heroId) {
       setHeroInitialized(true);
@@ -57,28 +57,18 @@ export default function AttributesPage() {
 
     async function init() {
       try {
-        const draft = await heroApi.getDraft();
+        const [draft, ancestries, vocations, backgrounds] = await Promise.all([
+          heroApi.getDraft(),
+          catalogApi.ancestries(),
+          catalogApi.vocations(),
+          catalogApi.backgrounds(),
+        ]);
         if (cancelled || !draft) return;
-
-        const ancestriesList = await catalogApi.ancestries();
-        if (cancelled) return;
-        const foundAncestry = draft.ancestry_id
-          ? ancestriesList.find((a) => a.id === draft.ancestry_id)
-          : undefined;
+        const foundAncestry = draft.ancestry_id ? ancestries.find((a) => a.id === draft.ancestry_id) : undefined;
+        const foundVocation = draft.vocation_id ? vocations.find((v) => v.id === draft.vocation_id) : undefined;
+        const foundBackground = draft.background_id ? backgrounds.find((bg) => bg.id === draft.background_id) : undefined;
         if (foundAncestry) setAncestry(foundAncestry);
-
-        const vocationsList = await catalogApi.vocations();
-        if (cancelled) return;
-        const foundVocation = draft.vocation_id
-          ? vocationsList.find((v) => v.id === draft.vocation_id)
-          : undefined;
         if (foundVocation) setCharacterClass(foundVocation);
-
-        const backgroundsList = await catalogApi.backgrounds();
-        if (cancelled) return;
-        const foundBackground = draft.background_id
-          ? backgroundsList.find((bg) => bg.id === draft.background_id)
-          : undefined;
         if (foundBackground) setBackground(foundBackground);
       } catch {
         // failure → guard will redirect to origins
