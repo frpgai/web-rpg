@@ -3,27 +3,6 @@ import type { HeroAttributes } from '../../../../types';
 import type { PointBuyRules } from '../../../../hooks/usePointBuyRules';
 import type { SystemAttribute } from '../../../../api/services/attributes';
 
-// Static fallbacks used when API data is unavailable
-const ATTR_ABBREV_FALLBACK: Record<keyof HeroAttributes, string> = {
-  str: 'FOR', dex: 'DES', con: 'CON', int: 'INT', wis: 'SAB', cha: 'CAR',
-};
-
-const ATTR_NAME_FALLBACK: Record<keyof HeroAttributes, string> = {
-  str: 'Força', dex: 'Destreza', con: 'Constituição',
-  int: 'Inteligência', wis: 'Sabedoria', cha: 'Carisma',
-};
-
-const ATTR_DESC_FALLBACK: Record<keyof HeroAttributes, string> = {
-  str: 'Poder físico puro e carga.',
-  dex: 'Agilidade, reflexos e equilíbrio.',
-  con: 'Resistência, vitalidade e saúde.',
-  int: 'Poder mental, lógica e memória.',
-  wis: 'Percepção, intuição e sintonização.',
-  cha: 'Influência, charme e liderança.',
-};
-
-const ATTR_KEYS_FALLBACK: (keyof HeroAttributes)[] = ['str', 'dex', 'con', 'int', 'wis', 'cha'];
-
 interface Props {
   attrs: HeroAttributes;
   remaining: number;
@@ -42,33 +21,21 @@ export function AttributeGrid({
   attrs, remaining, attributeBonuses, eligibleAttributes,
   asiPoolRemaining, asiMaxPerAttr, onSetAttr, rules, systemAttributes, modifiers, loading,
 }: Props) {
-  if (loading) {
+  if (loading || systemAttributes.length === 0) {
     return (
       <div className="attr-grid-skeleton">
-        {ATTR_KEYS_FALLBACK.map((key) => (
-          <div key={key} className="attr-grid-skeleton-card" />
+        {[0, 1, 2, 3, 4, 5].map((i) => (
+          <div key={i} className="attr-grid-skeleton-card" />
         ))}
       </div>
     );
   }
 
-  // Build ordered attribute keys from API data or fall back to static order
-  const attrKeys: (keyof HeroAttributes)[] = systemAttributes.length > 0
-    ? systemAttributes.map((a) => a.slug as keyof HeroAttributes)
-    : ATTR_KEYS_FALLBACK;
-
-  // Build lookup maps from API data
-  const abbrevMap: Record<string, string> = systemAttributes.length > 0
-    ? Object.fromEntries(systemAttributes.map((a) => [a.slug, a.abbreviation]))
-    : ATTR_ABBREV_FALLBACK;
-
-  const nameMap: Record<string, string> = systemAttributes.length > 0
-    ? Object.fromEntries(systemAttributes.map((a) => [a.slug, a.name]))
-    : ATTR_NAME_FALLBACK;
-
-  const descMap: Record<string, string> = systemAttributes.length > 0
-    ? Object.fromEntries(systemAttributes.map((a) => [a.slug, a.description]))
-    : ATTR_DESC_FALLBACK;
+  // Derived exclusively from API data — no static fallbacks
+  const attrKeys = systemAttributes.map((a) => a.slug as keyof HeroAttributes);
+  const abbrevMap = Object.fromEntries(systemAttributes.map((a) => [a.slug, a.abbreviation]));
+  const nameMap = Object.fromEntries(systemAttributes.map((a) => [a.slug, a.name]));
+  const descMap = Object.fromEntries(systemAttributes.map((a) => [a.slug, a.description]));
 
   return (
     <div className="attr-grid">
@@ -103,8 +70,8 @@ export function AttributeGrid({
             {/* Header: abbrev + name + controls */}
             <div className="attr-card-header">
               <div className="attr-card-title">
-                <h3 className="attr-card-abbrev">{abbrevMap[key] ?? key.toUpperCase()}</h3>
-                <p className="attr-card-name">{nameMap[key] ?? key}</p>
+                <h3 className="attr-card-abbrev">{abbrevMap[key]}</h3>
+                <p className="attr-card-name">{nameMap[key]}</p>
               </div>
 
               <div className="attr-card-controls">
@@ -113,7 +80,7 @@ export function AttributeGrid({
                   className="attr-btn attr-btn--dec"
                   disabled={!canDecrement}
                   onClick={() => onSetAttr(key, purchased - 1)}
-                  aria-label={`Diminuir ${abbrevMap[key] ?? key.toUpperCase()}`}
+                  aria-label={`Diminuir ${abbrevMap[key]}`}
                 >
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                     <line x1="5" y1="12" x2="19" y2="12" />
@@ -129,7 +96,7 @@ export function AttributeGrid({
                   className="attr-btn attr-btn--inc"
                   disabled={!canIncrement}
                   onClick={() => onSetAttr(key, purchased + 1)}
-                  aria-label={`Aumentar ${abbrevMap[key] ?? key.toUpperCase()}`}
+                  aria-label={`Aumentar ${abbrevMap[key]}`}
                 >
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                     <line x1="12" y1="5" x2="12" y2="19" />
@@ -140,7 +107,7 @@ export function AttributeGrid({
             </div>
 
             {/* Description */}
-            <p className="attr-card-desc">{descMap[key] ?? ''}</p>
+            <p className="attr-card-desc">{descMap[key]}</p>
 
             {/* Status badges */}
             <div className="attr-card-badges">
