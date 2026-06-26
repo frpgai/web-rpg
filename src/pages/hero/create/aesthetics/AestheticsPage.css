@@ -375,6 +375,18 @@
   box-sizing: border-box;
 }
 
+.aesthetics-context-btn {
+  cursor: pointer;
+  width: 100%;
+  transition: all 0.2s ease-out;
+}
+
+.aesthetics-context-btn:hover {
+  background-color: rgba(215, 186, 255, 0.08);
+  border-color: rgba(215, 186, 255, 0.2);
+  transform: translateY(-2px);
+}
+
 .aesthetics-context-box-label {
   font-family: 'Space Mono', monospace;
   font-size: 10px;
@@ -394,6 +406,19 @@
 
 .aesthetics-context-box-value-accent {
   color: var(--color-tertiary);
+}
+
+.aesthetics-bottom-sheet-content {
+  padding: 16px 20px 24px 20px;
+  text-align: left;
+}
+
+.aesthetics-bottom-sheet-text {
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.75;
+  color: var(--color-text-muted);
+  margin: 0;
 }
 
 @keyframes aesthetics-pulse-skeleton {

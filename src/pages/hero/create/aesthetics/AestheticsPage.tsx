@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useLocation, useParams } from 'wouter';
-import { Tooltip } from '../../../../components/ui/Tooltip';
+import { BottomSheet } from '../../../../components/ui/BottomSheet';
 import { CreationStepHeader } from '../../../../components/hero-creation/CreationStepHeader';
 import { CreationFooter } from '../../../../components/hero-creation/CreationFooter';
 import { useHeroCreationStore } from '../../../../stores/heroCreationStore';
@@ -34,6 +34,11 @@ export default function AestheticsPage() {
   const [avatarError, setAvatarError] = useState(false);
   const [nameBlurred, setNameBlurred] = useState(false);
   const [backstoryLen, setBackstoryLen] = useState(backstory.length);
+
+  // BottomSheet State
+  const [infoSheetOpen, setInfoSheetOpen] = useState(false);
+  const [infoSheetTitle, setInfoSheetTitle] = useState('');
+  const [infoSheetContent, setInfoSheetContent] = useState('');
 
   // ─── Load hero from backend when heroId is present ────────────────────────
   useEffect(() => {
@@ -173,6 +178,13 @@ export default function AestheticsPage() {
     } else {
       setLocation('/hero/create/summary');
     }
+  };
+
+  // ─── Info Trigger Helpers ──────────────────────────────────────────────────
+  const openInfo = (title: string, content: string) => {
+    setInfoSheetTitle(title);
+    setInfoSheetContent(content);
+    setInfoSheetOpen(true);
   };
 
   if (!heroInitialized) return null;
@@ -327,34 +339,64 @@ export default function AestheticsPage() {
 
         {/* 4. CONTEXT GRID */}
         <div className="aesthetics-context-grid">
-          <div className="aesthetics-context-box">
-            <span className="aesthetics-context-box-label">CLASSE</span>
+          <button
+            type="button"
+            className="aesthetics-context-box aesthetics-context-btn"
+            onClick={() => {
+              const nameStr = characterClass?.name ?? hero?.class?.name ?? 'Classe';
+              // Check if we have description on Vocation or CharacterClass, otherwise fallback
+              const desc = (characterClass as any)?.description ?? 'Sua vocação e profissão de combate.';
+              openInfo(nameStr, desc);
+            }}
+          >
+            <span className="aesthetics-context-box-label">CLASSE ⓘ</span>
             <span className="aesthetics-context-box-value">
               {characterClass?.name ?? hero?.class?.name ?? '—'}
             </span>
-          </div>
-          <div className="aesthetics-context-box">
-            <span className="aesthetics-context-box-label">RAÇA</span>
+          </button>
+          <button
+            type="button"
+            className="aesthetics-context-box aesthetics-context-btn"
+            onClick={() => {
+              const nameStr = ancestry?.name ?? hero?.ancestry?.name ?? 'Raça';
+              const desc = ancestry?.description ?? (hero?.ancestry as any)?.description ?? 'Sua origem biológica e traços físicos.';
+              openInfo(nameStr, desc);
+            }}
+          >
+            <span className="aesthetics-context-box-label">RAÇA ⓘ</span>
             <span className="aesthetics-context-box-value">
               {ancestry?.name ?? hero?.ancestry?.name ?? '—'}
             </span>
-          </div>
-          <div className="aesthetics-context-box">
-            <span className="aesthetics-context-box-label">ANTECEDENTE</span>
+          </button>
+          <button
+            type="button"
+            className="aesthetics-context-box aesthetics-context-btn"
+            onClick={() => {
+              const nameStr = background?.name ?? hero?.background?.name ?? 'Antecedente';
+              const desc = background?.description ?? (hero?.background as any)?.description ?? 'O que seu herói fazia antes de virar aventureiro.';
+              openInfo(nameStr, desc);
+            }}
+          >
+            <span className="aesthetics-context-box-label">ANTECEDENTE ⓘ</span>
             <span className="aesthetics-context-box-value">
               {background?.name ?? hero?.background?.name ?? '—'}
             </span>
-          </div>
-          <div className="aesthetics-context-box">
-            <Tooltip text="O atributo mais importante para sua vocação.">
-              <span className="aesthetics-context-box-label">{keyAttrLabel}</span>
-            </Tooltip>
-            <Tooltip text="Número somado ao dado nos testes. Quanto maior o atributo, maior o bônus.">
-              <span className="aesthetics-context-box-value aesthetics-context-box-value-accent">
-                {keyAttrValue ?? '—'}
-              </span>
-            </Tooltip>
-          </div>
+          </button>
+          <button
+            type="button"
+            className="aesthetics-context-box aesthetics-context-btn"
+            onClick={() =>
+              openInfo(
+                `Atributo de Destaque (${keyAttrLabel})`,
+                'O atributo mais importante para as habilidades da sua classe. O valor total exibido já inclui os bônus comprados e os adicionais fornecidos pela raça e pelo antecedente.'
+              )
+            }
+          >
+            <span className="aesthetics-context-box-label">{keyAttrLabel} ⓘ</span>
+            <span className="aesthetics-context-box-value aesthetics-context-box-value-accent">
+              {keyAttrValue ?? '—'}
+            </span>
+          </button>
         </div>
       </div>
 
@@ -363,6 +405,17 @@ export default function AestheticsPage() {
         onNext={handleNext}
         canNext={canNext}
       />
+
+      {/* Info Details BottomSheet */}
+      <BottomSheet
+        open={infoSheetOpen}
+        onClose={() => setInfoSheetOpen(false)}
+        title={infoSheetTitle}
+      >
+        <div className="aesthetics-bottom-sheet-content">
+          <p className="aesthetics-bottom-sheet-text">{infoSheetContent}</p>
+        </div>
+      </BottomSheet>
     </div>
   );
 }
