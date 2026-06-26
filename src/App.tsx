@@ -47,10 +47,19 @@ export default function App() {
         <Route path="/heroes/create/origins">
           <PrivateRoute><OriginsPage /></PrivateRoute>
         </Route>
+        <Route path="/hero/create/origins">
+          <PrivateRoute><OriginsPage /></PrivateRoute>
+        </Route>
         <Route path="/heroes/create/attributes">
           <PrivateRoute><AttributesPage /></PrivateRoute>
         </Route>
         <Route path="/heroes/create/attributes/:id">
+          <PrivateRoute><AttributesPage /></PrivateRoute>
+        </Route>
+        <Route path="/hero/create/attributes">
+          <PrivateRoute><AttributesPage /></PrivateRoute>
+        </Route>
+        <Route path="/hero/create/attributes/:id">
           <PrivateRoute><AttributesPage /></PrivateRoute>
         </Route>
         <Route path="/heroes/create/aesthetics">
@@ -59,10 +68,22 @@ export default function App() {
         <Route path="/heroes/create/aesthetics/:id">
           <PrivateRoute><AestheticsPage /></PrivateRoute>
         </Route>
+        <Route path="/hero/create/aesthetics">
+          <PrivateRoute><AestheticsPage /></PrivateRoute>
+        </Route>
+        <Route path="/hero/create/aesthetics/:id">
+          <PrivateRoute><AestheticsPage /></PrivateRoute>
+        </Route>
         <Route path="/heroes/create/summary">
           <PrivateRoute><SummaryPage /></PrivateRoute>
         </Route>
         <Route path="/heroes/create/summary/:id">
+          <PrivateRoute><SummaryPage /></PrivateRoute>
+        </Route>
+        <Route path="/hero/create/summary">
+          <PrivateRoute><SummaryPage /></PrivateRoute>
+        </Route>
+        <Route path="/hero/create/summary/:id">
           <PrivateRoute><SummaryPage /></PrivateRoute>
         </Route>
 
