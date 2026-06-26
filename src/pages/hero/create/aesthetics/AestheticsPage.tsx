@@ -127,20 +127,6 @@ export default function AestheticsPage() {
     loadAvatars();
   }, [loadAvatars, heroInitialized]);
 
-  // ─── Shuffle thumbnails (Fisher-Yates, local) ─────────────────────────────
-  const handleShuffle = () => {
-    setAvatarList((prev) => {
-      const arr = [...prev];
-      for (let i = arr.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        const temp = arr[i];
-        arr[i] = arr[j];
-        arr[j] = temp;
-      }
-      return arr;
-    });
-  };
-
   // ─── Active avatar preset ──────────────────────────────────────────────────
   const activePreset = avatarList.find((p) => p.id === avatarId) ?? avatarList[0] ?? null;
 
@@ -206,10 +192,6 @@ export default function AestheticsPage() {
         <div className="aesthetics-glass-panel">
           <div className="aesthetics-avatar-header-row">
             <span className="aesthetics-avatar-section-title">Selecione seu Avatar</span>
-            <button className="aesthetics-shuffle-btn" onClick={handleShuffle} type="button">
-              <span className="aesthetics-shuffle-btn-icon">↻</span>
-              <span className="aesthetics-shuffle-btn-text">GERAR NOVOS</span>
-            </button>
           </div>
 
           {avatarError && (
@@ -248,7 +230,6 @@ export default function AestheticsPage() {
                       <span className="aesthetics-recommended-text">RECOMENDADO</span>
                     </div>
                   )}
-                  <span className="aesthetics-portrait-name">{activePreset?.label ?? ''}</span>
                 </div>
                 {activePreset?.recommended && (
                   <span className="aesthetics-verified-icon">✓</span>
@@ -356,6 +337,12 @@ export default function AestheticsPage() {
             <span className="aesthetics-context-box-label">RAÇA</span>
             <span className="aesthetics-context-box-value">
               {ancestry?.name ?? hero?.ancestry?.name ?? '—'}
+            </span>
+          </div>
+          <div className="aesthetics-context-box">
+            <span className="aesthetics-context-box-label">ANTECEDENTE</span>
+            <span className="aesthetics-context-box-value">
+              {background?.name ?? hero?.background?.name ?? '—'}
             </span>
           </div>
           <div className="aesthetics-context-box">
