@@ -7,24 +7,41 @@ import { getAssetUrl } from '../../../../utils/url';
 import type { HeroDetail, HeroAttributes } from '../../../../types';
 import './SummaryPage.css';
 
-// Mock values for kits and abilities by class slug (as seed fallback if empty from API)
 interface KitItem {
   name: string;
   description: string;
   items: string[];
+  icon: string;
 }
 
+// Aligned with class-specific choices shown in Stitch design
 const CLASS_KITS: Record<string, KitItem[]> = {
-  fighter: [
+  paladin: [
     {
       name: 'Baluarte Argênteo',
-      description: 'Defesa impenetrável e controle de área.',
-      items: ['Espada Longa', 'Escudo de Torre', 'Armadura de Cota de Malha'],
+      description: 'Espada Curta & Escudo Torre. Foco em defesa impenetrável.',
+      items: ['Espada Curta', 'Escudo Torre', 'Baluarte'],
+      icon: 'shield',
     },
     {
       name: 'Destruidora de Sóis',
-      description: 'Poder de ataque brutal de duas mãos.',
-      items: ['Espada de Duas Mãos (Montante)', 'Armadura de Couro Batido'],
+      description: 'Montante de Obsidiana. Foco em dano devastador em área.',
+      items: ['Montante de Obsidiana', 'Armadura Pesada'],
+      icon: 'swords',
+    },
+  ],
+  fighter: [
+    {
+      name: 'Baluarte Argênteo',
+      description: 'Espada Curta & Escudo Torre. Foco em defesa impenetrável.',
+      items: ['Espada Curta', 'Escudo Torre', 'Baluarte'],
+      icon: 'shield',
+    },
+    {
+      name: 'Destruidora de Sóis',
+      description: 'Montante de Obsidiana. Foco em dano devastador em área.',
+      items: ['Montante de Obsidiana', 'Armadura Pesada'],
+      icon: 'swords',
     },
   ],
   wizard: [
@@ -32,6 +49,7 @@ const CLASS_KITS: Record<string, KitItem[]> = {
       name: 'Tomo Arcano',
       description: 'Estudo acadêmico de magia e conjurações complexas.',
       items: ['Cajado Rúnico', 'Livro de Magias', 'Componentes Arcanos'],
+      icon: 'menu_book',
     },
   ],
   rogue: [
@@ -39,13 +57,7 @@ const CLASS_KITS: Record<string, KitItem[]> = {
       name: 'Sombra Silenciosa',
       description: 'Furtividade máxima e infiltração de precisão.',
       items: ['Espada Curta', 'Adaga (x2)', 'Ferramentas de Ladrão'],
-    },
-  ],
-  paladin: [
-    {
-      name: 'Cruzado da Luz',
-      description: 'Equipamento pesado consagrado para o combate divino.',
-      items: ['Espada Longa', 'Escudo Sagrado', 'Cota de Malha'],
+      icon: 'visibility_off',
     },
   ],
 };
@@ -56,9 +68,36 @@ interface AbilityItem {
   type: 'action' | 'passive';
   description: string;
   manaCost: number;
+  icon: string;
 }
 
 const CLASS_ABILITIES: Record<string, AbilityItem[]> = {
+  paladin: [
+    {
+      slug: 'aura-de-julgamento',
+      name: 'Aura de Julgamento',
+      type: 'action',
+      description: 'Queima inimigos próximos com dano sagrado constante.',
+      manaCost: 0,
+      icon: 'flare',
+    },
+    {
+      slug: 'estalo-penumbral',
+      name: 'Estalo Penumbral',
+      type: 'action',
+      description: 'Teleporte curto que deixa uma explosão de sombra.',
+      manaCost: 0,
+      icon: 'bolt',
+    },
+    {
+      slug: 'dadiva-de-aethel',
+      name: 'Dádiva de Aethel',
+      type: 'action',
+      description: 'Cura aliados e remove efeitos de debilitação.',
+      manaCost: 0,
+      icon: 'healing',
+    },
+  ],
   fighter: [
     {
       slug: 'second-wind',
@@ -66,6 +105,7 @@ const CLASS_ABILITIES: Record<string, AbilityItem[]> = {
       type: 'action',
       description: 'Uma vez por combate, recupere vigor rapidamente.',
       manaCost: 0,
+      icon: 'air',
     },
     {
       slug: 'fighting-style',
@@ -73,6 +113,7 @@ const CLASS_ABILITIES: Record<string, AbilityItem[]> = {
       type: 'passive',
       description: 'Sua maestria concede bônus permanentes de ataque.',
       manaCost: 0,
+      icon: 'shield',
     },
     {
       slug: 'action-surge',
@@ -80,6 +121,7 @@ const CLASS_ABILITIES: Record<string, AbilityItem[]> = {
       type: 'action',
       description: 'Force seus limites físicos para agir mais uma vez no seu turno.',
       manaCost: 0,
+      icon: 'bolt',
     },
   ],
   wizard: [
@@ -89,6 +131,7 @@ const CLASS_ABILITIES: Record<string, AbilityItem[]> = {
       type: 'action',
       description: 'Medite para recuperar parte dos seus slots de magia gastos.',
       manaCost: 0,
+      icon: 'auto_fix_high',
     },
     {
       slug: 'ritual-casting',
@@ -96,6 +139,7 @@ const CLASS_ABILITIES: Record<string, AbilityItem[]> = {
       type: 'passive',
       description: 'Conjure magias de ritual sem gastar slots.',
       manaCost: 0,
+      icon: 'menu_book',
     },
   ],
   rogue: [
@@ -105,6 +149,7 @@ const CLASS_ABILITIES: Record<string, AbilityItem[]> = {
       type: 'passive',
       description: 'Cause dano extra ao atingir alvos desprevenidos.',
       manaCost: 0,
+      icon: 'visibility_off',
     },
     {
       slug: 'expertise',
@@ -112,24 +157,27 @@ const CLASS_ABILITIES: Record<string, AbilityItem[]> = {
       type: 'passive',
       description: 'Dobre sua proficiência em perícias cruciais.',
       manaCost: 0,
+      icon: 'military_tech',
     },
   ],
-  paladin: [
-    {
-      slug: 'divine-sense',
-      name: 'Sentido Divino',
-      type: 'action',
-      description: 'Detecte a presença de seres celestiais, abissais ou mortos-vivos.',
-      manaCost: 0,
-    },
-    {
-      slug: 'lay-on-hands',
-      name: 'Imposição de Mãos',
-      type: 'action',
-      description: 'Canalize energia sagrada para curar feridas com o toque.',
-      manaCost: 0,
-    },
-  ],
+};
+
+const ATTRIBUTE_LABELS: Record<string, string> = {
+  str: 'Força',
+  dex: 'Destreza',
+  con: 'Constituição',
+  int: 'Inteligência',
+  wis: 'Sabedoria',
+  cha: 'Carisma',
+};
+
+const ATTRIBUTE_COLORS: Record<string, string> = {
+  str: 'var(--color-secondary)',
+  dex: 'var(--color-primary)',
+  con: 'var(--color-tertiary)',
+  int: 'var(--color-secondary)',
+  wis: 'var(--color-text-muted)',
+  cha: 'var(--color-primary)',
 };
 
 export default function SummaryPage() {
@@ -153,9 +201,8 @@ export default function SummaryPage() {
       try {
         const data = await heroApi.get(heroId!);
         setHero(data);
-        // Pre-select default kit if available
         const classSlug = data.class?.slug || 'fighter';
-        const kits = CLASS_KITS[classSlug] || [];
+        const kits = CLASS_KITS[classSlug] || CLASS_KITS.fighter;
         if (kits.length > 0) {
           setSelectedKit(kits[0].name);
         }
@@ -177,8 +224,8 @@ export default function SummaryPage() {
   if (!hero) return null;
 
   const classSlug = hero.class?.slug || 'fighter';
-  const kits = CLASS_KITS[classSlug] || [];
-  const abilities = CLASS_ABILITIES[classSlug] || [];
+  const kits = CLASS_KITS[classSlug] || CLASS_KITS.fighter;
+  const abilities = CLASS_ABILITIES[classSlug] || CLASS_ABILITIES.fighter;
 
   const handleAbilityToggle = (slug: string) => {
     if (selectedAbilities.includes(slug)) {
@@ -186,6 +233,9 @@ export default function SummaryPage() {
     } else {
       if (selectedAbilities.length < 2) {
         setSelectedAbilities([...selectedAbilities, slug]);
+      } else {
+        // Rotates the selection (removes the oldest one)
+        setSelectedAbilities([selectedAbilities[1], slug]);
       }
     }
   };
@@ -196,10 +246,6 @@ export default function SummaryPage() {
     setLocation(`/heroes/create/aesthetics/${heroId}`);
   };
 
-  const getModifier = (val: number) => {
-    return Math.floor((val - 10) / 2);
-  };
-
   const attributeKeys: Array<keyof HeroAttributes> = ['str', 'dex', 'con', 'int', 'wis', 'cha'];
 
   const handleNext = async () => {
@@ -208,14 +254,14 @@ export default function SummaryPage() {
     try {
       const baseAttributes: Record<string, number> = {};
       
-      const sheetAttrs = hero.sheet?.base_attributes || hero.sheet?.attributes;
-      if (sheetAttrs) {
+      const rootAttrs = (hero as any).attributes;
+      if (rootAttrs) {
         attributeKeys.forEach((key) => {
-          baseAttributes[key] = sheetAttrs[key] || 10;
+          const attrData = rootAttrs[key];
+          baseAttributes[key] = typeof attrData === 'object' ? (attrData.value ?? attrData.final ?? 10) : (attrData || 10);
         });
       }
 
-      // Finalize creation
       await heroApi.create({
         name: hero.name,
         ancestry_id: hero.ancestry?.id || '',
@@ -228,10 +274,7 @@ export default function SummaryPage() {
         ability_slugs: selectedAbilities as [string, string],
       } as any);
 
-      // Clear draft
       await heroApi.deleteDraft();
-      
-      // Go to dashboard
       setLocation('/dashboard');
     } catch (err) {
       console.error('Failed to finalize hero creation:', err);
@@ -243,95 +286,154 @@ export default function SummaryPage() {
 
   return (
     <div className="summary-page-root">
+      <div className="summary-bg-cinematic" />
+      
       <div className="summary-page-scroll">
         <CreationStepHeader
-          stepLabel="PASSO 04: ARSENAL & REVISÃO"
+          stepLabel="ETAPA 4: REVISÃO FINAL"
           headline="DESTINO SELADO"
           progressPct={100}
         />
 
-        {/* 1. HERO PREVIEW CARD */}
-        <div className="summary-card aesthetics-glass-panel">
-          <div className="summary-hero-row">
-            {hero.avatar_url && (
-              <img
-                src={getAssetUrl(hero.avatar_url)}
-                alt={hero.name}
-                className="summary-hero-avatar"
-              />
-            )}
-            <div className="summary-hero-meta">
-              <h2 className="summary-hero-name">{hero.name}</h2>
-              <p className="summary-hero-subtitle">
-                {hero.ancestry?.name} • {hero.class?.name} • {hero.background?.name}
-              </p>
+        <div className="summary-layout-grid">
+          {/* Left Column: Character Profile */}
+          <div className="summary-left-col">
+            <div className="summary-profile-card rim-light">
+              <div className="summary-profile-header">
+                <div className="summary-profile-title">
+                  <h2>{hero.name || 'Sem Nome'}</h2>
+                  <p className="summary-profile-class-slug">
+                    CLASSE: {hero.class?.name || 'Classe desconhecida'}
+                  </p>
+                </div>
+                <div className="summary-class-badge">
+                  <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>
+                    {classSlug === 'paladin' ? 'shield' : classSlug === 'wizard' ? 'auto_fix_high' : classSlug === 'rogue' ? 'visibility_off' : 'swords'}
+                  </span>
+                </div>
+              </div>
+
+              <div className="summary-portrait-container">
+                {hero.avatar_url && (
+                  <img
+                    alt={`${hero.name} Portrait`}
+                    className="summary-portrait-img"
+                    src={getAssetUrl(hero.avatar_url)}
+                  />
+                )}
+              </div>
+
+              <div className="summary-attributes-progress">
+                {attributeKeys.map((key) => {
+                  const attrData = (hero as any).attributes?.[key];
+                  const val = typeof attrData === 'object' ? (attrData.final ?? attrData.value ?? 10) : (attrData || 10);
+                  const modifier = typeof attrData === 'object' ? (attrData.modifier ?? 0) : Math.floor((val - 10) / 2);
+                  const label = ATTRIBUTE_LABELS[key] || key.toUpperCase();
+                  const color = ATTRIBUTE_COLORS[key] || 'var(--color-primary)';
+                  const percentage = Math.min(100, Math.max(0, (val / 20) * 100));
+
+                  const modSign = modifier >= 0 ? `+${modifier}` : modifier;
+
+                  return (
+                    <div key={key} className="summary-attr-progress-row">
+                      <p className="summary-attr-progress-label">
+                        {label} <span className="summary-attr-mod-pill">({modSign})</span>
+                      </p>
+                      <div className="summary-attr-progress-bar-container">
+                        <div className="summary-attr-progress-bar-bg">
+                          <div
+                            className="summary-attr-progress-bar-fill"
+                            style={{ width: `${percentage}%`, backgroundColor: color }}
+                          />
+                        </div>
+                        <span className="summary-attr-progress-value" style={{ color }}>
+                          {val}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           </div>
 
-          <div className="summary-attributes-grid">
-            {attributeKeys.map((key) => {
-              const val = (hero.sheet?.attributes?.[key] as number) || 10;
-              const mod = getModifier(val);
-              return (
-                <div key={key} className="summary-attribute-box">
-                  <span className="summary-attr-label">{key.toUpperCase()}</span>
-                  <span className="summary-attr-val">{val}</span>
-                  <span className="summary-attr-mod">
-                    {mod >= 0 ? `+${mod}` : mod}
-                  </span>
+          {/* Right Column: Choices */}
+          <div className="summary-right-col">
+            {/* Equipment Selection */}
+            <div className="summary-section">
+              <div className="summary-section-header">
+                <div className="summary-section-title-wrapper">
+                  <span className="material-symbols-outlined">crossword</span>
+                  <h3 className="summary-section-title-text">Arsenal Inicial</h3>
                 </div>
-              );
-            })}
+              </div>
+
+              <div className="summary-kits-grid">
+                {kits.map((kit) => {
+                  const isSelected = selectedKit === kit.name;
+                  return (
+                    <div
+                      key={kit.name}
+                      className={`summary-kit-card-premium ${isSelected ? 'selected' : ''}`}
+                      onClick={() => setSelectedKit(kit.name)}
+                    >
+                      <div className="summary-kit-check-icon">
+                        <span className="material-symbols-outlined">check_circle</span>
+                      </div>
+                      
+                      <div className="summary-kit-card-premium-content">
+                        <div className="summary-kit-icon-box">
+                          <span className="material-symbols-outlined">
+                            {kit.icon || 'swords'}
+                          </span>
+                        </div>
+                        <div className="summary-kit-text-box">
+                          <h4>{kit.name}</h4>
+                          <p>{kit.description}</p>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Skills Selection */}
+            <div className="summary-section">
+              <div className="summary-section-header">
+                <div className="summary-section-title-wrapper">
+                  <span className="material-symbols-outlined">magic_button</span>
+                  <h3 className="summary-section-title-text">Habilidades Arcanas</h3>
+                </div>
+                <span className="summary-section-subtitle-badge">SELECIONE 2</span>
+              </div>
+
+              <div className="summary-abilities-grid-premium">
+                {abilities.map((ability) => {
+                  const isSelected = selectedAbilities.includes(ability.slug);
+                  return (
+                    <div
+                      key={ability.slug}
+                      className={`summary-ability-card-premium ${isSelected ? 'selected' : ''}`}
+                      onClick={() => handleAbilityToggle(ability.slug)}
+                    >
+                      <div className="summary-ability-image-box">
+                        <div className="summary-ability-image-box-overlay" />
+                        <span
+                          className="material-symbols-outlined"
+                          style={{ fontVariationSettings: isSelected ? "'FILL' 1" : "'FILL' 0" }}
+                        >
+                          {ability.icon || 'bolt'}
+                        </span>
+                      </div>
+                      <h5>{ability.name}</h5>
+                      <p>{ability.description}</p>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
           </div>
-        </div>
-
-        {/* 2. KITS SECTION */}
-        <div className="summary-section-title">Arsenal Inicial</div>
-        <div className="summary-kits-container">
-          {kits.map((kit) => {
-            const isSelected = selectedKit === kit.name;
-            return (
-              <div
-                key={kit.name}
-                className={`summary-kit-card aesthetics-glass-panel ${isSelected ? 'selected' : ''}`}
-                onClick={() => setSelectedKit(kit.name)}
-              >
-                <div className="summary-kit-header">
-                  <span className="summary-kit-name">{kit.name}</span>
-                  <span className="summary-kit-radio">{isSelected ? '✓' : ''}</span>
-                </div>
-                <p className="summary-kit-desc">{kit.description}</p>
-                <div className="summary-kit-items">
-                  {kit.items.map((i) => (
-                    <span key={i} className="summary-kit-item-tag">{i}</span>
-                  ))}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-
-        {/* 3. ABILITIES SECTION */}
-        <div className="summary-section-title">
-          Habilidades de Classe ({selectedAbilities.length} / 2)
-        </div>
-        <div className="summary-abilities-container">
-          {abilities.map((ability) => {
-            const isSelected = selectedAbilities.includes(ability.slug);
-            return (
-              <div
-                key={ability.slug}
-                className={`summary-ability-card aesthetics-glass-panel ${isSelected ? 'selected' : ''}`}
-                onClick={() => handleAbilityToggle(ability.slug)}
-              >
-                <div className="summary-ability-header">
-                  <span className="summary-ability-name">{ability.name}</span>
-                  <span className="summary-ability-badge">{ability.type.toUpperCase()}</span>
-                </div>
-                <p className="summary-ability-desc">{ability.description}</p>
-              </div>
-            );
-          })}
         </div>
       </div>
 
