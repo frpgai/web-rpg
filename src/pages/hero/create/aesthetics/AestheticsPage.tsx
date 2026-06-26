@@ -172,8 +172,18 @@ export default function AestheticsPage() {
     }
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (heroId) {
+      try {
+        const resolvedPreset = avatarList.find((p) => p.id === avatarId) || activePreset;
+        await heroApi.saveDraftAesthetics(heroId, {
+          name: name.trim(),
+          avatar_url: resolvedPreset?.url || '',
+          backstory: backstory.trim(),
+        });
+      } catch (err) {
+        console.error('Failed to save draft aesthetics:', err);
+      }
       setLocation(`/heroes/create/summary/${heroId}`);
     } else {
       setLocation('/heroes/create/summary');
