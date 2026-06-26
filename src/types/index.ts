@@ -132,6 +132,7 @@ export interface ClassAbility {
   icon: string;
   mana_cost: number;
   range: string;
+  image_url?: string;
 }
 
 export type HeroAbility = ClassAbility;

@@ -3,164 +3,11 @@ import { useLocation, useParams } from 'wouter';
 import { CreationStepHeader } from '../../../../components/hero-creation/CreationStepHeader';
 import { CreationFooter } from '../../../../components/hero-creation/CreationFooter';
 import { heroApi } from '../../../../api/services/hero';
+import { catalogApi } from '../../../../api/services/catalog';
 import { getAssetUrl } from '../../../../utils/url';
-import type { HeroDetail, HeroAttributes } from '../../../../types';
+import type { HeroDetail, HeroAttributes, ClassKit, ClassAbility } from '../../../../types';
 import './SummaryPage.css';
 
-interface KitItem {
-  name: string;
-  description: string;
-  items: string[];
-  icon: string;
-}
-
-// Aligned with class-specific choices shown in Stitch design
-const CLASS_KITS: Record<string, KitItem[]> = {
-  paladin: [
-    {
-      name: 'Baluarte Argênteo',
-      description: 'Espada Curta & Escudo Torre. Foco em defesa impenetrável.',
-      items: ['Espada Curta', 'Escudo Torre', 'Baluarte'],
-      icon: 'shield',
-    },
-    {
-      name: 'Destruidora de Sóis',
-      description: 'Montante de Obsidiana. Foco em dano devastador em área.',
-      items: ['Montante de Obsidiana', 'Armadura Pesada'],
-      icon: 'swords',
-    },
-  ],
-  fighter: [
-    {
-      name: 'Baluarte Argênteo',
-      description: 'Espada Curta & Escudo Torre. Foco em defesa impenetrável.',
-      items: ['Espada Curta', 'Escudo Torre', 'Baluarte'],
-      icon: 'shield',
-    },
-    {
-      name: 'Destruidora de Sóis',
-      description: 'Montante de Obsidiana. Foco em dano devastador em área.',
-      items: ['Montante de Obsidiana', 'Armadura Pesada'],
-      icon: 'swords',
-    },
-  ],
-  wizard: [
-    {
-      name: 'Tomo Arcano',
-      description: 'Estudo acadêmico de magia e conjurações complexas.',
-      items: ['Cajado Rúnico', 'Livro de Magias', 'Componentes Arcanos'],
-      icon: 'menu_book',
-    },
-  ],
-  rogue: [
-    {
-      name: 'Sombra Silenciosa',
-      description: 'Furtividade máxima e infiltração de precisão.',
-      items: ['Espada Curta', 'Adaga (x2)', 'Ferramentas de Ladrão'],
-      icon: 'visibility_off',
-    },
-  ],
-};
-
-interface AbilityItem {
-  slug: string;
-  name: string;
-  type: 'action' | 'passive';
-  description: string;
-  manaCost: number;
-  icon: string;
-}
-
-const CLASS_ABILITIES: Record<string, AbilityItem[]> = {
-  paladin: [
-    {
-      slug: 'aura-de-julgamento',
-      name: 'Aura de Julgamento',
-      type: 'action',
-      description: 'Queima inimigos próximos com dano sagrado constante.',
-      manaCost: 0,
-      icon: 'flare',
-    },
-    {
-      slug: 'estalo-penumbral',
-      name: 'Estalo Penumbral',
-      type: 'action',
-      description: 'Teleporte curto que deixa uma explosão de sombra.',
-      manaCost: 0,
-      icon: 'bolt',
-    },
-    {
-      slug: 'dadiva-de-aethel',
-      name: 'Dádiva de Aethel',
-      type: 'action',
-      description: 'Cura aliados e remove efeitos de debilitação.',
-      manaCost: 0,
-      icon: 'healing',
-    },
-  ],
-  fighter: [
-    {
-      slug: 'second-wind',
-      name: 'Retomar o Fôlego',
-      type: 'action',
-      description: 'Uma vez por combate, recupere vigor rapidamente.',
-      manaCost: 0,
-      icon: 'air',
-    },
-    {
-      slug: 'fighting-style',
-      name: 'Estilo de Combate',
-      type: 'passive',
-      description: 'Sua maestria concede bônus permanentes de ataque.',
-      manaCost: 0,
-      icon: 'shield',
-    },
-    {
-      slug: 'action-surge',
-      name: 'Surto de Ação',
-      type: 'action',
-      description: 'Force seus limites físicos para agir mais uma vez no seu turno.',
-      manaCost: 0,
-      icon: 'bolt',
-    },
-  ],
-  wizard: [
-    {
-      slug: 'arcane-recovery',
-      name: 'Recuperação Arcana',
-      type: 'action',
-      description: 'Medite para recuperar parte dos seus slots de magia gastos.',
-      manaCost: 0,
-      icon: 'auto_fix_high',
-    },
-    {
-      slug: 'ritual-casting',
-      name: 'Conjuração de Ritual',
-      type: 'passive',
-      description: 'Conjure magias de ritual sem gastar slots.',
-      manaCost: 0,
-      icon: 'menu_book',
-    },
-  ],
-  rogue: [
-    {
-      slug: 'sneak-attack',
-      name: 'Ataque Furtivo',
-      type: 'passive',
-      description: 'Cause dano extra ao atingir alvos desprevenidos.',
-      manaCost: 0,
-      icon: 'visibility_off',
-    },
-    {
-      slug: 'expertise',
-      name: 'Especialização',
-      type: 'passive',
-      description: 'Dobre sua proficiência em perícias cruciais.',
-      manaCost: 0,
-      icon: 'military_tech',
-    },
-  ],
-};
 
 const ATTRIBUTE_LABELS: Record<string, string> = {
   str: 'Força',
@@ -190,6 +37,8 @@ export default function SummaryPage() {
   const [submitting, setSubmitting] = useState(false);
   const [selectedKit, setSelectedKit] = useState<string>('');
   const [selectedAbilities, setSelectedAbilities] = useState<string[]>([]);
+  const [kits, setKits] = useState<ClassKit[]>([]);
+  const [abilities, setAbilities] = useState<ClassAbility[]>([]);
 
   useEffect(() => {
     if (!heroId) {
@@ -197,14 +46,21 @@ export default function SummaryPage() {
       return;
     }
 
-    async function fetchHero() {
+    async function fetchAll() {
       try {
         const data = await heroApi.get(heroId!);
         setHero(data);
-        const classSlug = data.class?.slug || 'fighter';
-        const kits = CLASS_KITS[classSlug] || CLASS_KITS.fighter;
-        if (kits.length > 0) {
-          setSelectedKit(kits[0].name);
+        const classId = data.class?.id;
+        if (classId) {
+          const [fetchedKits, fetchedAbilities] = await Promise.all([
+            catalogApi.vocationStartingKits(classId),
+            catalogApi.vocationAbilities(classId),
+          ]);
+          setKits(fetchedKits);
+          setAbilities(fetchedAbilities);
+          if (fetchedKits.length > 0) {
+            setSelectedKit(fetchedKits[0].slug);
+          }
         }
       } catch (err) {
         console.error('Failed to load hero for summary:', err);
@@ -214,7 +70,7 @@ export default function SummaryPage() {
       }
     }
 
-    fetchHero();
+    fetchAll();
   }, [heroId, setLocation]);
 
   if (loading) {
@@ -224,8 +80,6 @@ export default function SummaryPage() {
   if (!hero) return null;
 
   const classSlug = hero.class?.slug || 'fighter';
-  const kits = CLASS_KITS[classSlug] || CLASS_KITS.fighter;
-  const abilities = CLASS_ABILITIES[classSlug] || CLASS_ABILITIES.fighter;
 
   const handleAbilityToggle = (slug: string) => {
     if (selectedAbilities.includes(slug)) {
@@ -370,12 +224,12 @@ export default function SummaryPage() {
 
               <div className="summary-kits-grid">
                 {kits.map((kit) => {
-                  const isSelected = selectedKit === kit.name;
+                  const isSelected = selectedKit === kit.slug;
                   return (
                     <div
-                      key={kit.name}
+                      key={kit.slug}
                       className={`summary-kit-card-premium ${isSelected ? 'selected' : ''}`}
-                      onClick={() => setSelectedKit(kit.name)}
+                      onClick={() => setSelectedKit(kit.slug)}
                     >
                       <div className="summary-kit-check-icon">
                         <span className="material-symbols-outlined">check_circle</span>
@@ -419,12 +273,20 @@ export default function SummaryPage() {
                     >
                       <div className="summary-ability-image-box">
                         <div className="summary-ability-image-box-overlay" />
-                        <span
-                          className="material-symbols-outlined"
-                          style={{ fontVariationSettings: isSelected ? "'FILL' 1" : "'FILL' 0" }}
-                        >
-                          {ability.icon || 'bolt'}
-                        </span>
+                        {ability.image_url ? (
+                          <img
+                            src={getAssetUrl(ability.image_url)}
+                            alt={ability.name}
+                            className="summary-ability-image"
+                          />
+                        ) : (
+                          <span
+                            className="material-symbols-outlined"
+                            style={{ fontVariationSettings: isSelected ? "'FILL' 1" : "'FILL' 0" }}
+                          >
+                            {ability.icon || 'bolt'}
+                          </span>
+                        )}
                       </div>
                       <h5>{ability.name}</h5>
                       <p>{ability.description}</p>

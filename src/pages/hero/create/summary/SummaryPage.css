@@ -26,7 +26,7 @@
   flex: 1;
   overflow-y: auto;
   padding: var(--space-lg) var(--space-lg) 100px var(--space-lg);
-  max-width: var(--container-max, 1200px);
+  max-width: 480px;
   margin: 0 auto;
   width: 100%;
 }
@@ -438,6 +438,17 @@
 
 .summary-ability-card-premium.selected .summary-ability-image-box .material-symbols-outlined {
   color: var(--color-tertiary);
+}
+
+.summary-ability-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.summary-ability-card-premium:hover .summary-ability-image {
+  transform: scale(1.05);
 }
 
 .summary-ability-card-premium h5 {
