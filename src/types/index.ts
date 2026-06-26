@@ -162,12 +162,24 @@ export interface ClassAbility {
   image_url?: string;
 }
 
-export type HeroAbility = ClassAbility;
+export interface HeroAbility {
+  id: string;
+  slug: string;
+  name: string;
+  type: 'action' | 'bonus_action' | 'reaction' | 'passive';
+  description: string;
+  mana_cost: number;
+  image_url: string;
+}
 
 export interface InventoryItem {
+  id: string;
+  item_id: string;
   name: string;
   rarity: 'common' | 'uncommon' | 'rare' | 'very_rare' | 'legendary';
   weight_kg: number;
+  quantity: number;
+  equipped: boolean;
 }
 
 export interface CharacterClass {
@@ -224,27 +236,31 @@ export interface HeroSheet {
 export interface HeroDetail {
   id: string;
   name: string;
-  ancestry: {
-    id: string;
-    slug: string;
-    name: string;
-    eligible_attributes: string[];
-    traits: Array<{ id: string; slug: string; name: string; description: string }>;
-  } | null;
+  ancestry: { id: string; slug: string; name: string } | null;
   class: { id: string; slug: string; name: string } | null;
-  background: {
-    id: string;
-    slug: string;
-    name: string;
-    eligible_attributes: string[];
-    attribute_bonuses: number[];
-  } | null;
+  background: { id: string; slug: string; name: string } | null;
   level: number;
   xp: number;
   xp_next_level: number;
   avatar_url: string | null;
   backstory: string | null;
-  sheet: HeroSheet;
+  hp_current: number;
+  hp_max: number;
+  mp_current: number;
+  mp_max: number;
+  def: number;
+  attributes: {
+    [key: string]: {
+      base: number;
+      bonus: number;
+      final: number;
+      modifier: number;
+    };
+  } | null;
+  traits: string[];
+  skills: string[];
+  abilities: HeroAbility[];
+  inventory: InventoryItem[];
   active_session: { id: string; name: string } | null;
 }
 

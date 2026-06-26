@@ -78,7 +78,7 @@ export default function AestheticsPage() {
         setLocation('/hero/create/origins');
         return;
       }
-      const attrs = hero.sheet?.base_attributes ?? hero.sheet?.attributes;
+      const attrs = (hero as any).sheet?.base_attributes ?? (hero as any).sheet?.attributes ?? hero.attributes;
       if (!attrs) {
         setLocation(`/heroes/create/attributes/${heroId}`);
       }

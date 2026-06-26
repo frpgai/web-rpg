@@ -1,0 +1,634 @@
+/* =============================================================================
+   HeroDetailPage — pixel-perfect via Stitch screen 957f2ff25b4d44119d4d85876aed08a5
+   ============================================================================= */
+
+.hero-detail-root {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+}
+
+.hero-detail-scroll {
+  flex: 1;
+  max-width: 480px;
+  margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
+  padding: var(--space-lg) var(--space-md) var(--space-xl) var(--space-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+/* ── Header ──────────────────────────────────────────────────────────────── */
+
+.hero-detail-header {
+  display: flex;
+  gap: var(--space-md);
+  align-items: flex-start;
+}
+
+.hero-detail-avatar-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.hero-detail-avatar {
+  width: 96px;
+  height: 128px;
+  object-fit: cover;
+  border-radius: var(--radius-lg);
+  border: 2px solid rgba(215, 186, 255, 0.2);
+  display: block;
+}
+
+.hero-detail-avatar-placeholder {
+  width: 96px;
+  height: 128px;
+  border-radius: var(--radius-lg);
+  background-color: var(--color-surface-container);
+  border: 2px solid rgba(215, 186, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hero-detail-avatar-placeholder .material-symbols-outlined {
+  font-size: 40px;
+  color: var(--color-outline);
+}
+
+.hero-detail-level-badge {
+  position: absolute;
+  bottom: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--color-primary-container);
+  color: var(--color-on-primary);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  white-space: nowrap;
+}
+
+.hero-detail-identity {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  padding-top: var(--space-xs);
+}
+
+.hero-detail-name {
+  font-family: var(--font-display);
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 1.1;
+  margin: 0;
+  color: var(--color-text);
+}
+
+.hero-detail-class {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-secondary);
+  margin: 0;
+}
+
+.hero-detail-ancestry {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  margin: 0;
+}
+
+.hero-detail-session-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  background: rgba(215, 186, 255, 0.08);
+  border: 1px solid rgba(215, 186, 255, 0.2);
+  border-radius: var(--radius-full);
+  padding: 4px 10px;
+  font-size: 11px;
+  color: var(--color-primary);
+  margin-top: var(--space-xs);
+}
+
+.hero-detail-session-chip .material-symbols-outlined {
+  font-size: 14px;
+}
+
+/* ── Status Bars ─────────────────────────────────────────────────────────── */
+
+.hero-detail-status-bars {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  background: var(--color-surface-low);
+  border-radius: var(--radius-lg);
+  padding: var(--space-md);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.hero-detail-bar-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.hero-detail-bar-label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--color-text-muted);
+  min-width: 56px;
+}
+
+.hero-detail-bar-icon {
+  font-size: 14px;
+}
+
+.hero-detail-bar-icon--hp  { color: #ef5350; }
+.hero-detail-bar-icon--mp  { color: #42a5f5; }
+.hero-detail-bar-icon--xp  { color: var(--color-secondary); }
+
+.hero-detail-bar-track {
+  flex: 1;
+  height: 6px;
+  background: var(--color-surface-highest);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.hero-detail-bar-fill {
+  height: 100%;
+  border-radius: var(--radius-full);
+  transition: width 0.8s ease-out;
+}
+
+.hero-detail-bar-fill--hp  { background-color: #ef5350; }
+.hero-detail-bar-fill--mp  { background-color: #42a5f5; }
+.hero-detail-bar-fill--xp  { background-color: var(--color-secondary); }
+
+.hero-detail-bar-value {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--color-text-muted);
+  min-width: 52px;
+  text-align: right;
+}
+
+/* ── Attribute Grid ──────────────────────────────────────────────────────── */
+
+.hero-detail-attr-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-sm);
+}
+
+.hero-detail-attr-card {
+  background: var(--color-surface-container);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-md);
+  padding: var(--space-sm) var(--space-xs);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  text-align: center;
+}
+
+.hero-detail-attr-abbr {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+}
+
+.hero-detail-attr-val {
+  font-family: var(--font-sans);
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--color-text);
+}
+
+.hero-detail-attr-mod {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+/* ── Sections ────────────────────────────────────────────────────────────── */
+
+.hero-detail-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.hero-detail-section-title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0;
+  color: var(--color-text);
+  border-bottom: 1px solid var(--color-outline-variant);
+  padding-bottom: var(--space-xs);
+}
+
+.hero-detail-section-title .material-symbols-outlined {
+  font-size: 20px;
+  color: var(--color-primary);
+}
+
+/* ── Skills ──────────────────────────────────────────────────────────────── */
+
+.hero-detail-skills-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.hero-detail-skill-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: 6px var(--space-sm);
+  border-radius: var(--radius-sm);
+  transition: background 0.15s ease;
+}
+
+.hero-detail-skill-row--proficient {
+  background: rgba(215, 186, 255, 0.04);
+}
+
+.hero-detail-skill-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+  background: var(--color-outline-variant);
+  flex-shrink: 0;
+}
+
+.hero-detail-skill-dot--proficient {
+  background: var(--color-primary);
+}
+
+.hero-detail-skill-name {
+  flex: 1;
+  font-size: 13px;
+  color: var(--color-text-muted);
+}
+
+.hero-detail-skill-row--proficient .hero-detail-skill-name {
+  color: var(--color-text);
+  font-weight: 500;
+}
+
+.hero-detail-skill-attr {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--color-outline);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  min-width: 28px;
+  text-align: right;
+}
+
+.hero-detail-skill-mod {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-text-muted);
+  min-width: 28px;
+  text-align: right;
+}
+
+.hero-detail-skill-row--proficient .hero-detail-skill-mod {
+  color: var(--color-primary);
+}
+
+/* ── Inventory ───────────────────────────────────────────────────────────── */
+
+.hero-detail-inventory-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.hero-detail-inventory-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-sm) var(--space-md);
+  background: var(--color-surface-container);
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.hero-detail-inventory-name {
+  flex: 1;
+  font-size: 13px;
+  color: var(--color-text);
+  font-weight: 500;
+}
+
+.hero-detail-inventory-qty {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--color-text-muted);
+}
+
+.hero-detail-inventory-rarity {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+}
+
+.hero-detail-inventory-rarity--common    { background: rgba(255,255,255,0.08); color: var(--color-text-muted); }
+.hero-detail-inventory-rarity--uncommon  { background: rgba(49,227,104,0.12);  color: var(--color-tertiary); }
+.hero-detail-inventory-rarity--rare      { background: rgba(66,165,245,0.14);  color: #42a5f5; }
+.hero-detail-inventory-rarity--very_rare { background: rgba(215,186,255,0.14); color: var(--color-primary); }
+.hero-detail-inventory-rarity--legendary { background: rgba(255,184,108,0.14); color: var(--color-secondary); }
+
+.hero-detail-inventory-weight {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--color-outline);
+}
+
+.hero-detail-inventory-equipped {
+  font-size: 16px;
+  color: var(--color-tertiary);
+}
+
+/* ── Tabs ────────────────────────────────────────────────────────────────── */
+
+.hero-detail-tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid var(--color-outline-variant);
+}
+
+.hero-detail-tab-btn {
+  flex: 1;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  padding: var(--space-sm) var(--space-xs);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-outline);
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease;
+  margin-bottom: -1px;
+}
+
+.hero-detail-tab-btn:hover {
+  color: var(--color-text-muted);
+}
+
+.hero-detail-tab-btn--active {
+  color: var(--color-primary);
+  border-bottom-color: var(--color-primary);
+}
+
+/* ── Abilities Grid ──────────────────────────────────────────────────────── */
+
+.hero-detail-abilities-grid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.hero-detail-ability-card {
+  display: flex;
+  gap: var(--space-md);
+  background: var(--color-surface-container);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.hero-detail-ability-img-box {
+  width: 80px;
+  min-width: 80px;
+  background: var(--color-surface-high);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hero-detail-ability-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.hero-detail-ability-icon {
+  font-size: 32px;
+  color: var(--color-text-muted);
+}
+
+.hero-detail-ability-body {
+  flex: 1;
+  padding: var(--space-sm) var(--space-sm) var(--space-sm) 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.hero-detail-ability-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.hero-detail-ability-type {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+}
+
+.hero-detail-ability-type--action,
+.hero-detail-ability-type--bonus_action,
+.hero-detail-ability-type--reaction {
+  background: rgba(215, 186, 255, 0.12);
+  color: var(--color-primary);
+  border: 1px solid rgba(215, 186, 255, 0.2);
+}
+
+.hero-detail-ability-type--passive {
+  background: rgba(255, 184, 108, 0.12);
+  color: var(--color-secondary);
+  border: 1px solid rgba(255, 184, 108, 0.2);
+}
+
+.hero-detail-ability-mana {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: #42a5f5;
+}
+
+.hero-detail-ability-mana .material-symbols-outlined {
+  font-size: 12px;
+}
+
+.hero-detail-ability-name {
+  font-size: 14px;
+  font-weight: 700;
+  margin: 0;
+  color: var(--color-text);
+}
+
+.hero-detail-ability-desc {
+  font-size: 11px;
+  color: var(--color-text-muted);
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* ── Backstory / Notes ───────────────────────────────────────────────────── */
+
+.hero-detail-backstory {
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--color-text-muted);
+  padding: var(--space-sm) 0;
+}
+
+/* ── Empty state ─────────────────────────────────────────────────────────── */
+
+.hero-detail-empty-text {
+  font-size: 13px;
+  color: var(--color-outline);
+  text-align: center;
+  padding: var(--space-lg);
+}
+
+/* ── Error page ──────────────────────────────────────────────────────────── */
+
+.hero-detail-error-page {
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-md);
+  padding: var(--space-xl);
+  text-align: center;
+}
+
+.hero-detail-error-icon {
+  font-size: 56px;
+  color: var(--color-outline);
+}
+
+.hero-detail-error-title {
+  font-size: 16px;
+  color: var(--color-text-muted);
+  margin: 0;
+}
+
+.hero-detail-error-btn {
+  background: rgba(215, 186, 255, 0.1);
+  border: 1px solid rgba(215, 186, 255, 0.25);
+  border-radius: var(--radius-full);
+  color: var(--color-primary);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  padding: var(--space-sm) var(--space-lg);
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.hero-detail-error-btn:hover {
+  background: rgba(215, 186, 255, 0.18);
+}
+
+/* ── Loading skeleton ────────────────────────────────────────────────────── */
+
+@keyframes hero-detail-shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position:  200% 0; }
+}
+
+.hero-detail-skeleton-header,
+.hero-detail-skeleton-bar,
+.hero-detail-skeleton-card {
+  background: linear-gradient(
+    90deg,
+    var(--color-surface-low) 25%,
+    var(--color-surface-high) 50%,
+    var(--color-surface-low) 75%
+  );
+  background-size: 200% 100%;
+  animation: hero-detail-shimmer 1.5s infinite;
+  border-radius: var(--radius-md);
+}
+
+.hero-detail-skeleton-header {
+  height: 128px;
+  border-radius: var(--radius-lg);
+}
+
+.hero-detail-skeleton-bars {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  padding: var(--space-md);
+  background: var(--color-surface-low);
+  border-radius: var(--radius-lg);
+}
+
+.hero-detail-skeleton-bar {
+  height: 6px;
+}
+
+.hero-detail-skeleton-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-sm);
+}
+
+.hero-detail-skeleton-card {
+  height: 80px;
+}

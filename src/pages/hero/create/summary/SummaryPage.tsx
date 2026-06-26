@@ -8,7 +8,6 @@ import { getAssetUrl } from '../../../../utils/url';
 import { useHeroCreationStore } from '../../../../stores/heroCreationStore';
 import type {
   HeroDetail,
-  HeroAttributes,
   ClassKit,
   ClassAbility,
   BackgroundSkill,
@@ -222,7 +221,7 @@ export default function SummaryPage() {
 
   if (!hero) return null;
 
-  const attributeKeys: Array<keyof HeroAttributes> = ['str', 'dex', 'con', 'int', 'wis', 'cha'];
+  const attributeKeys = ['str', 'dex', 'con', 'int', 'wis', 'cha'] as const;
 
   return (
     <div className="summary-page-root">
@@ -273,13 +272,9 @@ export default function SummaryPage() {
 
               <div className="summary-attributes-grid">
                 {attributeKeys.map((key) => {
-                  const attrData = (hero as unknown as Record<string, unknown>)?.attributes?.[key] as number | { value?: number; final?: number; modifier?: number } | undefined;
-                  const val = typeof attrData === 'object' && attrData !== null
-                    ? ((attrData as { final?: number; value?: number }).final ?? (attrData as { value?: number }).value ?? 10)
-                    : (typeof attrData === 'number' ? attrData : 10);
-                  const modifier = typeof attrData === 'object' && attrData !== null
-                    ? ((attrData as { modifier?: number }).modifier ?? Math.floor((val - 10) / 2))
-                    : Math.floor((val - 10) / 2);
+                  const attrData = hero.attributes?.[key];
+                  const val = attrData?.final ?? 10;
+                  const modifier = attrData?.modifier ?? Math.floor((val - 10) / 2);
                   const label = ATTRIBUTE_LABELS[key] ?? key.toUpperCase();
                   const color = ATTRIBUTE_COLORS[key] ?? 'var(--color-primary)';
                   const pct = Math.min(100, Math.max(0, (val / 20) * 100));

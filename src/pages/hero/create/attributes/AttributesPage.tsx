@@ -92,9 +92,9 @@ export default function AttributesPage() {
 
     // Check if we have top-level attributes (from backend Go model)
     const backendAttrs = (hero as any).attributes;
-    // Check if we have sheet-level attributes (fallback)
-    const baseAttrs = hero.sheet?.base_attributes;
-    const bonuses = hero.sheet?.bonuses;
+    // Check if we have sheet-level attributes (fallback, legacy)
+    const baseAttrs = (hero as any).sheet?.base_attributes;
+    const bonuses = (hero as any).sheet?.bonuses;
 
     if (backendAttrs) {
       setAttrs({
