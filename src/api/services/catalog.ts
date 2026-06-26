@@ -1,5 +1,5 @@
 import { apiClient } from '../client';
-import type { Ancestry, AncestryDetails, Background, BackgroundDetails, CharacterClass, AvatarPreset, Vocation, VocationDetails, ClassKit, ClassAbility } from '../../types';
+import type { Ancestry, AncestryDetails, Background, BackgroundDetails, CharacterClass, AvatarPreset, Vocation, VocationDetails, ClassKit, ClassAbility, BackgroundSkill, VocationSkills } from '../../types';
 
 export const catalogApi = {
   ancestries: () => apiClient.get('api/v1/ancestries').json<Ancestry[]>(),
@@ -23,4 +23,8 @@ export const catalogApi = {
     apiClient.get(`api/v1/vocations/${vocationId}/starting-kits`).json<ClassKit[]>(),
   vocationAbilities: (vocationId: string) =>
     apiClient.get(`api/v1/vocations/${vocationId}/abilities`).json<ClassAbility[]>(),
+  vocationSkills: (vocationId: string) =>
+    apiClient.get(`api/v1/vocations/${vocationId}/skills`).json<VocationSkills>(),
+  backgroundSkills: (backgroundId: string) =>
+    apiClient.get(`api/v1/backgrounds/${backgroundId}/skills`).json<BackgroundSkill[]>(),
 };

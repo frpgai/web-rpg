@@ -1,13 +1,20 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useLocation, useParams } from 'wouter';
 import { CreationStepHeader } from '../../../../components/hero-creation/CreationStepHeader';
 import { CreationFooter } from '../../../../components/hero-creation/CreationFooter';
 import { heroApi } from '../../../../api/services/hero';
 import { catalogApi } from '../../../../api/services/catalog';
 import { getAssetUrl } from '../../../../utils/url';
-import type { HeroDetail, HeroAttributes, ClassKit, ClassAbility } from '../../../../types';
+import { useHeroCreationStore } from '../../../../stores/heroCreationStore';
+import type {
+  HeroDetail,
+  HeroAttributes,
+  ClassKit,
+  ClassAbility,
+  BackgroundSkill,
+  VocationSkills,
+} from '../../../../types';
 import './SummaryPage.css';
-
 
 const ATTRIBUTE_LABELS: Record<string, string> = {
   str: 'Força',
@@ -27,22 +34,53 @@ const ATTRIBUTE_COLORS: Record<string, string> = {
   cha: 'var(--color-primary)',
 };
 
+const ABILITY_TYPE_LABEL: Record<string, string> = {
+  action: 'Ação',
+  bonus_action: 'Ação Bônus',
+  reaction: 'Reação',
+  passive: 'Passiva',
+};
+
+const ABILITY_TYPE_TOOLTIP: Record<string, string> = {
+  action: 'O personagem usa sua ação principal no turno para ativar esta habilidade',
+  passive: 'Efeito sempre ativo — não precisa ser ativado; funciona automaticamente nas condições descritas',
+  bonus_action: 'Usa a ação bônus do turno para ativar esta habilidade',
+  reaction: 'Ativada como reação a um gatilho específico',
+};
+
+const RARITY_LABELS: Record<string, string> = {
+  common: 'Comum',
+  uncommon: 'Incomum',
+  rare: 'Raro',
+  very_rare: 'Muito Raro',
+  legendary: 'Lendário',
+};
+
 export default function SummaryPage() {
   const [, setLocation] = useLocation();
   const params = useParams<{ id?: string }>();
   const heroId = params?.id ?? null;
 
+  const store = useHeroCreationStore();
+
   const [hero, setHero] = useState<HeroDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [selectedKit, setSelectedKit] = useState<string>('');
-  const [selectedAbilities, setSelectedAbilities] = useState<string[]>([]);
+  const [error, setError] = useState<string | null>(null);
+
   const [kits, setKits] = useState<ClassKit[]>([]);
   const [abilities, setAbilities] = useState<ClassAbility[]>([]);
+  const [backgroundSkills, setBackgroundSkills] = useState<BackgroundSkill[]>([]);
+  const [vocationSkills, setVocationSkills] = useState<VocationSkills | null>(null);
+
+  // Local state for selections (mirroring store)
+  const [selectedKitId, setSelectedKitId] = useState<string>(store.kitId);
+  const [selectedAbilityIds, setSelectedAbilityIds] = useState<string[]>(store.abilityIds);
+  const [selectedSkillIds, setSelectedSkillIds] = useState<string[]>([]);
 
   useEffect(() => {
     if (!heroId) {
-      setLocation('/heroes/create/origins');
+      setLocation('/hero/create/aesthetics');
       return;
     }
 
@@ -50,21 +88,42 @@ export default function SummaryPage() {
       try {
         const data = await heroApi.get(heroId!);
         setHero(data);
-        const classId = data.class?.id;
-        if (classId) {
-          const [fetchedKits, fetchedAbilities] = await Promise.all([
-            catalogApi.vocationStartingKits(classId),
-            catalogApi.vocationAbilities(classId),
-          ]);
+
+        const vocationId = data.class?.id;
+        const backgroundId = data.background?.id;
+
+        const promises: Promise<unknown>[] = [];
+        if (vocationId) {
+          promises.push(
+            catalogApi.vocationStartingKits(vocationId),
+            catalogApi.vocationAbilities(vocationId),
+            catalogApi.vocationSkills(vocationId),
+          );
+        }
+        if (backgroundId) {
+          promises.push(catalogApi.backgroundSkills(backgroundId));
+        }
+
+        const results = await Promise.all(promises);
+
+        let resultIdx = 0;
+        if (vocationId) {
+          const fetchedKits = results[resultIdx++] as ClassKit[];
+          const fetchedAbilities = results[resultIdx++] as ClassAbility[];
+          const fetchedVocationSkills = results[resultIdx++] as VocationSkills;
           setKits(fetchedKits);
           setAbilities(fetchedAbilities);
-          if (fetchedKits.length > 0) {
-            setSelectedKit(fetchedKits[0].slug);
-          }
+          setVocationSkills(fetchedVocationSkills);
+        }
+        if (backgroundId) {
+          const fetchedBgSkills = results[resultIdx++] as BackgroundSkill[];
+          setBackgroundSkills(fetchedBgSkills);
+          // Pre-set background skill ids in selected (they are locked)
+          setSelectedSkillIds(fetchedBgSkills.map((s) => s.id));
         }
       } catch (err) {
         console.error('Failed to load hero for summary:', err);
-        setLocation('/heroes/create/origins');
+        setLocation('/hero/create/aesthetics');
       } finally {
         setLoading(false);
       }
@@ -73,75 +132,102 @@ export default function SummaryPage() {
     fetchAll();
   }, [heroId, setLocation]);
 
-  if (loading) {
-    return <div className="summary-loading">Carregando resumo do destino...</div>;
-  }
+  const handleKitSelect = useCallback((kit: ClassKit) => {
+    if (submitting) return;
+    setSelectedKitId(kit.id);
+    store.setKit(kit.id, kit.slug);
+  }, [submitting, store]);
 
-  if (!hero) return null;
-
-  const classSlug = hero.class?.slug || 'fighter';
-
-  const handleAbilityToggle = (slug: string) => {
-    if (selectedAbilities.includes(slug)) {
-      setSelectedAbilities(selectedAbilities.filter((s) => s !== slug));
+  const handleAbilityToggle = useCallback((ability: ClassAbility) => {
+    if (submitting) return;
+    if (selectedAbilityIds.includes(ability.id)) {
+      const next = selectedAbilityIds.filter((id) => id !== ability.id);
+      setSelectedAbilityIds(next);
     } else {
-      if (selectedAbilities.length < 2) {
-        setSelectedAbilities([...selectedAbilities, slug]);
-      } else {
-        // Rotates the selection (removes the oldest one)
-        setSelectedAbilities([selectedAbilities[1], slug]);
-      }
+      if (selectedAbilityIds.length >= 2) return;
+      const next = [...selectedAbilityIds, ability.id];
+      setSelectedAbilityIds(next);
     }
-  };
+  }, [submitting, selectedAbilityIds]);
 
-  const canSubmit = !!selectedKit && selectedAbilities.length === 2 && !submitting;
+  const handleSkillToggle = useCallback((skill: BackgroundSkill) => {
+    if (submitting) return;
+    const isBackgroundSkill = backgroundSkills.some((s) => s.id === skill.id);
+    if (isBackgroundSkill) return;
+
+    const skillChoices = vocationSkills?.skill_choices ?? 0;
+    const classSkillIds = selectedSkillIds.filter(
+      (id) => !backgroundSkills.some((bs) => bs.id === id),
+    );
+
+    if (selectedSkillIds.includes(skill.id)) {
+      setSelectedSkillIds(selectedSkillIds.filter((id) => id !== skill.id));
+    } else {
+      if (classSkillIds.length >= skillChoices) return;
+      setSelectedSkillIds([...selectedSkillIds, skill.id]);
+    }
+  }, [submitting, backgroundSkills, selectedSkillIds, vocationSkills]);
+
+  const skillChoices = vocationSkills?.skill_choices ?? 0;
+  const classSkillIds = selectedSkillIds.filter(
+    (id) => !backgroundSkills.some((bs) => bs.id === id),
+  );
+
+  const canSubmit =
+    !!selectedKitId &&
+    selectedAbilityIds.length === 2 &&
+    classSkillIds.length === skillChoices &&
+    !submitting;
 
   const handleBack = () => {
-    setLocation(`/heroes/create/aesthetics/${heroId}`);
+    if (submitting) return;
+    setLocation(`/hero/create/aesthetics/${heroId}`);
   };
 
-  const attributeKeys: Array<keyof HeroAttributes> = ['str', 'dex', 'con', 'int', 'wis', 'cha'];
-
-  const handleNext = async () => {
-    if (!canSubmit) return;
+  const handleSubmit = async () => {
+    if (!canSubmit || !heroId) return;
     setSubmitting(true);
+    setError(null);
     try {
-      const baseAttributes: Record<string, number> = {};
-      
-      const rootAttrs = (hero as any).attributes;
-      if (rootAttrs) {
-        attributeKeys.forEach((key) => {
-          const attrData = rootAttrs[key];
-          baseAttributes[key] = typeof attrData === 'object' ? (attrData.value ?? attrData.final ?? 10) : (attrData || 10);
-        });
+      const result = await heroApi.completeDraft(heroId, {
+        starting_kit_id: selectedKitId,
+        vocation_ability_ids: selectedAbilityIds,
+        skill_ids: selectedSkillIds,
+      });
+      store.reset();
+      setLocation(`/hero/${result.id}`);
+    } catch (err: unknown) {
+      const httpErr = err as { response?: { status?: number; json?: () => Promise<{ field?: string; message?: string }> } };
+      if (httpErr?.response?.status === 422) {
+        try {
+          const body = await httpErr.response.json?.();
+          const msg = body?.message ?? 'Dados inválidos. Verifique suas escolhas.';
+          setError(msg);
+          const field = body?.field;
+          if (field === 'attributes') setLocation(`/hero/create/attributes/${heroId}`);
+        } catch {
+          setError('Dados inválidos. Verifique suas escolhas.');
+        }
+      } else {
+        setError('Erro de conexão. Verifique sua internet e tente novamente.');
       }
-
-      await heroApi.create({
-        name: hero.name,
-        ancestry_id: hero.ancestry?.id || '',
-        characterClass_id: hero.class?.id || '',
-        vocation_id: hero.class?.id || '',
-        attributes: baseAttributes as any,
-        avatar_url: hero.avatar_url || '',
-        backstory: hero.backstory || '',
-        kit_slug: selectedKit,
-        ability_slugs: selectedAbilities as [string, string],
-      } as any);
-
-      await heroApi.deleteDraft();
-      setLocation('/dashboard');
-    } catch (err) {
-      console.error('Failed to finalize hero creation:', err);
-      alert('Erro ao concluir criação do herói. Verifique seus atributos ou tente novamente.');
     } finally {
       setSubmitting(false);
     }
   };
 
+  if (loading) {
+    return <div className="summary-loading">Carregando revisão final...</div>;
+  }
+
+  if (!hero) return null;
+
+  const attributeKeys: Array<keyof HeroAttributes> = ['str', 'dex', 'con', 'int', 'wis', 'cha'];
+
   return (
     <div className="summary-page-root">
       <div className="summary-bg-cinematic" />
-      
+
       <div className="summary-page-scroll">
         <CreationStepHeader
           stepLabel="ETAPA 4: REVISÃO FINAL"
@@ -157,12 +243,20 @@ export default function SummaryPage() {
                 <div className="summary-profile-title">
                   <h2>{hero.name || 'Sem Nome'}</h2>
                   <p className="summary-profile-class-slug">
-                    CLASSE: {hero.class?.name || 'Classe desconhecida'}
+                    CLASSE: {hero.class?.name ?? 'Desconhecida'}
                   </p>
+                  {hero.ancestry && (
+                    <p className="summary-profile-ancestry-slug">
+                      RAÇA: {hero.ancestry.name}
+                    </p>
+                  )}
                 </div>
                 <div className="summary-class-badge">
-                  <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>
-                    {classSlug === 'paladin' ? 'shield' : classSlug === 'wizard' ? 'auto_fix_high' : classSlug === 'rogue' ? 'visibility_off' : 'swords'}
+                  <span
+                    className="material-symbols-outlined"
+                    style={{ fontVariationSettings: "'FILL' 1" }}
+                  >
+                    shield
                   </span>
                 </div>
               </div>
@@ -177,30 +271,33 @@ export default function SummaryPage() {
                 )}
               </div>
 
-              <div className="summary-attributes-progress">
+              <div className="summary-attributes-grid">
                 {attributeKeys.map((key) => {
-                  const attrData = (hero as any).attributes?.[key];
-                  const val = typeof attrData === 'object' ? (attrData.final ?? attrData.value ?? 10) : (attrData || 10);
-                  const modifier = typeof attrData === 'object' ? (attrData.modifier ?? 0) : Math.floor((val - 10) / 2);
-                  const label = ATTRIBUTE_LABELS[key] || key.toUpperCase();
-                  const color = ATTRIBUTE_COLORS[key] || 'var(--color-primary)';
-                  const percentage = Math.min(100, Math.max(0, (val / 20) * 100));
-
-                  const modSign = modifier >= 0 ? `+${modifier}` : modifier;
+                  const attrData = (hero as unknown as Record<string, unknown>)?.attributes?.[key] as number | { value?: number; final?: number; modifier?: number } | undefined;
+                  const val = typeof attrData === 'object' && attrData !== null
+                    ? ((attrData as { final?: number; value?: number }).final ?? (attrData as { value?: number }).value ?? 10)
+                    : (typeof attrData === 'number' ? attrData : 10);
+                  const modifier = typeof attrData === 'object' && attrData !== null
+                    ? ((attrData as { modifier?: number }).modifier ?? Math.floor((val - 10) / 2))
+                    : Math.floor((val - 10) / 2);
+                  const label = ATTRIBUTE_LABELS[key] ?? key.toUpperCase();
+                  const color = ATTRIBUTE_COLORS[key] ?? 'var(--color-primary)';
+                  const pct = Math.min(100, Math.max(0, (val / 20) * 100));
+                  const modSign = modifier >= 0 ? `+${modifier}` : String(modifier);
 
                   return (
-                    <div key={key} className="summary-attr-progress-row">
-                      <p className="summary-attr-progress-label">
-                        {label} <span className="summary-attr-mod-pill">({modSign})</span>
+                    <div key={key} className="summary-attr-row">
+                      <p className="summary-attr-label">
+                        {label} <span className="summary-attr-mod">({modSign})</span>
                       </p>
-                      <div className="summary-attr-progress-bar-container">
-                        <div className="summary-attr-progress-bar-bg">
+                      <div className="summary-attr-bar-wrap">
+                        <div className="summary-attr-bar-bg">
                           <div
-                            className="summary-attr-progress-bar-fill"
-                            style={{ width: `${percentage}%`, backgroundColor: color }}
+                            className="summary-attr-bar-fill"
+                            style={{ width: `${pct}%`, backgroundColor: color }}
                           />
                         </div>
-                        <span className="summary-attr-progress-value" style={{ color }}>
+                        <span className="summary-attr-value" style={{ color }}>
                           {val}
                         </span>
                       </div>
@@ -213,71 +310,99 @@ export default function SummaryPage() {
 
           {/* Right Column: Choices */}
           <div className="summary-right-col">
-            {/* Equipment Selection */}
-            <div className="summary-section">
+            {/* Arsenal Section */}
+            <section className="summary-section">
               <div className="summary-section-header">
-                <div className="summary-section-title-wrapper">
-                  <span className="material-symbols-outlined">crossword</span>
-                  <h3 className="summary-section-title-text">Arsenal Inicial</h3>
+                <div className="summary-section-title-wrap">
+                  <span className="material-symbols-outlined summary-section-icon summary-section-icon--primary">crossword</span>
+                  <h3 className="summary-section-title">Arsenal Inicial</h3>
                 </div>
               </div>
 
               <div className="summary-kits-grid">
                 {kits.map((kit) => {
-                  const isSelected = selectedKit === kit.slug;
+                  const isSelected = selectedKitId === kit.id;
                   return (
                     <div
-                      key={kit.slug}
-                      className={`summary-kit-card-premium ${isSelected ? 'selected' : ''}`}
-                      onClick={() => setSelectedKit(kit.slug)}
+                      key={kit.id}
+                      className={`summary-kit-card${isSelected ? ' summary-kit-card--selected' : ''}`}
+                      onClick={() => handleKitSelect(kit)}
+                      role="radio"
+                      aria-checked={isSelected}
+                      tabIndex={0}
+                      onKeyDown={(e) => e.key === 'Enter' && handleKitSelect(kit)}
                     >
-                      <div className="summary-kit-check-icon">
+                      <div className="summary-kit-check">
                         <span className="material-symbols-outlined">check_circle</span>
                       </div>
-                      
-                      <div className="summary-kit-card-premium-content">
-                        <div className="summary-kit-icon-box">
-                          <span className="material-symbols-outlined">
-                            {kit.icon || 'swords'}
-                          </span>
+                      <div className="summary-kit-body">
+                        <div className={`summary-kit-icon${isSelected ? ' summary-kit-icon--selected' : ''}`}>
+                          <span className="material-symbols-outlined">{kit.icon || 'swords'}</span>
                         </div>
-                        <div className="summary-kit-text-box">
-                          <h4>{kit.name}</h4>
-                          <p>{kit.description}</p>
+                        <div className="summary-kit-text">
+                          <h4 className="summary-kit-name">{kit.name}</h4>
+                          <p className="summary-kit-desc">{kit.description}</p>
+                          {kit.items && kit.items.length > 0 && (
+                            <ul className="summary-kit-items">
+                              {kit.items.map((item, idx) => (
+                                <li key={idx} className="summary-kit-item">
+                                  <span className="summary-kit-item-name">
+                                    {item.name}
+                                    {item.quantity > 1 && <span className="summary-kit-item-qty"> ×{item.quantity}</span>}
+                                  </span>
+                                  <span className="summary-kit-item-rarity">
+                                    {RARITY_LABELS[item.rarity] ?? item.rarity}
+                                  </span>
+                                  {item.equipped && (
+                                    <span className="summary-kit-item-equipped">Equipado</span>
+                                  )}
+                                </li>
+                              ))}
+                            </ul>
+                          )}
                         </div>
                       </div>
                     </div>
                   );
                 })}
               </div>
-            </div>
+            </section>
 
-            {/* Skills Selection */}
-            <div className="summary-section">
+            {/* Abilities Section */}
+            <section className="summary-section">
               <div className="summary-section-header">
-                <div className="summary-section-title-wrapper">
-                  <span className="material-symbols-outlined">magic_button</span>
-                  <h3 className="summary-section-title-text">Habilidades Arcanas</h3>
+                <div className="summary-section-title-wrap">
+                  <span className="material-symbols-outlined summary-section-icon summary-section-icon--tertiary">magic_button</span>
+                  <h3 className="summary-section-title">Habilidades Arcanas</h3>
                 </div>
-                <span className="summary-section-subtitle-badge">SELECIONE 2</span>
+                <span className="summary-section-badge">
+                  {selectedAbilityIds.length} / 2 habilidades
+                </span>
               </div>
 
-              <div className="summary-abilities-grid-premium">
+              <div className="summary-abilities-grid">
                 {abilities.map((ability) => {
-                  const isSelected = selectedAbilities.includes(ability.slug);
+                  const isSelected = selectedAbilityIds.includes(ability.id);
+                  const typeLabel = ABILITY_TYPE_LABEL[ability.type] ?? ability.type;
+                  const typeTooltip = ABILITY_TYPE_TOOLTIP[ability.type] ?? '';
+
                   return (
                     <div
-                      key={ability.slug}
-                      className={`summary-ability-card-premium ${isSelected ? 'selected' : ''}`}
-                      onClick={() => handleAbilityToggle(ability.slug)}
+                      key={ability.id}
+                      className={`summary-ability-card${isSelected ? ' summary-ability-card--selected' : ''}`}
+                      onClick={() => handleAbilityToggle(ability)}
+                      role="checkbox"
+                      aria-checked={isSelected}
+                      tabIndex={0}
+                      onKeyDown={(e) => e.key === 'Enter' && handleAbilityToggle(ability)}
                     >
-                      <div className="summary-ability-image-box">
-                        <div className="summary-ability-image-box-overlay" />
+                      <div className="summary-ability-img-box">
+                        <div className="summary-ability-img-overlay" />
                         {ability.image_url ? (
                           <img
                             src={getAssetUrl(ability.image_url)}
                             alt={ability.name}
-                            className="summary-ability-image"
+                            className="summary-ability-img"
                           />
                         ) : (
                           <span
@@ -288,22 +413,132 @@ export default function SummaryPage() {
                           </span>
                         )}
                       </div>
-                      <h5>{ability.name}</h5>
-                      <p>{ability.description}</p>
+
+                      <div className="summary-ability-meta">
+                        <span
+                          className={`summary-ability-type-badge summary-ability-type-badge--${ability.type}`}
+                          title={typeTooltip}
+                        >
+                          {typeLabel}
+                        </span>
+                        {isSelected && (
+                          <span className="material-symbols-outlined summary-ability-check">check_circle</span>
+                        )}
+                      </div>
+
+                      <h5 className="summary-ability-name">{ability.name}</h5>
+                      <p className="summary-ability-desc">{ability.description}</p>
+
+                      <div className="summary-ability-stats">
+                        <span className="summary-ability-stat">
+                          <span className="material-symbols-outlined summary-ability-stat-icon">water_drop</span>
+                          {ability.mana_cost > 0 ? `${ability.mana_cost} mana` : 'Sem custo'}
+                        </span>
+                        {ability.range && (
+                          <span className="summary-ability-stat">
+                            <span className="material-symbols-outlined summary-ability-stat-icon">radar</span>
+                            {ability.range}
+                          </span>
+                        )}
+                      </div>
                     </div>
                   );
                 })}
               </div>
-            </div>
+            </section>
+
+            {/* Skills Section */}
+            <section className="summary-section">
+              <div className="summary-section-header">
+                <div className="summary-section-title-wrap">
+                  <span className="material-symbols-outlined summary-section-icon summary-section-icon--secondary">history_edu</span>
+                  <h3 className="summary-section-title">Perícias do Herói</h3>
+                </div>
+                <span className="summary-section-badge">
+                  {classSkillIds.length} / {skillChoices} perícias de classe
+                </span>
+              </div>
+
+              {/* Background skills — locked */}
+              {backgroundSkills.length > 0 && (
+                <div className="summary-skills-group">
+                  <p className="summary-skills-group-label">Antecedente (fixas)</p>
+                  <div className="summary-skills-list">
+                    {backgroundSkills.map((skill) => (
+                      <div key={skill.id} className="summary-skill-chip summary-skill-chip--locked">
+                        <span className="material-symbols-outlined summary-skill-chip-check">check_circle</span>
+                        <span className="summary-skill-chip-name">{skill.name}</span>
+                        <span className="material-symbols-outlined summary-skill-chip-lock">lock</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Vocation eligible skills */}
+              {vocationSkills && vocationSkills.eligible_skills.length > 0 && (
+                <div className="summary-skills-group">
+                  <p className="summary-skills-group-label">
+                    Classe — escolha {skillChoices}
+                  </p>
+                  <div className="summary-skills-list">
+                    {vocationSkills.eligible_skills.map((skill) => {
+                      const isLockedByBg = backgroundSkills.some((bs) => bs.id === skill.id);
+                      const isSelected = selectedSkillIds.includes(skill.id);
+
+                      if (isLockedByBg) {
+                        return (
+                          <div key={skill.id} className="summary-skill-chip summary-skill-chip--locked">
+                            <span className="material-symbols-outlined summary-skill-chip-check">check_circle</span>
+                            <span className="summary-skill-chip-name">{skill.name}</span>
+                            <span className="material-symbols-outlined summary-skill-chip-lock">lock</span>
+                          </div>
+                        );
+                      }
+
+                      return (
+                        <div
+                          key={skill.id}
+                          className={`summary-skill-chip${isSelected ? ' summary-skill-chip--selected' : ''}`}
+                          onClick={() => handleSkillToggle(skill)}
+                          role="checkbox"
+                          aria-checked={isSelected}
+                          tabIndex={0}
+                          onKeyDown={(e) => e.key === 'Enter' && handleSkillToggle(skill)}
+                        >
+                          <span className="material-symbols-outlined summary-skill-chip-check">
+                            {isSelected ? 'check_circle' : 'radio_button_unchecked'}
+                          </span>
+                          <span className="summary-skill-chip-name">{skill.name}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </section>
           </div>
         </div>
+
+        {error && (
+          <div className="summary-error-toast">
+            <span className="material-symbols-outlined">error</span>
+            {error}
+            {error.includes('conexão') && (
+              <button className="summary-error-retry" onClick={handleSubmit} disabled={submitting}>
+                Tentar novamente
+              </button>
+            )}
+          </div>
+        )}
       </div>
 
       <CreationFooter
         onBack={handleBack}
-        onNext={handleNext}
+        onNext={handleSubmit}
         canNext={canSubmit}
-        nextLabel={submitting ? 'Salvando...' : 'Concluir Criação'}
+        nextLabel={submitting ? 'Concluindo...' : 'CONCLUIR CRIAÇÃO'}
+        backDisabled={submitting}
       />
     </div>
   );

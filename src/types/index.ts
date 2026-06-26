@@ -116,15 +116,42 @@ export interface VocationDetails extends Vocation {
   traits: Trait[];
 }
 
+export interface ClassKitItem {
+  name: string;
+  rarity: string;
+  weight_kg: number;
+  quantity: number;
+  equipped: boolean;
+}
+
 export interface ClassKit {
+  id: string;
   slug: string;
   name: string;
   description: string;
   icon: string;
-  items: { name: string; rarity: string; weight_kg: number }[];
+  items: ClassKitItem[];
+}
+
+export interface BackgroundSkill {
+  id: string;
+  slug: string;
+  name: string;
+}
+
+export interface VocationSkills {
+  skill_choices: number;
+  eligible_skills: BackgroundSkill[];
+}
+
+export interface CompleteHeroPayload {
+  starting_kit_id: string;
+  vocation_ability_ids: string[];
+  skill_ids: string[];
 }
 
 export interface ClassAbility {
+  id: string;
   slug: string;
   name: string;
   type: 'action' | 'bonus_action' | 'reaction' | 'passive';
