@@ -16,7 +16,10 @@ type HeroCreationState = {
   avatarUrl: string;
   // Step 4
   kitSlug: string;
+  kitId: string;
   abilitySlugs: string[];
+  abilityIds: string[];
+  skillIds: string[];
 
   // Actions
   reset: () => void;
@@ -27,8 +30,10 @@ type HeroCreationState = {
   setBackstory: (b: string) => void;
   setAvatarUrl: (url: string) => void;
   setAvatar: (id: string, url: string) => void;
-  setKit: (slug: string) => void;
-  toggleAbility: (slug: string) => void;
+  setKit: (id: string, slug: string) => void;
+  toggleAbility: (id: string, slug: string) => void;
+  toggleSkill: (id: string, limit: number) => void;
+  setBackgroundSkillIds: (ids: string[]) => void;
 };
 
 const defaultState = {
@@ -40,7 +45,10 @@ const defaultState = {
   avatarId: '',
   avatarUrl: '',
   kitSlug: '',
+  kitId: '',
   abilitySlugs: [] as string[],
+  abilityIds: [] as string[],
+  skillIds: [] as string[],
 };
 
 export const useHeroCreationStore = create<HeroCreationState>((set) => ({
@@ -62,15 +70,34 @@ export const useHeroCreationStore = create<HeroCreationState>((set) => ({
 
   setAvatar: (avatarId, avatarUrl) => set({ avatarId, avatarUrl }),
 
-  setKit: (kitSlug) => set({ kitSlug }),
+  setKit: (id, slug) => set({ kitId: id, kitSlug: slug }),
 
-  toggleAbility: (slug) =>
+  toggleAbility: (id, slug) =>
     set((state) => {
-      const current = state.abilitySlugs;
-      if (current.includes(slug)) {
-        return { abilitySlugs: current.filter((s) => s !== slug) };
+      const currentSlugs = state.abilitySlugs;
+      const currentIds = state.abilityIds;
+      if (currentSlugs.includes(slug)) {
+        return {
+          abilitySlugs: currentSlugs.filter((s) => s !== slug),
+          abilityIds: currentIds.filter((i) => i !== id),
+        };
       }
-      if (current.length >= 2) return {};
-      return { abilitySlugs: [...current, slug] };
+      if (currentSlugs.length >= 2) return {};
+      return {
+        abilitySlugs: [...currentSlugs, slug],
+        abilityIds: [...currentIds, id],
+      };
     }),
+
+  toggleSkill: (id, limit) =>
+    set((state) => {
+      const current = state.skillIds;
+      if (current.includes(id)) {
+        return { skillIds: current.filter((i) => i !== id) };
+      }
+      if (current.length >= limit) return {};
+      return { skillIds: [...current, id] };
+    }),
+
+  setBackgroundSkillIds: (ids) => set({ skillIds: ids }),
 }));

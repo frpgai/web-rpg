@@ -1,5 +1,5 @@
 import { apiClient } from '../client';
-import type { Hero, HeroDetail, CreateHeroRequest, PreviewResult, DraftHero, SaveDraftRequest, SaveDraftResponse } from '../../types';
+import type { Hero, HeroDetail, CreateHeroRequest, PreviewResult, DraftHero, SaveDraftRequest, SaveDraftResponse, CompleteHeroPayload } from '../../types';
 
 export const heroApi = {
   list: () => apiClient.get('api/v1/heroes').json<Hero[]>(),
@@ -28,6 +28,12 @@ export const heroApi = {
   saveDraft: (data: SaveDraftRequest): Promise<SaveDraftResponse> =>
     apiClient.post('api/v1/heroes/draft', { json: data }).json<SaveDraftResponse>(),
 
+  saveDraftAesthetics: (id: string, data: { name: string; avatar_url: string; backstory: string }): Promise<{ id: string; draft_step: string }> =>
+    apiClient.put(`api/v1/heroes/drafts/${id}/aesthetics`, { json: data }).json<{ id: string; draft_step: string }>(),
+
   deleteDraft: (): Promise<void> =>
     apiClient.delete('api/v1/heroes/draft').then(() => undefined),
+
+  completeDraft: (id: string, payload: CompleteHeroPayload): Promise<HeroDetail> =>
+    apiClient.patch(`api/v1/heroes/${id}/complete`, { json: payload }).json<HeroDetail>(),
 };

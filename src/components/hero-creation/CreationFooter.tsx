@@ -6,6 +6,7 @@ interface Props {
   canNext: boolean;
   backLabel?: string;
   nextLabel?: string;
+  backDisabled?: boolean;
 }
 
 export function CreationFooter({
@@ -14,10 +15,11 @@ export function CreationFooter({
   canNext,
   backLabel = 'Voltar',
   nextLabel = 'Avançar',
+  backDisabled = false,
 }: Props) {
   return (
     <div className="creation-footer">
-      <button type="button" className="btn-back" onClick={onBack}>
+      <button type="button" className="btn-back" onClick={onBack} disabled={backDisabled}>
         <svg 
           width="18" 
           height="18" 

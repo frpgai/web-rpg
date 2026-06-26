@@ -1,0 +1,431 @@
+import { useState, useEffect, useCallback } from 'react';
+import { useLocation, useParams } from 'wouter';
+import { BottomSheet } from '../../../../components/ui/BottomSheet';
+import { CreationStepHeader } from '../../../../components/hero-creation/CreationStepHeader';
+import { CreationFooter } from '../../../../components/hero-creation/CreationFooter';
+import { useHeroCreationStore } from '../../../../stores/heroCreationStore';
+import { catalogApi } from '../../../../api/services/catalog';
+import { heroApi } from '../../../../api/services/hero';
+import type { AvatarPreset, HeroDetail } from '../../../../types';
+import { getAssetUrl } from '../../../../utils/url';
+import './AestheticsPage.css';
+
+export default function AestheticsPage() {
+  const [, setLocation] = useLocation();
+  const params = useParams<{ id?: string }>();
+  const heroId = params?.id ?? null;
+
+  const {
+    ancestry,
+    characterClass,
+    background,
+    name,
+    backstory,
+    avatarId,
+    setName,
+    setBackstory,
+    setAvatar,
+  } = useHeroCreationStore();
+
+  const [hero, setHero] = useState<HeroDetail | null>(null);
+  const [heroInitialized, setHeroInitialized] = useState(false);
+  const [avatarList, setAvatarList] = useState<AvatarPreset[]>([]);
+  const [loadingAvatars, setLoadingAvatars] = useState(false);
+  const [avatarError, setAvatarError] = useState(false);
+  const [nameBlurred, setNameBlurred] = useState(false);
+  const [backstoryLen, setBackstoryLen] = useState(backstory.length);
+
+  // BottomSheet State
+  const [infoSheetOpen, setInfoSheetOpen] = useState(false);
+  const [infoSheetTitle, setInfoSheetTitle] = useState('');
+  const [infoSheetContent, setInfoSheetContent] = useState('');
+
+  // ─── Load hero from backend when heroId is present ────────────────────────
+  useEffect(() => {
+    if (!heroId) {
+      setHeroInitialized(true);
+      return;
+    }
+
+    let cancelled = false;
+    async function init() {
+      try {
+        const data = await heroApi.get(heroId!);
+        if (cancelled) return;
+        setHero(data);
+        // Hydrate store from backend data
+        if (data.name) setName(data.name);
+        if (data.backstory) {
+          setBackstory(data.backstory);
+          setBackstoryLen(data.backstory.length);
+        }
+      } catch {
+        setLocation('/hero/create/origins');
+      } finally {
+        if (!cancelled) setHeroInitialized(true);
+      }
+    }
+    init();
+    return () => { cancelled = true; };
+  }, [heroId]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ─── Guard: must have completed steps 1 and 2 ─────────────────────────────
+  useEffect(() => {
+    if (!heroInitialized) return;
+
+    if (heroId) {
+      if (!hero?.ancestry || !hero?.class || !hero?.background) {
+        setLocation('/hero/create/origins');
+        return;
+      }
+      const attrs = (hero as any).sheet?.base_attributes ?? (hero as any).sheet?.attributes ?? hero.attributes;
+      if (!attrs) {
+        setLocation(`/heroes/create/attributes/${heroId}`);
+      }
+    } else {
+      const { ancestry: a, characterClass: v, background: b } =
+        useHeroCreationStore.getState();
+      if (!a || !v || !b) {
+        setLocation('/hero/create/origins');
+      }
+    }
+  }, [heroInitialized, hero, heroId, setLocation]);
+
+  // ─── Load avatars ──────────────────────────────────────────────────────────
+  const loadAvatars = useCallback(async () => {
+    const resolvedAncestry = ancestry ?? (hero?.ancestry ? { id: hero.ancestry.id } : null);
+    const resolvedClass = characterClass ?? (hero?.class ? { id: hero.class.id } : null);
+    const resolvedBackground = background ?? (hero?.background ? { id: hero.background.id } : null);
+    if (!resolvedAncestry || !resolvedClass) return;
+    setLoadingAvatars(true);
+    setAvatarError(false);
+    try {
+      const presets = await catalogApi.fetchAvatars(
+        resolvedAncestry.id,
+        resolvedClass.id,
+        resolvedBackground?.id,
+      );
+      setAvatarList(presets);
+      // Hydrate avatar from hero backend data if present
+      const heroAvatarUrl = hero?.avatar_url;
+      if (heroAvatarUrl) {
+        const matching = presets.find((p) => p.url === heroAvatarUrl);
+        if (matching && !avatarId) {
+          setAvatar(matching.id, matching.url);
+        }
+      } else {
+        const rec = presets.find((p) => p.recommended);
+        if (rec && !avatarId) {
+          setAvatar(rec.id, rec.url);
+        }
+      }
+    } catch (err) {
+      console.error('Failed to load avatars preset:', err);
+      setAvatarError(true);
+    } finally {
+      setLoadingAvatars(false);
+    }
+  }, [ancestry, characterClass, background, hero, avatarId, setAvatar]);
+
+  useEffect(() => {
+    if (!heroInitialized) return;
+    loadAvatars();
+  }, [loadAvatars, heroInitialized]);
+
+  // ─── Active avatar preset ──────────────────────────────────────────────────
+  const activePreset = avatarList.find((p) => p.id === avatarId) ?? avatarList[0] ?? null;
+
+  // ─── Name validation ──────────────────────────────────────────────────────
+  const nameIsValid = name.trim().length >= 2 && name.trim().length <= 40;
+  const showNameError = nameBlurred && !nameIsValid;
+
+  const handleNameChange = (val: string) => {
+    setName(val);
+  };
+
+  const handleNameBlur = () => {
+    setNameBlurred(true);
+  };
+
+  // ─── Backstory handler ─────────────────────────────────────────────────────
+  const handleBackstoryChange = (val: string) => {
+    const trimmed = val.slice(0, 500);
+    setBackstory(trimmed);
+    setBackstoryLen(trimmed.length);
+  };
+
+  // ─── Derived key attribute ────────────────────────────────────────────────
+  const keyAttrLabel = characterClass?.key_attribute?.toUpperCase() ?? '—';
+  // When heroId is present, read from sheet; otherwise not available (step 2 not in this store)
+  const keyAttr = characterClass?.key_attribute?.toLowerCase();
+  const sheetAttrs = hero?.sheet?.attributes as Record<string, number> | undefined;
+  const keyAttrValue: number | null =
+    heroId && keyAttr && sheetAttrs ? (sheetAttrs[keyAttr] ?? null) : null;
+
+  const canNext = nameIsValid && !!avatarId;
+
+  const handleBack = () => {
+    if (heroId) {
+      setLocation(`/heroes/create/attributes/${heroId}`);
+    } else {
+      setLocation('/heroes/create/attributes');
+    }
+  };
+
+  const handleNext = async () => {
+    if (heroId) {
+      try {
+        const resolvedPreset = avatarList.find((p) => p.id === avatarId) || activePreset;
+        await heroApi.saveDraftAesthetics(heroId, {
+          name: name.trim(),
+          avatar_url: resolvedPreset?.url || '',
+          backstory: backstory.trim(),
+        });
+      } catch (err) {
+        console.error('Failed to save draft aesthetics:', err);
+      }
+      setLocation(`/heroes/create/summary/${heroId}`);
+    } else {
+      setLocation('/heroes/create/summary');
+    }
+  };
+
+  // ─── Info Trigger Helpers ──────────────────────────────────────────────────
+  const openInfo = (title: string, content: string) => {
+    setInfoSheetTitle(title);
+    setInfoSheetContent(content);
+    setInfoSheetOpen(true);
+  };
+
+  if (!heroInitialized) return null;
+  if (!heroId && (!ancestry || !characterClass)) return null;
+
+  return (
+    <div className="aesthetics-page-root">
+      <div className="aesthetics-page-scroll">
+        {/* Step Header */}
+        <CreationStepHeader
+          stepLabel="PASSO 03: ESTÉTICA"
+          headline="IDENTIDADE DO HERÓI"
+          progressPct={75}
+        />
+
+        {/* 1. AVATAR SECTION */}
+        <div className="aesthetics-glass-panel">
+          <div className="aesthetics-avatar-header-row">
+            <span className="aesthetics-avatar-section-title">Selecione seu Avatar</span>
+          </div>
+
+          {avatarError && (
+            <div className="aesthetics-error-banner">
+              <span className="aesthetics-error-banner-text">Erro ao carregar avatares.</span>
+              <button className="aesthetics-retry-button" onClick={loadAvatars} type="button">
+                Tentar novamente
+              </button>
+            </div>
+          )}
+
+          {/* Main Avatar Display */}
+          {loadingAvatars ? (
+            <div className="aesthetics-main-avatar-skeleton" />
+          ) : (
+            <div className="aesthetics-main-avatar-container">
+              {activePreset?.url ? (
+                <img
+                  src={getAssetUrl(activePreset.url)}
+                  alt={activePreset.label}
+                  className="aesthetics-main-avatar-img"
+                />
+              ) : (
+                <div className="aesthetics-main-avatar-img aesthetics-main-avatar-placeholder">
+                  <svg viewBox="0 0 96 96" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" style={{ width: '40%', opacity: 0.3 }}>
+                    <circle cx="48" cy="32" r="18" fill="currentColor" />
+                    <path d="M10 88c0-21 17-38 38-38s38 17 38 38" fill="currentColor" />
+                  </svg>
+                </div>
+              )}
+              <div className="aesthetics-main-avatar-gradient" />
+              <div className="aesthetics-main-avatar-overlay">
+                <div className="aesthetics-main-avatar-overlay-left">
+                  {activePreset?.recommended && (
+                    <div className="aesthetics-recommended-badge">
+                      <span className="aesthetics-recommended-text">RECOMENDADO</span>
+                    </div>
+                  )}
+                </div>
+                {activePreset?.recommended && (
+                  <span className="aesthetics-verified-icon">✓</span>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Thumbnail Carousel */}
+          <div className="aesthetics-thumbnail-carousel-container">
+            <div className="aesthetics-thumbnail-carousel">
+              {loadingAvatars
+                ? Array.from({ length: 3 }).map((_, i) => (
+                    <div key={i} className="aesthetics-thumbnail-thumb aesthetics-thumbnail-skeleton" />
+                  ))
+                : avatarList.length > 0
+                ? avatarList.map((preset) => {
+                    const isSelected = avatarId === preset.id;
+                    return (
+                      <button
+                        key={preset.id}
+                        className={`aesthetics-thumbnail-thumb ${
+                          isSelected ? 'aesthetics-thumbnail-selected' : 'aesthetics-thumbnail-unselected'
+                        }`}
+                        onClick={() => setAvatar(preset.id, preset.url)}
+                        type="button"
+                      >
+                        <img
+                          src={getAssetUrl(preset.url)}
+                          alt={preset.label}
+                          className={`aesthetics-thumbnail-img ${
+                            !isSelected ? 'aesthetics-thumbnail-img-unselected' : ''
+                          }`}
+                        />
+                      </button>
+                    );
+                  })
+                : (
+                    <button
+                      className="aesthetics-thumbnail-thumb aesthetics-thumbnail-selected"
+                      type="button"
+                      disabled
+                    >
+                      <div className="aesthetics-thumbnail-img aesthetics-main-avatar-placeholder">
+                        <svg viewBox="0 0 96 96" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" style={{ width: '50%', opacity: 0.3 }}>
+                          <circle cx="48" cy="32" r="18" fill="currentColor" />
+                          <path d="M10 88c0-21 17-38 38-38s38 17 38 38" fill="currentColor" />
+                        </svg>
+                      </div>
+                    </button>
+                  )}
+            </div>
+          </div>
+        </div>
+
+        {/* 2. NAME FIELD */}
+        <div className="aesthetics-glass-panel">
+          <span className="aesthetics-field-label">Nome do Herói</span>
+          <input
+            type="text"
+            className={`aesthetics-input ${showNameError ? 'aesthetics-input-error' : ''}`}
+            value={name}
+            onChange={(e) => handleNameChange(e.target.value)}
+            onBlur={handleNameBlur}
+            placeholder="Ex: Aethelred o Audaz"
+            maxLength={40}
+          />
+          {showNameError ? (
+            <span className="aesthetics-field-error">
+              Nome deve ter entre 2 e 40 caracteres
+            </span>
+          ) : (
+            <span className="aesthetics-field-hint">
+              Sua lenda começa com um nome. Escolha com sabedoria.
+            </span>
+          )}
+        </div>
+
+        {/* 3. BACKSTORY TEXTAREA */}
+        <div className="aesthetics-glass-panel">
+          <span className="aesthetics-field-label">Origem/Histórico</span>
+          <textarea
+            className="aesthetics-input aesthetics-textarea"
+            value={backstory}
+            onChange={(e) => handleBackstoryChange(e.target.value)}
+            placeholder="Nascido sob a aurora púrpura de Valoria..."
+            rows={5}
+            maxLength={500}
+          />
+          <div className="aesthetics-textarea-footer">
+            <span className="aesthetics-textarea-hint">Breve introdução narrativa</span>
+            <span className="aesthetics-char-count">{backstoryLen} / 500</span>
+          </div>
+        </div>
+
+        {/* 4. CONTEXT GRID */}
+        <div className="aesthetics-context-grid">
+          <button
+            type="button"
+            className="aesthetics-context-box aesthetics-context-btn"
+            onClick={() => {
+              const nameStr = characterClass?.name ?? hero?.class?.name ?? 'Classe';
+              // Check if we have description on Vocation or CharacterClass, otherwise fallback
+              const desc = (characterClass as any)?.description ?? 'Sua vocação e profissão de combate.';
+              openInfo(nameStr, desc);
+            }}
+          >
+            <span className="aesthetics-context-box-label">CLASSE ⓘ</span>
+            <span className="aesthetics-context-box-value">
+              {characterClass?.name ?? hero?.class?.name ?? '—'}
+            </span>
+          </button>
+          <button
+            type="button"
+            className="aesthetics-context-box aesthetics-context-btn"
+            onClick={() => {
+              const nameStr = ancestry?.name ?? hero?.ancestry?.name ?? 'Raça';
+              const desc = ancestry?.description ?? (hero?.ancestry as any)?.description ?? 'Sua origem biológica e traços físicos.';
+              openInfo(nameStr, desc);
+            }}
+          >
+            <span className="aesthetics-context-box-label">RAÇA ⓘ</span>
+            <span className="aesthetics-context-box-value">
+              {ancestry?.name ?? hero?.ancestry?.name ?? '—'}
+            </span>
+          </button>
+          <button
+            type="button"
+            className="aesthetics-context-box aesthetics-context-btn"
+            onClick={() => {
+              const nameStr = background?.name ?? hero?.background?.name ?? 'Antecedente';
+              const desc = background?.description ?? (hero?.background as any)?.description ?? 'O que seu herói fazia antes de virar aventureiro.';
+              openInfo(nameStr, desc);
+            }}
+          >
+            <span className="aesthetics-context-box-label">ANTECEDENTE ⓘ</span>
+            <span className="aesthetics-context-box-value">
+              {background?.name ?? hero?.background?.name ?? '—'}
+            </span>
+          </button>
+          <button
+            type="button"
+            className="aesthetics-context-box aesthetics-context-btn"
+            onClick={() =>
+              openInfo(
+                `Atributo de Destaque (${keyAttrLabel})`,
+                'O atributo mais importante para as habilidades da sua classe. O valor total exibido já inclui os bônus comprados e os adicionais fornecidos pela raça e pelo antecedente.'
+              )
+            }
+          >
+            <span className="aesthetics-context-box-label">{keyAttrLabel} ⓘ</span>
+            <span className="aesthetics-context-box-value aesthetics-context-box-value-accent">
+              {keyAttrValue ?? '—'}
+            </span>
+          </button>
+        </div>
+      </div>
+
+      <CreationFooter
+        onBack={handleBack}
+        onNext={handleNext}
+        canNext={canNext}
+      />
+
+      {/* Info Details BottomSheet */}
+      <BottomSheet
+        open={infoSheetOpen}
+        onClose={() => setInfoSheetOpen(false)}
+        title={infoSheetTitle}
+      >
+        <div className="aesthetics-bottom-sheet-content">
+          <p className="aesthetics-bottom-sheet-text">{infoSheetContent}</p>
+        </div>
+      </BottomSheet>
+    </div>
+  );
+}

@@ -1,4 +1,5 @@
 import type { Hero } from '../../types';
+import { getAssetUrl } from '../../utils/url';
 import './HeroCard.css';
 
 
@@ -92,7 +93,7 @@ export function HeroCard({
         <div className="dashboard-hero-card-avatar-wrapper">
           {currentHero.avatar_url ? (
             <img
-              src={currentHero.avatar_url}
+              src={getAssetUrl(currentHero.avatar_url)}
               alt={currentHero.name}
               className="dashboard-hero-card-avatar"
             />
