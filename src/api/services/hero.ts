@@ -28,6 +28,9 @@ export const heroApi = {
   saveDraft: (data: SaveDraftRequest): Promise<SaveDraftResponse> =>
     apiClient.post('api/v1/heroes/draft', { json: data }).json<SaveDraftResponse>(),
 
+  saveDraftAesthetics: (id: string, data: { name: string; avatar_url: string; backstory: string }): Promise<{ id: string; draft_step: string }> =>
+    apiClient.put(`api/v1/heroes/drafts/${id}/aesthetics`, { json: data }).json<{ id: string; draft_step: string }>(),
+
   deleteDraft: (): Promise<void> =>
     apiClient.delete('api/v1/heroes/draft').then(() => undefined),
 };

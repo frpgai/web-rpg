@@ -9,6 +9,7 @@ import DashboardPage from './pages/dashboard/DashboardPage';
 import OriginsPage from './pages/hero/create/origins';
 import AttributesPage from './pages/hero/create/attributes/AttributesPage';
 import AestheticsPage from './pages/hero/create/aesthetics/AestheticsPage';
+import SummaryPage from './pages/hero/create/summary/SummaryPage';
 import SelectSystemPage from './pages/SelectSystemPage';
 import { PrivateRoute } from './components/common/PrivateRoute';
 import { useAuthStore } from './stores/authStore';
@@ -43,20 +44,26 @@ export default function App() {
         <Route path="/dashboard">
           <PrivateRoute><DashboardPage /></PrivateRoute>
         </Route>
-        <Route path="/hero/create/origins">
+        <Route path="/heroes/create/origins">
           <PrivateRoute><OriginsPage /></PrivateRoute>
         </Route>
-        <Route path="/hero/create/attributes">
+        <Route path="/heroes/create/attributes">
           <PrivateRoute><AttributesPage /></PrivateRoute>
         </Route>
         <Route path="/heroes/create/attributes/:id">
           <PrivateRoute><AttributesPage /></PrivateRoute>
         </Route>
-        <Route path="/hero/create/aesthetics">
+        <Route path="/heroes/create/aesthetics">
           <PrivateRoute><AestheticsPage /></PrivateRoute>
         </Route>
-        <Route path="/hero/create/aesthetics/:id">
+        <Route path="/heroes/create/aesthetics/:id">
           <PrivateRoute><AestheticsPage /></PrivateRoute>
+        </Route>
+        <Route path="/heroes/create/summary">
+          <PrivateRoute><SummaryPage /></PrivateRoute>
+        </Route>
+        <Route path="/heroes/create/summary/:id">
+          <PrivateRoute><SummaryPage /></PrivateRoute>
         </Route>
 
         <Route path="/select-system">

@@ -3,7 +3,6 @@ import { useLocation, useParams } from 'wouter';
 import { Tooltip } from '../../../../components/ui/Tooltip';
 import { CreationStepHeader } from '../../../../components/hero-creation/CreationStepHeader';
 import { CreationFooter } from '../../../../components/hero-creation/CreationFooter';
-import { AvatarCard } from '../../../../components/hero-creation/AvatarCard';
 import { useHeroCreationStore } from '../../../../stores/heroCreationStore';
 import { catalogApi } from '../../../../api/services/catalog';
 import { heroApi } from '../../../../api/services/hero';
@@ -35,7 +34,6 @@ export default function AestheticsPage() {
   const [avatarError, setAvatarError] = useState(false);
   const [nameBlurred, setNameBlurred] = useState(false);
   const [backstoryLen, setBackstoryLen] = useState(backstory.length);
-  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // ─── Load hero from backend when heroId is present ────────────────────────
   useEffect(() => {
@@ -57,7 +55,7 @@ export default function AestheticsPage() {
           setBackstoryLen(data.backstory.length);
         }
       } catch {
-        setLocation('/heroes/create/origins');
+        setLocation('/hero/create/origins');
       } finally {
         if (!cancelled) setHeroInitialized(true);
       }
@@ -72,10 +70,10 @@ export default function AestheticsPage() {
 
     if (heroId) {
       if (!hero?.ancestry || !hero?.class || !hero?.background) {
-        setLocation('/heroes/create/origins');
+        setLocation('/hero/create/origins');
         return;
       }
-      const attrs = (hero as any).attributes ?? hero.sheet?.base_attributes ?? hero.sheet?.attributes;
+      const attrs = hero.sheet?.base_attributes ?? hero.sheet?.attributes;
       if (!attrs) {
         setLocation(`/heroes/create/attributes/${heroId}`);
       }
@@ -83,7 +81,7 @@ export default function AestheticsPage() {
       const { ancestry: a, characterClass: v, background: b } =
         useHeroCreationStore.getState();
       if (!a || !v || !b) {
-        setLocation('/heroes/create/origins');
+        setLocation('/hero/create/origins');
       }
     }
   }, [heroInitialized, hero, heroId, setLocation]);
@@ -129,6 +127,19 @@ export default function AestheticsPage() {
     loadAvatars();
   }, [loadAvatars, heroInitialized]);
 
+  // ─── Shuffle thumbnails (Fisher-Yates, local) ─────────────────────────────
+  const handleShuffle = () => {
+    setAvatarList((prev) => {
+      const arr = [...prev];
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        const temp = arr[i];
+        arr[i] = arr[j];
+        arr[j] = temp;
+      }
+      return arr;
+    });
+  };
 
   // ─── Active avatar preset ──────────────────────────────────────────────────
   const activePreset = avatarList.find((p) => p.id === avatarId) ?? avatarList[0] ?? null;
@@ -166,24 +177,15 @@ export default function AestheticsPage() {
     if (heroId) {
       setLocation(`/heroes/create/attributes/${heroId}`);
     } else {
-      setLocation('/heroes/create/attributes');
+      setLocation('/hero/create/attributes');
     }
   };
 
-  const handleNext = async () => {
-    if (!heroId) {
-      setLocation('/heroes/create/origins');
-      return;
-    }
-    try {
-      await heroApi.saveDraftAesthetics(heroId, {
-        name: name,
-        avatar_url: activePreset ? activePreset.url : '',
-        backstory: backstory,
-      });
-      setLocation(`/heroes/create/summary/${heroId}`);
-    } catch (err) {
-      console.error('Failed to save draft aesthetics:', err);
+  const handleNext = () => {
+    if (heroId) {
+      setLocation(`/hero/create/summary/${heroId}`);
+    } else {
+      setLocation('/hero/create/summary');
     }
   };
 
@@ -204,6 +206,10 @@ export default function AestheticsPage() {
         <div className="aesthetics-glass-panel">
           <div className="aesthetics-avatar-header-row">
             <span className="aesthetics-avatar-section-title">Selecione seu Avatar</span>
+            <button className="aesthetics-shuffle-btn" onClick={handleShuffle} type="button">
+              <span className="aesthetics-shuffle-btn-icon">↻</span>
+              <span className="aesthetics-shuffle-btn-text">GERAR NOVOS</span>
+            </button>
           </div>
 
           {avatarError && (
@@ -218,38 +224,38 @@ export default function AestheticsPage() {
           {/* Main Avatar Display */}
           {loadingAvatars ? (
             <div className="aesthetics-main-avatar-skeleton" />
-          ) : activePreset ? (
+          ) : (
             <div className="aesthetics-main-avatar-container">
-              <img
-                src={getAssetUrl(activePreset.url)}
-                alt={activePreset.label}
-                className="aesthetics-main-avatar-img"
-              />
-              <button
-                className="aesthetics-zoom-btn"
-                onClick={() => setIsModalOpen(true)}
-                type="button"
-                title="Visualizar imagem completa"
-              >
-                <i className="material-icons" style={{ fontSize: 18 }}>
-                  fullscreen
-                </i>
-              </button>
+              {activePreset?.url ? (
+                <img
+                  src={getAssetUrl(activePreset.url)}
+                  alt={activePreset.label}
+                  className="aesthetics-main-avatar-img"
+                />
+              ) : (
+                <div className="aesthetics-main-avatar-img aesthetics-main-avatar-placeholder">
+                  <svg viewBox="0 0 96 96" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" style={{ width: '40%', opacity: 0.3 }}>
+                    <circle cx="48" cy="32" r="18" fill="currentColor" />
+                    <path d="M10 88c0-21 17-38 38-38s38 17 38 38" fill="currentColor" />
+                  </svg>
+                </div>
+              )}
               <div className="aesthetics-main-avatar-gradient" />
               <div className="aesthetics-main-avatar-overlay">
                 <div className="aesthetics-main-avatar-overlay-left">
-                  {activePreset.recommended && (
+                  {activePreset?.recommended && (
                     <div className="aesthetics-recommended-badge">
                       <span className="aesthetics-recommended-text">RECOMENDADO</span>
                     </div>
                   )}
+                  <span className="aesthetics-portrait-name">{activePreset?.label ?? ''}</span>
                 </div>
-                {activePreset.recommended && (
+                {activePreset?.recommended && (
                   <span className="aesthetics-verified-icon">✓</span>
                 )}
               </div>
             </div>
-          ) : null}
+          )}
 
           {/* Thumbnail Carousel */}
           <div className="aesthetics-thumbnail-carousel-container">
@@ -259,30 +265,41 @@ export default function AestheticsPage() {
                     <div key={i} className="aesthetics-thumbnail-thumb aesthetics-thumbnail-skeleton" />
                   ))
                 : avatarList.length > 0
-                  ? avatarList.map((preset) => (
-                      <AvatarCard
+                ? avatarList.map((preset) => {
+                    const isSelected = avatarId === preset.id;
+                    return (
+                      <button
                         key={preset.id}
-                        id={preset.id}
-                        url={getAssetUrl(preset.url)}
-                        label={preset.label}
-                        recommended={preset.recommended}
-                        selected={avatarId === preset.id}
-                        onClick={(id) => {
-                          const p = avatarList.find((x) => x.id === id);
-                          if (p) setAvatar(p.id, p.url);
-                        }}
-                      />
-                    ))
-                  : (
-                      <AvatarCard
-                        id="placeholder"
-                        url=""
-                        label="Sem avatares disponíveis"
-                        recommended={false}
-                        selected={false}
-                        onClick={() => {}}
-                      />
-                    )}
+                        className={`aesthetics-thumbnail-thumb ${
+                          isSelected ? 'aesthetics-thumbnail-selected' : 'aesthetics-thumbnail-unselected'
+                        }`}
+                        onClick={() => setAvatar(preset.id, preset.url)}
+                        type="button"
+                      >
+                        <img
+                          src={getAssetUrl(preset.url)}
+                          alt={preset.label}
+                          className={`aesthetics-thumbnail-img ${
+                            !isSelected ? 'aesthetics-thumbnail-img-unselected' : ''
+                          }`}
+                        />
+                      </button>
+                    );
+                  })
+                : (
+                    <button
+                      className="aesthetics-thumbnail-thumb aesthetics-thumbnail-selected"
+                      type="button"
+                      disabled
+                    >
+                      <div className="aesthetics-thumbnail-img aesthetics-main-avatar-placeholder">
+                        <svg viewBox="0 0 96 96" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" style={{ width: '50%', opacity: 0.3 }}>
+                          <circle cx="48" cy="32" r="18" fill="currentColor" />
+                          <path d="M10 88c0-21 17-38 38-38s38 17 38 38" fill="currentColor" />
+                        </svg>
+                      </div>
+                    </button>
+                  )}
             </div>
           </div>
         </div>
@@ -359,21 +376,6 @@ export default function AestheticsPage() {
         onNext={handleNext}
         canNext={canNext}
       />
-
-      {isModalOpen && activePreset && (
-        <div className="aesthetics-avatar-modal" onClick={() => setIsModalOpen(false)}>
-          <div className="aesthetics-avatar-modal-content" onClick={(e) => e.stopPropagation()}>
-            <button className="aesthetics-avatar-modal-close" onClick={() => setIsModalOpen(false)}>
-              <i className="material-icons">close</i>
-            </button>
-            <img
-              src={getAssetUrl(activePreset.url)}
-              alt={activePreset.label}
-              className="aesthetics-avatar-modal-img"
-            />
-          </div>
-        </div>
-      )}
     </div>
   );
 }

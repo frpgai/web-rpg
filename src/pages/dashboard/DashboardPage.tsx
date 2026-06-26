@@ -31,7 +31,7 @@ export default function DashboardPage() {
   };
 
   const handleCreateHero = () => {
-    setLocation('/hero/create/origins');
+    setLocation('/heroes/create/origins');
   };
 
   const handleCampaignPress = (id: string) => {
