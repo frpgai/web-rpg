@@ -168,15 +168,15 @@ export default function AestheticsPage() {
     if (heroId) {
       setLocation(`/heroes/create/attributes/${heroId}`);
     } else {
-      setLocation('/hero/create/attributes');
+      setLocation('/heroes/create/attributes');
     }
   };
 
   const handleNext = () => {
     if (heroId) {
-      setLocation(`/hero/create/summary/${heroId}`);
+      setLocation(`/heroes/create/summary/${heroId}`);
     } else {
-      setLocation('/hero/create/summary');
+      setLocation('/heroes/create/summary');
     }
   };
 
