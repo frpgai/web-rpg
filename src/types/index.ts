@@ -155,6 +155,7 @@ export interface ClassAbility {
   slug: string;
   name: string;
   type: 'action' | 'bonus_action' | 'reaction' | 'passive';
+  type_label?: string;
   description: string;
   icon: string;
   mana_cost: number;
@@ -167,6 +168,7 @@ export interface HeroAbility {
   slug: string;
   name: string;
   type: 'action' | 'bonus_action' | 'reaction' | 'passive';
+  type_label?: string;
   description: string;
   mana_cost: number;
   range: string;
