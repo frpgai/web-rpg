@@ -2,35 +2,19 @@ import { useState } from 'react';
 import { useParams, useLocation } from 'wouter';
 import { useHero } from './useHero';
 import { getAssetUrl } from '../../../utils/url';
-import { Tooltip } from '../../../components/ui/Tooltip';
 import type { HeroAbility, InventoryItem } from '../../../types';
 import './HeroDetailPage.css';
 
 // ── Constants ──────────────────────────────────────────────────────────────
 
-const ATTR_META: Array<{ key: string; abbr: string; icon: string; tooltip: string }> = [
-  { key: 'str', abbr: 'FOR', icon: 'fitness_center', tooltip: 'Força — poder físico bruto' },
-  { key: 'dex', abbr: 'DES', icon: 'bolt',           tooltip: 'Destreza — agilidade e reflexos' },
-  { key: 'con', abbr: 'CON', icon: 'favorite',       tooltip: 'Constituição — resistência e vitalidade' },
-  { key: 'int', abbr: 'INT', icon: 'psychology',     tooltip: 'Inteligência — raciocínio e memória' },
-  { key: 'wis', abbr: 'SAB', icon: 'auto_awesome',   tooltip: 'Sabedoria — percepção e intuição' },
-  { key: 'cha', abbr: 'CAR', icon: 'theater_comedy', tooltip: 'Carisma — força de personalidade' },
+const ATTR_META: Array<{ key: string; abbr: string; icon: string }> = [
+  { key: 'str', abbr: 'FOR', icon: 'fitness_center' },
+  { key: 'dex', abbr: 'DES', icon: 'bolt' },
+  { key: 'con', abbr: 'CON', icon: 'favorite' },
+  { key: 'int', abbr: 'INT', icon: 'psychology' },
+  { key: 'wis', abbr: 'SAB', icon: 'auto_awesome' },
+  { key: 'cha', abbr: 'CAR', icon: 'theater_comedy' },
 ];
-
-const ABILITY_TYPE_TOOLTIP: Record<string, string> = {
-  action:       'Ação padrão no turno',
-  bonus_action: 'Ação bônus — limitada a 1 por turno',
-  reaction:     'Reação — 1 por rodada, fora do seu turno',
-  passive:      'Habilidade passiva — sempre ativa',
-};
-
-const RARITY_TOOLTIP: Record<string, string> = {
-  common:    'Item comum — sem propriedades especiais',
-  uncommon:  'Item incomum — levemente aprimorado',
-  rare:      'Item raro — poderes notáveis',
-  very_rare: 'Item muito raro — extremamente poderoso',
-  legendary: 'Item lendário — artefato único',
-};
 
 const ATTR_ABBR: Record<string, string> = Object.fromEntries(
   ATTR_META.map(({ key, abbr }) => [key, abbr]),
@@ -142,11 +126,7 @@ function InventoryCard({ item }: { item: InventoryItem }) {
       </div>
       <div className="hd-inv-info">
         <p className="hd-inv-name">{item.name}</p>
-        <p className="hd-inv-rarity">
-          <Tooltip text={RARITY_TOOLTIP[rarity] ?? rarity}>
-            {RARITY_LABEL[rarity] ?? rarity}
-          </Tooltip>
-        </p>
+        <p className="hd-inv-rarity">{RARITY_LABEL[rarity] ?? rarity}</p>
       </div>
       <span className="hd-inv-weight">{item.weight_kg} kg</span>
     </div>
@@ -160,11 +140,9 @@ function AbilityCard({ ability }: { ability: HeroAbility }) {
     <div className={`hd-ability-card hd-ability-card--${type}`}>
       <div className="hd-ability-header">
         <h4 className={`hd-ability-name hd-ability-name--${type}`}>{ability.name}</h4>
-        <Tooltip text={ABILITY_TYPE_TOOLTIP[type] ?? type}>
-          <span className={`hd-ability-badge hd-ability-badge--${type}`}>
-            {ABILITY_TYPE_LABEL[type] ?? type}
-          </span>
-        </Tooltip>
+        <span className={`hd-ability-badge hd-ability-badge--${type}`}>
+          {ABILITY_TYPE_LABEL[type] ?? type}
+        </span>
       </div>
       <p className="hd-ability-desc">{ability.description}</p>
       <div className="hd-ability-footer">
@@ -173,11 +151,11 @@ function AbilityCard({ ability }: { ability: HeroAbility }) {
             Custo: {ability.mana_cost} MP
           </span>
         )}
-        <span className={`hd-ability-meta hd-ability-meta--${isPassive ? 'passive' : 'action'}`}>
-          <Tooltip text="Distância máxima de alcance da habilidade">
-            Alcance
-          </Tooltip>: {ability.range || '—'}
-        </span>
+        {ability.range && (
+          <span className={`hd-ability-meta hd-ability-meta--${isPassive ? 'passive' : 'action'}`}>
+            Alcance: {ability.range}
+          </span>
+        )}
       </div>
     </div>
   );
@@ -193,35 +171,21 @@ export default function HeroDetailPage() {
   const { hero, loading, error, errorStatus, refresh } = useHero(heroId);
   const [activeTab, setActiveTab] = useState<TabKey>('abilities');
 
-  // Network error (non-404, non-403): show toast, keep skeleton behind
-  const isNetworkError = !!error && errorStatus === null;
-
   if (loading) return <HeroDetailSkeleton />;
 
-  if (errorStatus === 404 || errorStatus === 403) {
+  if (errorStatus === 404 || (!hero && error)) {
     return (
       <HeroDetailError
-        message={errorStatus === 404 ? 'Herói não encontrado' : 'Você não tem acesso a este herói'}
-        buttonLabel={errorStatus === 403 ? 'Voltar' : 'Voltar ao Dashboard'}
+        message={errorStatus === 404 ? 'Herói não encontrado' : errorStatus === 403 ? 'Você não tem acesso a este herói' : (error ?? 'Erro desconhecido')}
+        buttonLabel={errorStatus === 403 ? 'Voltar' : errorStatus === 404 ? 'Voltar ao Dashboard' : 'Tentar novamente'}
         onAction={() => {
           if (errorStatus === 403) setLocation(-1 as unknown as string);
-          else setLocation('/dashboard');
+          else if (errorStatus === 404) setLocation('/dashboard');
+          else refresh();
         }}
       />
     );
   }
-
-  if (isNetworkError && !hero) return (
-    <div className="hd-root">
-      <HeroDetailSkeleton />
-      <div className="hd-toast-overlay">
-        <div className="hd-toast-bar">
-          <span className="hd-toast-msg">Erro de conexão. Tente novamente.</span>
-          <button className="hd-toast-retry" onClick={refresh}>Tentar novamente</button>
-        </div>
-      </div>
-    </div>
-  );
 
   if (!hero) return null;
 
@@ -243,14 +207,6 @@ export default function HeroDetailPage() {
 
   return (
     <div className="hd-root">
-      {isNetworkError && (
-        <div className="hd-toast-overlay">
-          <div className="hd-toast-bar">
-            <span className="hd-toast-msg">Erro de conexão. Tente novamente.</span>
-            <button className="hd-toast-retry" onClick={refresh}>Tentar novamente</button>
-          </div>
-        </div>
-      )}
       <div className="hd-scroll">
 
         {/* ── Header ─────────────────────────────────────────────────── */}
@@ -267,9 +223,7 @@ export default function HeroDetailPage() {
                 <span className="material-symbols-outlined">person</span>
               </div>
             )}
-            <Tooltip text="Nível do herói">
-              <div className="hd-level-badge">NÍVEL {hero.level}</div>
-            </Tooltip>
+            <div className="hd-level-badge">NÍVEL {hero.level}</div>
           </div>
 
           <div className="hd-identity">
@@ -296,9 +250,7 @@ export default function HeroDetailPage() {
             <div className="hd-bars">
               <div className="hd-bar-row">
                 <div className="hd-bar-label-row">
-                  <Tooltip text="Pontos de Vida — chega a 0 e você cai">
-                    <span className="hd-bar-label hd-bar-label--hp">VIDA</span>
-                  </Tooltip>
+                  <span className="hd-bar-label hd-bar-label--hp">VIDA</span>
                   <span className="hd-bar-value">{hero.hp_current} / {hero.hp_max}</span>
                 </div>
                 <div className="hd-bar-track">
@@ -308,9 +260,7 @@ export default function HeroDetailPage() {
 
               <div className="hd-bar-row">
                 <div className="hd-bar-label-row">
-                  <Tooltip text="Pontos de Mana — custo de habilidades mágicas">
-                    <span className="hd-bar-label hd-bar-label--mp">MANA</span>
-                  </Tooltip>
+                  <span className="hd-bar-label hd-bar-label--mp">MANA</span>
                   <span className="hd-bar-value">{hero.mp_current} / {hero.mp_max}</span>
                 </div>
                 <div className="hd-bar-track">
@@ -320,9 +270,7 @@ export default function HeroDetailPage() {
 
               <div className="hd-bar-row">
                 <div className="hd-bar-label-row">
-                  <Tooltip text="Experiência — acumulada para subir de nível">
-                    <span className="hd-bar-label hd-bar-label--xp">EXP</span>
-                  </Tooltip>
+                  <span className="hd-bar-label hd-bar-label--xp">EXP</span>
                   <span className="hd-bar-value">{hero.xp} / {hero.xp_next_level}</span>
                 </div>
                 <div className="hd-bar-track">
@@ -335,19 +283,15 @@ export default function HeroDetailPage() {
 
         {/* ── Attribute Grid ──────────────────────────────────────────── */}
         <div className="hd-attr-grid">
-          {ATTR_META.map(({ key, abbr, icon, tooltip }) => {
+          {ATTR_META.map(({ key, abbr, icon }) => {
             const val = getAttrFinal(key);
             const mod = getAttrMod(key);
             return (
               <div key={key} className="hd-attr-card">
                 <span className="material-symbols-outlined hd-attr-icon">{icon}</span>
-                <Tooltip text={tooltip}>
-                  <span className="hd-attr-abbr">{abbr}</span>
-                </Tooltip>
+                <span className="hd-attr-abbr">{abbr}</span>
                 <span className="hd-attr-val">{val}</span>
-                <Tooltip text="Modificador de atributo">
-                  <span className="hd-attr-mod">{fmtMod(mod)}</span>
-                </Tooltip>
+                <span className="hd-attr-mod">{fmtMod(mod)}</span>
               </div>
             );
           })}
