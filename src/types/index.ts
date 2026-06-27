@@ -155,7 +155,6 @@ export interface ClassAbility {
   slug: string;
   name: string;
   type: 'action' | 'bonus_action' | 'reaction' | 'passive';
-  type_label?: string;
   description: string;
   icon: string;
   mana_cost: number;
@@ -168,7 +167,6 @@ export interface HeroAbility {
   slug: string;
   name: string;
   type: 'action' | 'bonus_action' | 'reaction' | 'passive';
-  type_label?: string;
   description: string;
   mana_cost: number;
   range: string;
@@ -258,12 +256,10 @@ export interface HeroDetail {
       bonus: number;
       final: number;
       modifier: number;
-      abbreviation: string;
-      name: string;
     };
   } | null;
   traits: string[];
-  skills: Array<{ slug: string; name: string; base_ability: string; proficient: boolean }>;
+  skills: string[];
   abilities: HeroAbility[];
   inventory: InventoryItem[];
   active_session: { id: string; name: string } | null;
