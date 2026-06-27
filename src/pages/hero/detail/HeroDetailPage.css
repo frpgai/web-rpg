@@ -99,6 +99,31 @@
   text-shadow: 0 0 8px color-mix(in srgb, var(--color-primary) 60%, transparent);
 }
 
+/* ── Identity rows (Vocação/Classe, Ancestralidade, Antecedente) ────────────── */
+
+.hd-identity-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-bottom: var(--space-xs);
+}
+
+.hd-identity-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.hd-identity-label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  min-width: 100px;
+  flex-shrink: 0;
+}
+
 /* ── Chips ─────────────────────────────────────────────────────────────────── */
 
 .hd-chips {

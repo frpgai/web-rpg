@@ -256,10 +256,12 @@ export interface HeroDetail {
       bonus: number;
       final: number;
       modifier: number;
+      abbreviation: string;
+      name: string;
     };
   } | null;
   traits: string[];
-  skills: string[];
+  skills: Array<{ slug: string; name: string; base_ability: string; proficient: boolean }>;
   abilities: HeroAbility[];
   inventory: InventoryItem[];
   active_session: { id: string; name: string } | null;

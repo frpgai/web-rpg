@@ -7,18 +7,14 @@ import './HeroDetailPage.css';
 
 // ── Constants ──────────────────────────────────────────────────────────────
 
-const ATTR_META: Array<{ key: string; abbr: string; icon: string }> = [
-  { key: 'str', abbr: 'FOR', icon: 'fitness_center' },
-  { key: 'dex', abbr: 'DES', icon: 'bolt' },
-  { key: 'con', abbr: 'CON', icon: 'favorite' },
-  { key: 'int', abbr: 'INT', icon: 'psychology' },
-  { key: 'wis', abbr: 'SAB', icon: 'auto_awesome' },
-  { key: 'cha', abbr: 'CAR', icon: 'theater_comedy' },
-];
-
-const ATTR_ABBR: Record<string, string> = Object.fromEntries(
-  ATTR_META.map(({ key, abbr }) => [key, abbr]),
-);
+const ATTR_ICON: Record<string, string> = {
+  str: 'fitness_center',
+  dex: 'bolt',
+  con: 'favorite',
+  int: 'psychology',
+  wis: 'auto_awesome',
+  cha: 'theater_comedy',
+};
 
 const ALL_SKILLS: Array<{ slug: string; name: string; attr: string }> = [
   { slug: 'acrobatics',      name: 'Acrobacia',         attr: 'dex' },
@@ -198,7 +194,7 @@ export default function HeroDetailPage() {
   const xpPct  = hero.xp_next_level > 0 ? Math.min(100, (hero.xp / hero.xp_next_level) * 100) : 0;
 
   const pb = getProficiencyBonus(hero.level);
-  const proficientSlugs = new Set(hero.skills ?? []);
+  const proficientSlugs = new Set((hero.skills ?? []).map(s => s.slug));
 
   const skillTestMod = (skill: { slug: string; attr: string }) => {
     const attrMod = getAttrMod(skill.attr);
@@ -228,15 +224,24 @@ export default function HeroDetailPage() {
 
           <div className="hd-identity">
             <h1 className="hd-hero-name">{hero.name}</h1>
-            <div className="hd-chips">
+            <div className="hd-identity-rows">
+              {hero.class && (
+                <div className="hd-identity-row">
+                  <span className="hd-identity-label">Vocação / Classe</span>
+                  <span className="hd-chip hd-chip--class">{hero.class.name}</span>
+                </div>
+              )}
               {hero.ancestry && (
-                <span className="hd-chip hd-chip--ancestry">{hero.ancestry.name}</span>
+                <div className="hd-identity-row">
+                  <span className="hd-identity-label">Ancestralidade</span>
+                  <span className="hd-chip hd-chip--ancestry">{hero.ancestry.name}</span>
+                </div>
               )}
               {hero.background && (
-                <span className="hd-chip hd-chip--background">{hero.background.name}</span>
-              )}
-              {hero.class && (
-                <span className="hd-chip hd-chip--class">{hero.class.name}</span>
+                <div className="hd-identity-row">
+                  <span className="hd-identity-label">Antecedente</span>
+                  <span className="hd-chip hd-chip--background">{hero.background.name}</span>
+                </div>
               )}
             </div>
             {hero.active_session && (
@@ -283,18 +288,14 @@ export default function HeroDetailPage() {
 
         {/* ── Attribute Grid ──────────────────────────────────────────── */}
         <div className="hd-attr-grid">
-          {ATTR_META.map(({ key, abbr, icon }) => {
-            const val = getAttrFinal(key);
-            const mod = getAttrMod(key);
-            return (
-              <div key={key} className="hd-attr-card">
-                <span className="material-symbols-outlined hd-attr-icon">{icon}</span>
-                <span className="hd-attr-abbr">{abbr}</span>
-                <span className="hd-attr-val">{val}</span>
-                <span className="hd-attr-mod">{fmtMod(mod)}</span>
-              </div>
-            );
-          })}
+          {hero.attributes && Object.entries(hero.attributes).map(([key, attr]) => (
+            <div key={key} className="hd-attr-card">
+              <span className="material-symbols-outlined hd-attr-icon">{ATTR_ICON[key] ?? 'star'}</span>
+              <span className="hd-attr-abbr">{attr.abbreviation}</span>
+              <span className="hd-attr-val">{attr.final}</span>
+              <span className="hd-attr-mod">{fmtMod(attr.modifier)}</span>
+            </div>
+          ))}
         </div>
 
         {/* ── Inventory + Tabs layout ─────────────────────────────────── */}
@@ -332,7 +333,7 @@ export default function HeroDetailPage() {
                   >
                     <span className={`hd-skill-dot${isProficient ? ' hd-skill-dot--proficient' : ''}`} />
                     <span className="hd-skill-name">{skill.name}</span>
-                    <span className="hd-skill-attr">{ATTR_ABBR[skill.attr]}</span>
+                    <span className="hd-skill-attr">{hero.attributes?.[skill.attr]?.abbreviation ?? skill.attr.toUpperCase()}</span>
                     <span className="hd-skill-mod">{fmtMod(mod)}</span>
                   </div>
                 );
