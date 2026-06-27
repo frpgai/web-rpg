@@ -169,6 +169,7 @@ export interface HeroAbility {
   type: 'action' | 'bonus_action' | 'reaction' | 'passive';
   description: string;
   mana_cost: number;
+  range: string;
   image_url: string;
 }
 
