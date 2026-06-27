@@ -884,3 +884,55 @@
 .hd-error-btn:hover {
   opacity: 0.85;
 }
+
+/* ── Network Error Toast ────────────────────────────────────────────────────── */
+
+.hd-toast-overlay {
+  position: fixed;
+  top: var(--space-md);
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(100% - var(--space-xl));
+  max-width: calc(480px - var(--space-xl));
+  z-index: 1000;
+  pointer-events: none;
+}
+
+.hd-toast-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  background: var(--color-surface-high);
+  border: 1px solid color-mix(in srgb, var(--color-error) 30%, transparent);
+  border-radius: var(--radius-md);
+  padding: var(--space-sm) var(--space-md);
+  pointer-events: auto;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+
+.hd-toast-msg {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  color: var(--color-error);
+  flex: 1;
+}
+
+.hd-toast-retry {
+  background: transparent;
+  border: 1px solid var(--color-error);
+  color: var(--color-error);
+  border-radius: var(--radius-sm);
+  padding: var(--space-xs) var(--space-sm);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: opacity 0.2s ease;
+}
+
+.hd-toast-retry:hover {
+  opacity: 0.8;
+}
