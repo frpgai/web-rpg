@@ -132,12 +132,13 @@ function InventoryCard({ item }: { item: InventoryItem }) {
 function AbilityCard({ ability }: { ability: HeroAbility }) {
   const type = ability.type;
   const isPassive = type === 'passive';
+  const typeLabel = ability.type_label || (ABILITY_TYPE_LABEL[type] ?? type);
   return (
     <div className={`hd-ability-card hd-ability-card--${type}`}>
       <div className="hd-ability-header">
         <h4 className={`hd-ability-name hd-ability-name--${type}`}>{ability.name}</h4>
         <span className={`hd-ability-badge hd-ability-badge--${type}`}>
-          {ABILITY_TYPE_LABEL[type] ?? type}
+          {typeLabel}
         </span>
       </div>
       <p className="hd-ability-desc">{ability.description}</p>
