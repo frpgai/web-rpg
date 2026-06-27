@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useParams, useLocation } from 'wouter';
+import { useTranslation } from 'react-i18next';
 import { useHero } from './useHero';
 import { getAssetUrl } from '../../../utils/url';
 import type { HeroAbility, InventoryItem } from '../../../types';
@@ -114,6 +115,7 @@ function HeroDetailError({
 }
 
 function InventoryCard({ item }: { item: InventoryItem }) {
+  const { t } = useTranslation('common');
   const rarity = item.rarity;
   return (
     <div className={`hd-inv-item hd-inv-item--${rarity}`}>
@@ -122,7 +124,7 @@ function InventoryCard({ item }: { item: InventoryItem }) {
       </div>
       <div className="hd-inv-info">
         <p className="hd-inv-name">{item.name}</p>
-        <p className="hd-inv-rarity">{RARITY_LABEL[rarity] ?? rarity}</p>
+        <p className="hd-inv-rarity">{t(`rarity.${rarity}`) || rarity}</p>
       </div>
       <span className="hd-inv-weight">{item.weight_kg} kg</span>
     </div>
@@ -130,9 +132,10 @@ function InventoryCard({ item }: { item: InventoryItem }) {
 }
 
 function AbilityCard({ ability }: { ability: HeroAbility }) {
+  const { t } = useTranslation('common');
   const type = ability.type;
   const isPassive = type === 'passive';
-  const typeLabel = ability.type_label || (ABILITY_TYPE_LABEL[type] ?? type);
+  const typeLabel = t(`ability_type.${type}`) || type;
   return (
     <div className={`hd-ability-card hd-ability-card--${type}`}>
       <div className="hd-ability-header">
@@ -161,6 +164,8 @@ function AbilityCard({ ability }: { ability: HeroAbility }) {
 // ── Main Page ──────────────────────────────────────────────────────────────
 
 export default function HeroDetailPage() {
+  const { t } = useTranslation(['attributes', 'skills', 'common']);
+
   const params = useParams<{ id: string }>();
   const [, setLocation] = useLocation();
   const heroId = params?.id ?? '';
@@ -195,7 +200,7 @@ export default function HeroDetailPage() {
   const xpPct  = hero.xp_next_level > 0 ? Math.min(100, (hero.xp / hero.xp_next_level) * 100) : 0;
 
   const pb = getProficiencyBonus(hero.level);
-  const proficientSlugs = new Set((hero.skills ?? []).map(s => s.slug));
+  const proficientSlugs = new Set(hero.skills ?? []);
 
   const skillTestMod = (skill: { slug: string; attr: string }) => {
     const attrMod = getAttrMod(skill.attr);
@@ -292,7 +297,7 @@ export default function HeroDetailPage() {
           {hero.attributes && Object.entries(hero.attributes).map(([key, attr]) => (
             <div key={key} className="hd-attr-card">
               <span className="material-symbols-outlined hd-attr-icon">{ATTR_ICON[key] ?? 'star'}</span>
-              <span className="hd-attr-abbr">{attr.abbreviation}</span>
+              <span className="hd-attr-abbr">{t(`${key}.abbreviation`, { ns: 'attributes' }) || key.toUpperCase()}</span>
               <span className="hd-attr-val">{attr.final}</span>
               <span className="hd-attr-mod">{fmtMod(attr.modifier)}</span>
             </div>
@@ -333,8 +338,8 @@ export default function HeroDetailPage() {
                     className={`hd-skill-row${isProficient ? ' hd-skill-row--proficient' : ''}`}
                   >
                     <span className={`hd-skill-dot${isProficient ? ' hd-skill-dot--proficient' : ''}`} />
-                    <span className="hd-skill-name">{skill.name}</span>
-                    <span className="hd-skill-attr">{hero.attributes?.[skill.attr]?.abbreviation ?? skill.attr.toUpperCase()}</span>
+                    <span className="hd-skill-name">{t(`${skill.slug}.name`, { ns: 'skills' }) || skill.name}</span>
+                    <span className="hd-skill-attr">{t(`${skill.attr}.abbreviation`, { ns: 'attributes' }) || skill.attr.toUpperCase()}</span>
                     <span className="hd-skill-mod">{fmtMod(mod)}</span>
                   </div>
                 );

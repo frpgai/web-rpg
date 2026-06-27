@@ -1,0 +1,16 @@
+{
+  "rarity": {
+    "common": "Comum",
+    "uncommon": "Incomum",
+    "rare": "Raro",
+    "very_rare": "Muito Raro",
+    "legendary": "Lendário",
+    "artifact": "Artefato"
+  },
+  "ability_type": {
+    "action": "Ação",
+    "bonus_action": "Ação Bônus",
+    "reaction": "Reação",
+    "passive": "Passiva"
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "acrobatics": { "name": "Acrobacia", "baseAbility": "dex" },
+  "animal_handling": { "name": "Trato com Animais", "baseAbility": "wis" },
+  "arcana": { "name": "Arcanismo", "baseAbility": "int" },
+  "athletics": { "name": "Atletismo", "baseAbility": "str" },
+  "deception": { "name": "Enganação", "baseAbility": "cha" },
+  "history": { "name": "História", "baseAbility": "int" },
+  "insight": { "name": "Intuição", "baseAbility": "wis" },
+  "intimidation": { "name": "Intimidação", "baseAbility": "cha" },
+  "investigation": { "name": "Investigação", "baseAbility": "int" },
+  "medicine": { "name": "Medicina", "baseAbility": "wis" },
+  "nature": { "name": "Natureza", "baseAbility": "int" },
+  "perception": { "name": "Percepção", "baseAbility": "wis" },
+  "performance": { "name": "Atuação", "baseAbility": "cha" },
+  "persuasion": { "name": "Persuasão", "baseAbility": "cha" },
+  "religion": { "name": "Religião", "baseAbility": "int" },
+  "sleight_of_hand": { "name": "Prestidigitação", "baseAbility": "dex" },
+  "stealth": { "name": "Furtividade", "baseAbility": "dex" },
+  "survival": { "name": "Sobrevivência", "baseAbility": "wis" }
+}

@@ -158,9 +158,9 @@ export default function AestheticsPage() {
   const keyAttrLabel = characterClass?.key_attribute?.toUpperCase() ?? '—';
   // When heroId is present, read from sheet; otherwise not available (step 2 not in this store)
   const keyAttr = characterClass?.key_attribute?.toLowerCase();
-  const sheetAttrs = hero?.sheet?.attributes as Record<string, number> | undefined;
+  const sheetAttrs = hero?.attributes as Record<string, { final: number }> | null | undefined;
   const keyAttrValue: number | null =
-    heroId && keyAttr && sheetAttrs ? (sheetAttrs[keyAttr] ?? null) : null;
+    heroId && keyAttr && sheetAttrs ? (sheetAttrs[keyAttr]?.final ?? null) : null;
 
   const canNext = nameIsValid && !!avatarId;
 

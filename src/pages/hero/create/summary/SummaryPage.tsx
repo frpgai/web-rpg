@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useLocation, useParams } from 'wouter';
+import { useTranslation } from 'react-i18next';
 import { CreationStepHeader } from '../../../../components/hero-creation/CreationStepHeader';
 import { CreationFooter } from '../../../../components/hero-creation/CreationFooter';
 import { heroApi } from '../../../../api/services/hero';
@@ -56,6 +57,7 @@ const RARITY_LABELS: Record<string, string> = {
 };
 
 export default function SummaryPage() {
+  const { t } = useTranslation(['attributes', 'skills', 'common']);
   const [, setLocation] = useLocation();
   const params = useParams<{ id?: string }>();
   const heroId = params?.id ?? null;
@@ -275,7 +277,7 @@ export default function SummaryPage() {
                   const attrData = hero.attributes?.[key];
                   const val = attrData?.final ?? 10;
                   const modifier = attrData?.modifier ?? Math.floor((val - 10) / 2);
-                  const label = ATTRIBUTE_LABELS[key] ?? key.toUpperCase();
+                  const label = t(`${key}.name`, { ns: 'attributes' }) || key.toUpperCase();
                   const color = ATTRIBUTE_COLORS[key] ?? 'var(--color-primary)';
                   const pct = Math.min(100, Math.max(0, (val / 20) * 100));
                   const modSign = modifier >= 0 ? `+${modifier}` : String(modifier);
@@ -346,7 +348,7 @@ export default function SummaryPage() {
                                     {item.quantity > 1 && <span className="summary-kit-item-qty"> ×{item.quantity}</span>}
                                   </span>
                                   <span className="summary-kit-item-rarity">
-                                    {RARITY_LABELS[item.rarity] ?? item.rarity}
+                                    {t(`rarity.${item.rarity}`, { ns: 'common' }) || item.rarity}
                                   </span>
                                   {item.equipped && (
                                     <span className="summary-kit-item-equipped">Equipado</span>
@@ -377,8 +379,8 @@ export default function SummaryPage() {
 
               <div className="summary-abilities-grid">
                 {abilities.map((ability) => {
-                  const isSelected = selectedAbilityIds.includes(ability.id);
-                  const typeLabel = ability.type_label || (ABILITY_TYPE_LABEL[ability.type] ?? ability.type);
+                   const isSelected = selectedAbilityIds.includes(ability.id);
+                  const typeLabel = t(`ability_type.${ability.type}`, { ns: 'common' }) || ability.type;
                   const typeTooltip = ABILITY_TYPE_TOOLTIP[ability.type] ?? '';
 
                   return (
@@ -462,7 +464,7 @@ export default function SummaryPage() {
                     {backgroundSkills.map((skill) => (
                       <div key={skill.id} className="summary-skill-chip summary-skill-chip--locked">
                         <span className="material-symbols-outlined summary-skill-chip-check">check_circle</span>
-                        <span className="summary-skill-chip-name">{skill.name}</span>
+                        <span className="summary-skill-chip-name">{t(`${skill.slug}.name`, { ns: 'skills' }) || skill.name}</span>
                         <span className="material-symbols-outlined summary-skill-chip-lock">lock</span>
                       </div>
                     ))}
@@ -485,7 +487,7 @@ export default function SummaryPage() {
                         return (
                           <div key={skill.id} className="summary-skill-chip summary-skill-chip--locked">
                             <span className="material-symbols-outlined summary-skill-chip-check">check_circle</span>
-                            <span className="summary-skill-chip-name">{skill.name}</span>
+                            <span className="summary-skill-chip-name">{t(`${skill.slug}.name`, { ns: 'skills' }) || skill.name}</span>
                             <span className="material-symbols-outlined summary-skill-chip-lock">lock</span>
                           </div>
                         );
@@ -504,7 +506,7 @@ export default function SummaryPage() {
                           <span className="material-symbols-outlined summary-skill-chip-check">
                             {isSelected ? 'check_circle' : 'radio_button_unchecked'}
                           </span>
-                          <span className="summary-skill-chip-name">{skill.name}</span>
+                          <span className="summary-skill-chip-name">{t(`${skill.slug}.name`, { ns: 'skills' }) || skill.name}</span>
                         </div>
                       );
                     })}

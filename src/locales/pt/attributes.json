@@ -1,0 +1,8 @@
+{
+  "str": { "name": "Força", "abbreviation": "FOR" },
+  "dex": { "name": "Destreza", "abbreviation": "DES" },
+  "con": { "name": "Constituição", "abbreviation": "CON" },
+  "int": { "name": "Inteligência", "abbreviation": "INT" },
+  "wis": { "name": "Sabedoria", "abbreviation": "SAB" },
+  "cha": { "name": "Carisma", "abbreviation": "CAR" }
+}
