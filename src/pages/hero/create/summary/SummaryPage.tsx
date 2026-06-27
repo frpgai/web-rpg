@@ -378,7 +378,7 @@ export default function SummaryPage() {
               <div className="summary-abilities-grid">
                 {abilities.map((ability) => {
                   const isSelected = selectedAbilityIds.includes(ability.id);
-                  const typeLabel = ABILITY_TYPE_LABEL[ability.type] ?? ability.type;
+                  const typeLabel = ability.type_label || (ABILITY_TYPE_LABEL[ability.type] ?? ability.type);
                   const typeTooltip = ABILITY_TYPE_TOOLTIP[ability.type] ?? '';
 
                   return (
