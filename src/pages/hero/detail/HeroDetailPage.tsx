@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { useParams, useLocation } from 'wouter';
-import { useHero } from '../../hooks/useHero';
-import { getAssetUrl } from '../../utils/url';
-import type { HeroAbility, InventoryItem } from '../../types';
+import { useHero } from './useHero';
+import { getAssetUrl } from '../../../utils/url';
+import type { HeroAbility, InventoryItem } from '../../../types';
 import './HeroDetailPage.css';
 
 // ── Constants ──────────────────────────────────────────────────────────────
@@ -229,19 +229,22 @@ export default function HeroDetailPage() {
           <div className="hd-identity">
             <h1 className="hd-hero-name">{hero.name}</h1>
             <div className="hd-chips">
-              {hero.class && (
-                <span className="hd-chip hd-chip--class">{hero.class.name}</span>
-              )}
               {hero.ancestry && (
                 <span className="hd-chip hd-chip--ancestry">{hero.ancestry.name}</span>
               )}
-              {hero.active_session && (
-                <span className="hd-chip hd-chip--session">
-                  <span className="material-symbols-outlined">swords</span>
-                  {hero.active_session.name}
-                </span>
+              {hero.background && (
+                <span className="hd-chip hd-chip--background">{hero.background.name}</span>
+              )}
+              {hero.class && (
+                <span className="hd-chip hd-chip--class">{hero.class.name}</span>
               )}
             </div>
+            {hero.active_session && (
+              <div className="hd-session-chip">
+                <span className="material-symbols-outlined">swords</span>
+                {hero.active_session.name}
+              </div>
+            )}
 
             {/* ── Status Bars ──────────────────────────────────── */}
             <div className="hd-bars">

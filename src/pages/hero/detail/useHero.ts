@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
-import { heroApi } from '../api/services/hero';
-import type { HeroDetail } from '../types';
+import { heroApi } from '../../../api/services/hero';
+import type { HeroDetail } from '../../../types';
 
 export interface UseHeroResult {
   hero: HeroDetail | null;

@@ -133,14 +133,31 @@
   border: 1px solid var(--color-outline-variant);
 }
 
-/* Session chip — text-tertiary border-tertiary/30 bg-tertiary/5 */
-.hd-chip--session {
+/* Background chip — text-tertiary border-tertiary/30 bg-tertiary/5 */
+.hd-chip--background {
   color: var(--color-tertiary);
   border: 1px solid color-mix(in srgb, var(--color-tertiary) 30%, transparent);
   background: color-mix(in srgb, var(--color-tertiary) 5%, transparent);
 }
 
-.hd-chip--session .material-symbols-outlined {
+/* Session chip — separado dos 3 badges de identidade */
+.hd-session-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 3px var(--space-sm);
+  border-radius: var(--radius-full);
+  color: var(--color-primary);
+  border: 1px solid color-mix(in srgb, var(--color-primary) 30%, transparent);
+  background: color-mix(in srgb, var(--color-primary) 5%, transparent);
+  margin-top: var(--space-xs);
+}
+
+.hd-session-chip .material-symbols-outlined {
   font-size: 11px;
 }
 

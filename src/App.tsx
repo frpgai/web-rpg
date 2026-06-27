@@ -10,7 +10,7 @@ import OriginsPage from './pages/hero/create/origins';
 import AttributesPage from './pages/hero/create/attributes/AttributesPage';
 import AestheticsPage from './pages/hero/create/aesthetics/AestheticsPage';
 import SummaryPage from './pages/hero/create/summary/SummaryPage';
-import HeroDetailPage from './pages/hero/HeroDetailPage';
+import HeroDetailPage from './pages/hero/detail/HeroDetailPage';
 import SelectSystemPage from './pages/SelectSystemPage';
 import { PrivateRoute } from './components/common/PrivateRoute';
 import { useAuthStore } from './stores/authStore';
