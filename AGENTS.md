@@ -30,3 +30,8 @@ Classes definidas em arquivos CSS locais devem seguir:
 
 - O projeto usa CSS Custom Properties. Cores, fontes e medidas hardcoded são **PROIBIDOS**.
 - Para consultar a paleta e o design system, leia obrigatoriamente o arquivo [web-rpg/src/styles/tokens.css](file:///Users/felipe/Documents/rpg/web-rpg/src/styles/tokens.css).
+
+## i18n e Consumo de Dados da API (Sem Dados Hardcoded)
+
+- **Sem Dicionários Hardcoded**: Não é permitido criar dicionários estáticos ou mapeamentos traduzidos no frontend para dados estruturais do herói que venham da API (como nomes de atributos, abreviações, perícias, tipos de habilidades ou rótulos de raridades). Todas as informações estruturais de exibição e seus respectivos rótulos (como `name`, `abbreviation`, `type_label`, `rarity_label`) devem ser providos e consumidos diretamente a partir do payload retornado pelo backend.
+
