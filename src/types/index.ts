@@ -167,6 +167,7 @@ export interface HeroAbility {
   slug: string;
   name: string;
   type: 'action' | 'bonus_action' | 'reaction' | 'passive';
+  type_label: string;
   description: string;
   mana_cost: number;
   range: string;
@@ -178,6 +179,7 @@ export interface InventoryItem {
   item_id: string;
   name: string;
   rarity: 'common' | 'uncommon' | 'rare' | 'very_rare' | 'legendary';
+  rarity_label: string;
   weight_kg: number;
   quantity: number;
   equipped: boolean;
@@ -250,16 +252,22 @@ export interface HeroDetail {
   mp_current: number;
   mp_max: number;
   def: number;
-  attributes: {
-    [key: string]: {
-      base: number;
-      bonus: number;
-      final: number;
-      modifier: number;
-    };
-  } | null;
+  proficiency_bonus: number;
+  attributes: Record<string, {
+    base: number;
+    bonus: number;
+    final: number;
+    modifier: number;
+    abbreviation: string;
+    name: string;
+  }>;
   traits: string[];
-  skills: string[];
+  skills: Array<{
+    slug: string;
+    name: string;
+    base_ability: string;
+    proficient: boolean;
+  }>;
   abilities: HeroAbility[];
   inventory: InventoryItem[];
   active_session: { id: string; name: string } | null;

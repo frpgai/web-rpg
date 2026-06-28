@@ -38,21 +38,6 @@ const ALL_SKILLS: Array<{ slug: string; name: string; attr: string }> = [
   { slug: 'survival',        name: 'Sobrevivência',      attr: 'wis' },
 ];
 
-const ABILITY_TYPE_LABEL: Record<string, string> = {
-  action:       'Ação',
-  bonus_action: 'Ação Bônus',
-  reaction:     'Reação',
-  passive:      'Passiva',
-};
-
-const RARITY_LABEL: Record<string, string> = {
-  common:    'Comum',
-  uncommon:  'Incomum',
-  rare:      'Raro',
-  very_rare: 'Muito Raro',
-  legendary: 'Lendário',
-};
-
 function getProficiencyBonus(level: number): number {
   if (level <= 4)  return 2;
   if (level <= 8)  return 3;
@@ -200,7 +185,7 @@ export default function HeroDetailPage() {
   const xpPct  = hero.xp_next_level > 0 ? Math.min(100, (hero.xp / hero.xp_next_level) * 100) : 0;
 
   const pb = getProficiencyBonus(hero.level);
-  const proficientSlugs = new Set(hero.skills ?? []);
+  const proficientSlugs = new Set((hero.skills ?? []).map(s => s.slug));
 
   const skillTestMod = (skill: { slug: string; attr: string }) => {
     const attrMod = getAttrMod(skill.attr);

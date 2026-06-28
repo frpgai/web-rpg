@@ -4,7 +4,7 @@ import { CreationStepHeader } from '../../../../components/hero-creation/Creatio
 import { CreationFooter } from '../../../../components/hero-creation/CreationFooter';
 import { OracleButton } from '../../../../components/hero-creation/OracleButton';
 import { usePointBuyRules } from '../../../../hooks/usePointBuyRules';
-import { getSystemAttributes, previewAttributes, saveDraftAttributes } from '../../../../api/services/attributes';
+import { getSystemAttributes, saveDraftAttributes } from '../../../../api/services/attributes';
 import type { SystemAttribute } from '../../../../api/services/attributes';
 import { heroApi } from '../../../../api/services/hero';
 import { AttributeGrid } from './_AttributeGrid';
@@ -19,7 +19,7 @@ function rollRandomAttributes(rules: PointBuyRules, keys: string[]): HeroAttribu
   const MAX_RETRIES = 100;
 
   for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
-    const attrs = Object.fromEntries(keys.map((k) => [k, rules.min])) as HeroAttributes;
+    const attrs = Object.fromEntries(keys.map((k) => [k, rules.min])) as unknown as HeroAttributes;
     let remaining = rules.budget;
     const shuffled = [...keys].sort(() => Math.random() - 0.5);
 
@@ -48,7 +48,7 @@ function rollRandomAttributes(rules: PointBuyRules, keys: string[]): HeroAttribu
   }
 
   // Fallback: all attributes at min
-  return Object.fromEntries(keys.map((k) => [k, rules.min])) as HeroAttributes;
+  return Object.fromEntries(keys.map((k) => [k, rules.min])) as unknown as HeroAttributes;
 }
 
 export default function AttributesPage() {
@@ -58,29 +58,19 @@ export default function AttributesPage() {
 
   const [helpOpen, setHelpOpen] = useState(false);
   const [systemAttributes, setSystemAttributes] = useState<SystemAttribute[]>([]);
-  const [modifiers, setModifiers] = useState<Record<string, number>>({});
   const [previewEligibleAttributes, setPreviewEligibleAttributes] = useState<string[]>([]);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [heroInitialized, setHeroInitialized] = useState(false);
   const [heroLoading, setHeroLoading] = useState(true);
   const [attrsLoading, setAttrsLoading] = useState(true);
   const [showConfirm, setShowConfirm] = useState(false);
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Step 2 local state — 8 matches FALLBACK.min in usePointBuyRules
   const [attrs, setAttrs] = useState<HeroAttributes>({
     str: 8, dex: 8, con: 8, int: 8, wis: 8, cha: 8,
   });
   const [allocatedBonuses, setAllocatedBonuses] = useState<Record<string, number>>({});
-  const [asiAllPlus1, setAsiAllPlus1] = useState(false);
-
-  const asiPlus2 = useMemo(() => {
-    return Object.entries(allocatedBonuses).find(([, v]) => v === 2)?.[0] ?? null;
-  }, [allocatedBonuses]);
-
-  const asiPlus1 = useMemo(() => {
-    return Object.entries(allocatedBonuses).find(([, v]) => v === 1)?.[0] ?? null;
-  }, [allocatedBonuses]);
+  const asiAllPlus1 = false;
 
   // Hero data from API (replaces store for origins context)
   const [hero, setHero] = useState<HeroDetail | null>(null);
@@ -128,8 +118,9 @@ export default function AttributesPage() {
       if (bonuses) {
         const nonZeroBonuses: Record<string, number> = {};
         for (const [k, v] of Object.entries(bonuses)) {
-          if (v > 0) {
-            nonZeroBonuses[k] = v;
+          const val = Number(v);
+          if (val > 0) {
+            nonZeroBonuses[k] = val;
           }
         }
         setAllocatedBonuses(nonZeroBonuses);
@@ -189,13 +180,14 @@ export default function AttributesPage() {
   const characterClass = hero?.class ?? null;
   const background = useMemo(() => {
     if (!hero?.background) return null;
+    const bg = hero.background as any;
     return {
-      id: hero.background.id,
-      slug: hero.background.slug,
-      name: hero.background.name,
+      id: bg.id,
+      slug: bg.slug,
+      name: bg.name,
       description: '',
-      bonuses: hero.background.attribute_bonuses,
-      eligible_attributes: hero.background.eligible_attributes,
+      bonuses: bg.attribute_bonuses,
+      eligible_attributes: bg.eligible_attributes,
       traits: [],
     };
   }, [hero]);
@@ -220,28 +212,6 @@ export default function AttributesPage() {
       .finally(() => setHeroLoading(false));
   }, [ancestry, characterClass, background]);
 
-  // Debounced preview call — 300ms after any attribute change
-  useEffect(() => {
-    if (!background) return;
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => {
-      previewAttributes({ backgroundId: background.id, ...attrs })
-        .then((result) => {
-          const mods: Record<string, number> = {};
-          for (const [slug, data] of Object.entries(result.attributes)) {
-            mods[slug] = data.modifier;
-          }
-          setModifiers(mods);
-        })
-        .catch(() => {
-          // non-critical — modifiers remain from last successful call
-        });
-    }, 300);
-    return () => {
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-    };
-  }, [attrs, background]);
-
   function totalCost(a: Record<string, number>): number {
     return Object.values(a).reduce((sum, v) => sum + (rules.costTable[v] ?? 0), 0);
   }
@@ -258,7 +228,7 @@ export default function AttributesPage() {
   const asiPoolTotal = useMemo(() => {
     if (!background) return 0;
     if (asiAllPlus1) return eligibleAttributes.length;
-    return (background.bonuses ?? []).reduce((sum, v) => sum + v, 0);
+    return (background.bonuses ?? []).reduce((sum: number, v: number) => sum + v, 0);
   }, [background, asiAllPlus1, eligibleAttributes.length]);
 
   const asiMaxPerAttr = asiAllPlus1 ? 1 : 2;
@@ -281,7 +251,7 @@ export default function AttributesPage() {
   }, [allocatedBonuses, asiAllPlus1, background, systemAttributes]);
 
   const asiAllocated = useMemo(() => {
-    return eligibleAttributes.reduce((sum, attrId) => {
+    return eligibleAttributes.reduce((sum: number, attrId: string) => {
       const slug = systemAttributes.find((a) => a.id === attrId)?.slug;
       if (!slug) return sum;
       return sum + (attributeBonuses[slug as keyof typeof attributeBonuses] ?? 0);
@@ -293,7 +263,7 @@ export default function AttributesPage() {
     if (!background) return undefined;
     if (asiAllPlus1) return '+1 / +1 / +1';
     const formatted = (background.bonuses ?? [])
-      .map((b) => `+${b}`)
+      .map((b: number) => `+${b}`)
       .join(' / ');
     return formatted || undefined;
   }, [background, asiAllPlus1]);
@@ -428,15 +398,14 @@ export default function AttributesPage() {
         />
 
         <CharacterPreviewSummary
-          ancestry={ancestry}
-          background={background}
-          characterClass={characterClass}
+          ancestry={ancestry as any}
+          background={background as any}
+          characterClass={characterClass as any}
           loading={heroLoading}
         />
 
         <PointPoolCard
           remaining={remaining}
-          budget={rules.budget}
           bonusDescription={bonusDescription}
           loading={pointBuyLoading}
         />
@@ -483,7 +452,6 @@ export default function AttributesPage() {
           onSetAttr={handleSetAttr}
           rules={rules}
           systemAttributes={systemAttributes}
-          modifiers={modifiers}
           loading={attrsLoading}
         />
 
