@@ -16,15 +16,6 @@ import type {
 } from '../../../../types';
 import './SummaryPage.css';
 
-const ATTRIBUTE_LABELS: Record<string, string> = {
-  str: 'Força',
-  dex: 'Destreza',
-  con: 'Constituição',
-  int: 'Inteligência',
-  wis: 'Sabedoria',
-  cha: 'Carisma',
-};
-
 const ATTRIBUTE_COLORS: Record<string, string> = {
   str: 'var(--color-secondary)',
   dex: 'var(--color-primary)',
@@ -34,26 +25,11 @@ const ATTRIBUTE_COLORS: Record<string, string> = {
   cha: 'var(--color-primary)',
 };
 
-const ABILITY_TYPE_LABEL: Record<string, string> = {
-  action: 'Ação',
-  bonus_action: 'Ação Bônus',
-  reaction: 'Reação',
-  passive: 'Passiva',
-};
-
 const ABILITY_TYPE_TOOLTIP: Record<string, string> = {
   action: 'O personagem usa sua ação principal no turno para ativar esta habilidade',
   passive: 'Efeito sempre ativo — não precisa ser ativado; funciona automaticamente nas condições descritas',
   bonus_action: 'Usa a ação bônus do turno para ativar esta habilidade',
   reaction: 'Ativada como reação a um gatilho específico',
-};
-
-const RARITY_LABELS: Record<string, string> = {
-  common: 'Comum',
-  uncommon: 'Incomum',
-  rare: 'Raro',
-  very_rare: 'Muito Raro',
-  legendary: 'Lendário',
 };
 
 export default function SummaryPage() {

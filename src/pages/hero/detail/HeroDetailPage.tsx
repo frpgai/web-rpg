@@ -17,49 +17,6 @@ const ATTR_ICON: Record<string, string> = {
   cha: 'theater_comedy',
 };
 
-const ALL_SKILLS: Array<{ slug: string; name: string; attr: string }> = [
-  { slug: 'acrobatics',      name: 'Acrobacia',         attr: 'dex' },
-  { slug: 'animal_handling', name: 'Trato c/ Animais',  attr: 'wis' },
-  { slug: 'arcana',          name: 'Arcanismo',          attr: 'int' },
-  { slug: 'athletics',       name: 'Atletismo',          attr: 'str' },
-  { slug: 'deception',       name: 'Enganação',          attr: 'cha' },
-  { slug: 'history',         name: 'História',           attr: 'int' },
-  { slug: 'insight',         name: 'Intuição',           attr: 'wis' },
-  { slug: 'intimidation',    name: 'Intimidação',        attr: 'cha' },
-  { slug: 'investigation',   name: 'Investigação',       attr: 'int' },
-  { slug: 'medicine',        name: 'Medicina',           attr: 'wis' },
-  { slug: 'nature',          name: 'Natureza',           attr: 'int' },
-  { slug: 'perception',      name: 'Percepção',          attr: 'wis' },
-  { slug: 'performance',     name: 'Atuação',            attr: 'cha' },
-  { slug: 'persuasion',      name: 'Persuasão',          attr: 'cha' },
-  { slug: 'religion',        name: 'Religião',           attr: 'int' },
-  { slug: 'sleight_of_hand', name: 'Prestidigitação',    attr: 'dex' },
-  { slug: 'stealth',         name: 'Furtividade',        attr: 'dex' },
-  { slug: 'survival',        name: 'Sobrevivência',      attr: 'wis' },
-];
-
-const ABILITY_TYPE_LABEL: Record<string, string> = {
-  action:       'Ação',
-  bonus_action: 'Ação Bônus',
-  reaction:     'Reação',
-  passive:      'Passiva',
-};
-
-const RARITY_LABEL: Record<string, string> = {
-  common:    'Comum',
-  uncommon:  'Incomum',
-  rare:      'Raro',
-  very_rare: 'Muito Raro',
-  legendary: 'Lendário',
-};
-
-function getProficiencyBonus(level: number): number {
-  if (level <= 4)  return 2;
-  if (level <= 8)  return 3;
-  if (level <= 12) return 4;
-  if (level <= 16) return 5;
-  return 6;
-}
 
 function fmtMod(n: number): string {
   return n >= 0 ? `+${n}` : String(n);
@@ -164,7 +121,7 @@ function AbilityCard({ ability }: { ability: HeroAbility }) {
 // ── Main Page ──────────────────────────────────────────────────────────────
 
 export default function HeroDetailPage() {
-  const { t } = useTranslation(['attributes', 'skills', 'common']);
+  const { t } = useTranslation(['attributes', 'common']);
 
   const params = useParams<{ id: string }>();
   const [, setLocation] = useLocation();
@@ -172,6 +129,8 @@ export default function HeroDetailPage() {
 
   const { hero, loading, error, errorStatus, refresh } = useHero(heroId);
   const [activeTab, setActiveTab] = useState<TabKey>('abilities');
+
+  const [showOnlyProficient, setShowOnlyProficient] = useState(false);
 
   if (loading) return <HeroDetailSkeleton />;
 
@@ -199,12 +158,9 @@ export default function HeroDetailPage() {
   const mpPct  = hero.mp_max  > 0 ? Math.min(100, (hero.mp_current  / hero.mp_max)  * 100) : 0;
   const xpPct  = hero.xp_next_level > 0 ? Math.min(100, (hero.xp / hero.xp_next_level) * 100) : 0;
 
-  const pb = getProficiencyBonus(hero.level);
-  const proficientSlugs = new Set(hero.skills ?? []);
-
-  const skillTestMod = (skill: { slug: string; attr: string }) => {
-    const attrMod = getAttrMod(skill.attr);
-    return attrMod + (proficientSlugs.has(skill.slug) ? pb : 0);
+  const skillMod = (skill: { base_ability: string; proficient: boolean }) => {
+    const attrMod = getAttrMod(skill.base_ability);
+    return attrMod + (skill.proficient ? hero.proficiency_bonus : 0);
   };
 
   return (
@@ -324,26 +280,40 @@ export default function HeroDetailPage() {
 
           {/* ── Skills ──────────────────────────────────────────── */}
           <section className="hd-section">
-            <h2 className="hd-section-title">
-              <span className="material-symbols-outlined">history_edu</span>
-              Perícias
-            </h2>
+            <div className="hd-section-header-with-toggle">
+              <h2 className="hd-section-title" style={{ margin: 0 }}>
+                <span className="material-symbols-outlined">history_edu</span>
+                Perícias
+              </h2>
+              <button
+                className="hd-skills-toggle-btn"
+                onClick={() => setShowOnlyProficient(!showOnlyProficient)}
+              >
+                {showOnlyProficient ? 'Mostrar Todas' : 'Apenas Treinadas'}
+              </button>
+            </div>
             <div className="hd-skills-list">
-              {ALL_SKILLS.map((skill) => {
-                const isProficient = proficientSlugs.has(skill.slug);
-                const mod = skillTestMod(skill);
-                return (
-                  <div
-                    key={skill.slug}
-                    className={`hd-skill-row${isProficient ? ' hd-skill-row--proficient' : ''}`}
-                  >
-                    <span className={`hd-skill-dot${isProficient ? ' hd-skill-dot--proficient' : ''}`} />
-                    <span className="hd-skill-name">{t(`${skill.slug}.name`, { ns: 'skills' }) || skill.name}</span>
-                    <span className="hd-skill-attr">{t(`${skill.attr}.abbreviation`, { ns: 'attributes' }) || skill.attr.toUpperCase()}</span>
-                    <span className="hd-skill-mod">{fmtMod(mod)}</span>
-                  </div>
-                );
-              })}
+              {(hero.skills ?? [])
+                .filter((skill) => !showOnlyProficient || skill.proficient)
+                .map((skill) => {
+                  const mod = skillMod(skill);
+                  return (
+                    <div
+                      key={skill.slug}
+                      className={`hd-skill-row${skill.proficient ? ' hd-skill-row--proficient' : ''}`}
+                    >
+                      <span className={`hd-skill-dot${skill.proficient ? ' hd-skill-dot--proficient' : ''}`} />
+                      <span className="hd-skill-name">{skill.name}</span>
+                      <span className="hd-skill-attr">{skill.base_ability.toUpperCase()}</span>
+                      <span className="hd-skill-mod">{fmtMod(mod)}</span>
+                    </div>
+                  );
+                })}
+              {showOnlyProficient && (hero.skills ?? []).filter((s) => s.proficient).length === 0 && (
+                <div className="hd-empty-text" style={{ padding: 'var(--space-md)' }}>
+                  Nenhuma perícia treinada.
+                </div>
+              )}
             </div>
           </section>
 

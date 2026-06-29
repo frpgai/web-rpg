@@ -13,13 +13,12 @@ interface Props {
   onSetAttr: (key: keyof HeroAttributes, val: number) => void;
   rules: PointBuyRules;
   systemAttributes: SystemAttribute[];
-  modifiers: Record<string, number>;
   loading?: boolean;
 }
 
 export function AttributeGrid({
   attrs, remaining, attributeBonuses, eligibleAttributes,
-  asiPoolRemaining, asiMaxPerAttr, onSetAttr, rules, systemAttributes, modifiers, loading,
+  asiPoolRemaining, asiMaxPerAttr, onSetAttr, rules, systemAttributes, loading,
 }: Props) {
   if (loading || systemAttributes.length === 0) {
     return (
