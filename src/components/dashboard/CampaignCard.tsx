@@ -4,16 +4,6 @@ import './CampaignCard.css';
 
 export const CAMPAIGN_CARD_WIDTH = 320;
 
-type BadgeColor = { bg: string; text: string };
-
-function getBadgeColor(system: string): BadgeColor {
-  const s = system.toLowerCase();
-  if (s.includes('d&d') || s.includes('dnd')) return { bg: '#b91c1c', text: '#fee2e2' };
-  if (s.includes('pathfinder')) return { bg: '#92400e', text: '#fef3c7' };
-  if (s.includes('call')) return { bg: '#1e3a5f', text: '#bfdbfe' };
-  return { bg: 'rgba(215,186,255,0.2)', text: '#d7baff' };
-}
-
 type Props = {
   campaign: AvailableCampaign;
   onPress: () => void;
@@ -21,8 +11,6 @@ type Props = {
 };
 
 export function CampaignCard({ campaign, onPress, active = false }: Props) {
-  const badge = getBadgeColor(campaign.system);
-
   const inner = (
     <div className="dashboard-campaign-card-gradient">
       <div className="dashboard-campaign-card-top-row">
