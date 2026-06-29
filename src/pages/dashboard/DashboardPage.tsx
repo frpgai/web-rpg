@@ -27,11 +27,11 @@ export default function DashboardPage() {
   };
 
   const handleHeroPress = (hero: Hero) => {
-    setLocation(`/hero/${hero.id}`);
+    setLocation(`/app/hero/${hero.id}`);
   };
 
   const handleCreateHero = () => {
-    setLocation('/heroes/create/origins');
+    setLocation('/app/hero/create/origins');
   };
 
   const handleCampaignPress = (id: string) => {
@@ -131,9 +131,6 @@ export default function DashboardPage() {
           </div>
         )}
       </div>
-
-      {/* Bottom Nav */}
-      <BottomNav active="home" onPress={() => {}} />
 
       {/* FAB */}
       <button className="fab" onClick={handleCreateHero} aria-label="Criar Herói">

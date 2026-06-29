@@ -118,14 +118,14 @@ export default function OriginsPage() {
         vocation_id: vocation.id,
         background_id: background.id,
       });
-      setLocation(`/heroes/create/attributes/${draft.id}`);
+      setLocation(`/app/hero/create/attributes/${draft.id}`);
     } catch {
       console.error('Failed to save draft');
     }
   }
 
   function handleBack() {
-    setLocation('/dashboard');
+    setLocation('/app/dashboard');
   }
 
   const canNext = ancestry !== null && vocation !== null && background !== null;

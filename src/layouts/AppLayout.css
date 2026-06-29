@@ -1,0 +1,42 @@
+.layout-root {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  min-height: 100dvh;
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  width: 100%;
+}
+
+.layout-content {
+  flex: 1;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: var(--space-md);
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 100px; /* Espaço para o BottomNav flutuante no mobile */
+}
+
+.layout-nav-container {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 480px; /* Comportamento mobile centralizado por padrão */
+  z-index: 100;
+}
+
+@media (min-width: 768px) {
+  .layout-content {
+    padding: var(--space-xl);
+    padding-bottom: var(--space-xl);
+  }
+
+  .layout-nav-container {
+    max-width: 1000px; /* Alinha com a largura máxima do layout no desktop */
+  }
+}

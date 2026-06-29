@@ -157,11 +157,10 @@ export default function AttributesPage() {
     return () => { cancelled = true; };
   }, [heroId]);
 
-  // Guard: ensure previous steps are completed — only after init
   useEffect(() => {
     if (!heroInitialized) return;
     if (!hero?.ancestry || !hero?.class || !hero?.background) {
-      setLocation('/heroes/create/origins');
+      setLocation('/app/hero/create/origins');
     }
   }, [heroInitialized, hero, setLocation]);
 
@@ -370,10 +369,10 @@ export default function AttributesPage() {
       } catch (err) {
         console.error('Failed to save draft attributes:', err);
       } finally {
-        setLocation(`/heroes/create/aesthetics/${heroId}`);
+        setLocation(`/app/hero/create/aesthetics/${heroId}`);
       }
     } else {
-      setLocation('/heroes/create/aesthetics');
+      setLocation('/app/hero/create/aesthetics');
     }
   }
 
@@ -383,7 +382,7 @@ export default function AttributesPage() {
       setShowConfirm(true);
       return;
     }
-    setLocation('/heroes/create/origins');
+    setLocation('/app/hero/create/origins');
   }
 
   if (!ancestry || !characterClass || !background) return null;
@@ -479,7 +478,7 @@ export default function AttributesPage() {
         cancelLabel="Continuar Editando"
         onConfirm={() => {
           setShowConfirm(false);
-          setLocation('/heroes/create/origins');
+          setLocation('/app/hero/create/origins');
         }}
         onCancel={() => setShowConfirm(false)}
       />

@@ -57,7 +57,7 @@ export default function SummaryPage() {
 
   useEffect(() => {
     if (!heroId) {
-      setLocation('/hero/create/aesthetics');
+      setLocation('/app/hero/create/aesthetics');
       return;
     }
 
@@ -100,7 +100,7 @@ export default function SummaryPage() {
         }
       } catch (err) {
         console.error('Failed to load hero for summary:', err);
-        setLocation('/hero/create/aesthetics');
+        setLocation('/app/hero/create/aesthetics');
       } finally {
         setLoading(false);
       }
@@ -158,7 +158,7 @@ export default function SummaryPage() {
 
   const handleBack = () => {
     if (submitting) return;
-    setLocation(`/hero/create/aesthetics/${heroId}`);
+    setLocation(`/app/hero/create/aesthetics/${heroId}`);
   };
 
   const handleSubmit = async () => {
@@ -172,7 +172,7 @@ export default function SummaryPage() {
         skill_ids: selectedSkillIds,
       });
       store.reset();
-      setLocation(`/hero/${result.id}`);
+      setLocation(`/app/hero/${result.id}`);
     } catch (err: unknown) {
       const httpErr = err as { response?: { status?: number; json?: () => Promise<{ field?: string; message?: string }> } };
       if (httpErr?.response?.status === 422) {
@@ -181,7 +181,7 @@ export default function SummaryPage() {
           const msg = body?.message ?? 'Dados inválidos. Verifique suas escolhas.';
           setError(msg);
           const field = body?.field;
-          if (field === 'attributes') setLocation(`/hero/create/attributes/${heroId}`);
+          if (field === 'attributes') setLocation(`/app/hero/create/attributes/${heroId}`);
         } catch {
           setError('Dados inválidos. Verifique suas escolhas.');
         }

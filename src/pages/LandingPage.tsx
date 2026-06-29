@@ -94,7 +94,7 @@ export default function LandingPage() {
     if (!isAuthenticated) {
       setModalVisible(true);
     } else {
-      setLocation('/dashboard');
+      setLocation('/app/dashboard');
     }
   }
 
@@ -219,7 +219,7 @@ export default function LandingPage() {
 
       {/* Bottom CTA */}
       <div className="landing-bottom-bar">
-        <button className="cta-btn" onClick={() => setLocation(isAuthenticated ? '/dashboard' : '/register')}>
+        <button className="cta-btn" onClick={() => setLocation(isAuthenticated ? '/app/dashboard' : '/register')}>
           <span className="cta-btn-icon">👤</span>
           <span className="cta-btn-text">
             {isAuthenticated ? 'ENTRAR NO PAINEL' : 'CRIAR MEU PRIMEIRO HERÓI'}

@@ -37,6 +37,7 @@
 /* Avatar */
 .hd-avatar-wrap {
   position: relative;
+  padding-bottom: 44px;
 }
 
 .hd-avatar {
@@ -48,6 +49,7 @@
   background: color-mix(in srgb, var(--color-surface-container) 40%, transparent);
   border: 1px solid color-mix(in srgb, var(--color-primary) 10%, transparent);
   object-fit: cover;
+  object-position: top;
 }
 
 .hd-avatar-placeholder {
@@ -66,7 +68,7 @@
 /* Level badge — bg-primary text-on-primary px-lg py-sm rounded-xl rotate-3 */
 .hd-level-badge {
   position: absolute;
-  bottom: -10px;
+  bottom: 25px;
   right: -10px;
   background: var(--color-primary);
   color: var(--color-on-primary);
@@ -79,6 +81,33 @@
   transform: rotate(3deg);
   white-space: nowrap;
   box-shadow: 0 4px 12px color-mix(in srgb, var(--color-primary) 30%, transparent);
+}
+
+/* DEF badge — positioned below the level badge */
+.hd-def-badge {
+  position: absolute;
+  bottom: 3px;
+  right: -10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  background: var(--color-surface-high);
+  color: var(--color-text);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--radius-md);
+  border: 1px solid color-mix(in srgb, var(--color-outline-variant) 60%, transparent);
+  white-space: nowrap;
+  transform: rotate(3deg);
+
+}
+
+.hd-def-badge .material-symbols-outlined {
+  font-size: 12px;
+  color: var(--color-text-muted);
 }
 
 /* Identity */
@@ -163,27 +192,6 @@
   color: var(--color-tertiary);
   border: 1px solid color-mix(in srgb, var(--color-tertiary) 30%, transparent);
   background: color-mix(in srgb, var(--color-tertiary) 5%, transparent);
-}
-
-/* Session chip — separado dos 3 badges de identidade */
-.hd-session-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
-  font-family: var(--font-mono);
-  font-size: 9px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  padding: 3px var(--space-sm);
-  border-radius: var(--radius-full);
-  color: var(--color-primary);
-  border: 1px solid color-mix(in srgb, var(--color-primary) 30%, transparent);
-  background: color-mix(in srgb, var(--color-primary) 5%, transparent);
-  margin-top: var(--space-xs);
-}
-
-.hd-session-chip .material-symbols-outlined {
-  font-size: 11px;
 }
 
 /* ── Status Bars ───────────────────────────────────────────────────────────── */
@@ -658,6 +666,32 @@
   margin-bottom: var(--space-sm);
 }
 
+.hd-ability-title-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  min-width: 0;
+}
+
+.hd-ability-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-sm);
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.hd-ability-icon-fallback {
+  font-size: 20px;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-muted);
+  flex-shrink: 0;
+}
+
 .hd-ability-name {
   font-size: 13px;
   font-weight: 700;
@@ -936,3 +970,52 @@
 .hd-error-btn:hover {
   opacity: 0.85;
 }
+
+.hd-left-col {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+  width: 100%;
+}
+
+/* ── Responsividade no Desktop (Fluida e sem Grid para a página inteira) ─────── */
+
+@media (min-width: 768px) {
+  .hd-root {
+    max-width: 1000px;
+    padding: var(--space-lg);
+  }
+
+  .hd-scroll {
+    padding-bottom: 120px;
+  }
+
+  /* No desktop, usamos Flexbox para colocar a coluna esquerda e direita lado a lado */
+  .hd-main-layout {
+    display: flex;
+    flex-direction: row;
+    gap: var(--space-xl);
+    align-items: flex-start;
+    width: 100%;
+  }
+
+  /* Distribui as duas colunas principais no Flexbox */
+  .hd-left-col {
+    flex: 1;
+    min-width: 0; /* Evita quebra de layout por overflow */
+  }
+
+  .hd-tabs-section {
+    flex: 1.2; /* Dá um pouco mais de espaço para as abas e habilidades */
+    min-width: 0; /* Evita quebra de layout por overflow */
+    margin-bottom: 0;
+  }
+
+  /* Menu inferior flutuante adaptado para a largura do layout */
+  .hd-bottom-nav {
+    max-width: 1000px;
+    border-radius: 16px 16px 0 0;
+  }
+}
+
+
