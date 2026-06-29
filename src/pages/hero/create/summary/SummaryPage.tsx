@@ -410,7 +410,7 @@ export default function SummaryPage() {
                         {ability.range && (
                           <span className="summary-ability-stat">
                             <span className="material-symbols-outlined summary-ability-stat-icon">radar</span>
-                            {ability.range}
+                            {t(`ability_range.${ability.range}`, { ns: 'common', defaultValue: ability.range })}
                           </span>
                         )}
                       </div>
