@@ -75,18 +75,18 @@ export default function AestheticsPage() {
 
     if (heroId) {
       if (!hero?.ancestry || !hero?.class || !hero?.background) {
-        setLocation('/hero/create/origins');
+        setLocation('/app/hero/create/origins');
         return;
       }
       const attrs = (hero as any).sheet?.base_attributes ?? (hero as any).sheet?.attributes ?? hero.attributes;
       if (!attrs) {
-        setLocation(`/heroes/create/attributes/${heroId}`);
+        setLocation(`/app/hero/create/attributes/${heroId}`);
       }
     } else {
       const { ancestry: a, characterClass: v, background: b } =
         useHeroCreationStore.getState();
       if (!a || !v || !b) {
-        setLocation('/hero/create/origins');
+        setLocation('/app/hero/create/origins');
       }
     }
   }, [heroInitialized, hero, heroId, setLocation]);
@@ -166,9 +166,9 @@ export default function AestheticsPage() {
 
   const handleBack = () => {
     if (heroId) {
-      setLocation(`/heroes/create/attributes/${heroId}`);
+      setLocation(`/app/hero/create/attributes/${heroId}`);
     } else {
-      setLocation('/heroes/create/attributes');
+      setLocation('/app/hero/create/attributes');
     }
   };
 
@@ -184,9 +184,9 @@ export default function AestheticsPage() {
       } catch (err) {
         console.error('Failed to save draft aesthetics:', err);
       }
-      setLocation(`/heroes/create/summary/${heroId}`);
+      setLocation(`/app/hero/create/summary/${heroId}`);
     } else {
-      setLocation('/heroes/create/summary');
+      setLocation('/app/hero/create/summary');
     }
   };
 

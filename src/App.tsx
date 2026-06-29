@@ -12,6 +12,7 @@ import AestheticsPage from './pages/hero/create/aesthetics/AestheticsPage';
 import SummaryPage from './pages/hero/create/summary/SummaryPage';
 import HeroDetailPage from './pages/hero/detail/HeroDetailPage';
 import SelectSystemPage from './pages/SelectSystemPage';
+import AppLayout from './layouts/AppLayout';
 import { PrivateRoute } from './components/common/PrivateRoute';
 import { useAuthStore } from './stores/authStore';
 import { systemService } from './api/services/systemService';
@@ -35,75 +36,51 @@ export default function App() {
   return (
     <Router hook={useHashLocation}>
       <Switch>
-        {/* Rotas públicas */}
+        {/* ==================== 1. ROTAS PÚBLICAS ==================== */}
         <Route path="/" component={LandingPage} />
         <Route path="/login" component={LoginPage} />
         <Route path="/register" component={RegisterPage} />
 
+        {/* ==================== 2. ROTAS PRIVADAS ==================== */}
+        <Route path="/app/*">
+          <PrivateRoute>
+            <AppLayout>
+              <Switch>
+                <Route path="/app/dashboard" component={DashboardPage} />
+                <Route path="/app/hero/:id" component={HeroDetailPage} />
 
-        {/* Rotas privadas */}
-        <Route path="/dashboard">
-          <PrivateRoute><DashboardPage /></PrivateRoute>
-        </Route>
-        <Route path="/heroes/create/origins">
-          <PrivateRoute><OriginsPage /></PrivateRoute>
-        </Route>
-        <Route path="/hero/create/origins">
-          <PrivateRoute><OriginsPage /></PrivateRoute>
-        </Route>
-        <Route path="/heroes/create/attributes">
-          <PrivateRoute><AttributesPage /></PrivateRoute>
-        </Route>
-        <Route path="/heroes/create/attributes/:id">
-          <PrivateRoute><AttributesPage /></PrivateRoute>
-        </Route>
-        <Route path="/hero/create/attributes">
-          <PrivateRoute><AttributesPage /></PrivateRoute>
-        </Route>
-        <Route path="/hero/create/attributes/:id">
-          <PrivateRoute><AttributesPage /></PrivateRoute>
-        </Route>
-        <Route path="/heroes/create/aesthetics">
-          <PrivateRoute><AestheticsPage /></PrivateRoute>
-        </Route>
-        <Route path="/heroes/create/aesthetics/:id">
-          <PrivateRoute><AestheticsPage /></PrivateRoute>
-        </Route>
-        <Route path="/hero/create/aesthetics">
-          <PrivateRoute><AestheticsPage /></PrivateRoute>
-        </Route>
-        <Route path="/hero/create/aesthetics/:id">
-          <PrivateRoute><AestheticsPage /></PrivateRoute>
-        </Route>
-        <Route path="/heroes/create/summary">
-          <PrivateRoute><SummaryPage /></PrivateRoute>
-        </Route>
-        <Route path="/heroes/create/summary/:id">
-          <PrivateRoute><SummaryPage /></PrivateRoute>
-        </Route>
-        <Route path="/hero/create/summary">
-          <PrivateRoute><SummaryPage /></PrivateRoute>
-        </Route>
-        <Route path="/hero/create/summary/:id">
-          <PrivateRoute><SummaryPage /></PrivateRoute>
-        </Route>
+                <Route path="/app/heroes/create/origins" component={OriginsPage} />
+                <Route path="/app/hero/create/origins" component={OriginsPage} />
 
-        <Route path="/hero/:id">
-          <PrivateRoute><HeroDetailPage /></PrivateRoute>
-        </Route>
+                <Route path="/app/heroes/create/attributes" component={AttributesPage} />
+                <Route path="/app/heroes/create/attributes/:id" component={AttributesPage} />
+                <Route path="/app/hero/create/attributes" component={AttributesPage} />
+                <Route path="/app/hero/create/attributes/:id" component={AttributesPage} />
 
-        <Route path="/select-system">
-          <PrivateRoute><SelectSystemPage /></PrivateRoute>
-        </Route>
+                <Route path="/app/heroes/create/aesthetics" component={AestheticsPage} />
+                <Route path="/app/heroes/create/aesthetics/:id" component={AestheticsPage} />
+                <Route path="/app/hero/create/aesthetics" component={AestheticsPage} />
+                <Route path="/app/hero/create/aesthetics/:id" component={AestheticsPage} />
 
-        {/* Fallback */}
-        <Route>
-          <div style={{ padding: '20px', textAlign: 'center' }}>
-            <h1>404</h1>
-            <p>Página não encontrada.</p>
-          </div>
+                <Route path="/app/heroes/create/summary" component={SummaryPage} />
+                <Route path="/app/heroes/create/summary/:id" component={SummaryPage} />
+                <Route path="/app/hero/create/summary" component={SummaryPage} />
+                <Route path="/app/hero/create/summary/:id" component={SummaryPage} />
+
+                <Route path="/app/select-system" component={SelectSystemPage} />
+
+                <Route>
+                  <div style={{ padding: '20px', textAlign: 'center' }}>
+                    <h1>404</h1>
+                    <p>Página não encontrada no painel.</p>
+                  </div>
+                </Route>
+              </Switch>
+            </AppLayout>
+          </PrivateRoute>
         </Route>
       </Switch>
     </Router>
   );
 }
+

@@ -49,6 +49,7 @@
   background: color-mix(in srgb, var(--color-surface-container) 40%, transparent);
   border: 1px solid color-mix(in srgb, var(--color-primary) 10%, transparent);
   object-fit: cover;
+  object-position: top;
 }
 
 .hd-avatar-placeholder {
@@ -67,7 +68,7 @@
 /* Level badge — bg-primary text-on-primary px-lg py-sm rounded-xl rotate-3 */
 .hd-level-badge {
   position: absolute;
-  bottom: -10px;
+  bottom: 25px;
   right: -10px;
   background: var(--color-primary);
   color: var(--color-on-primary);
@@ -85,7 +86,7 @@
 /* DEF badge — positioned below the level badge */
 .hd-def-badge {
   position: absolute;
-  bottom: -34px;
+  bottom: 3px;
   right: -10px;
   display: inline-flex;
   align-items: center;
@@ -100,6 +101,8 @@
   border-radius: var(--radius-md);
   border: 1px solid color-mix(in srgb, var(--color-outline-variant) 60%, transparent);
   white-space: nowrap;
+  transform: rotate(3deg);
+
 }
 
 .hd-def-badge .material-symbols-outlined {
@@ -967,3 +970,52 @@
 .hd-error-btn:hover {
   opacity: 0.85;
 }
+
+.hd-left-col {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+  width: 100%;
+}
+
+/* ── Responsividade no Desktop (Fluida e sem Grid para a página inteira) ─────── */
+
+@media (min-width: 768px) {
+  .hd-root {
+    max-width: 1000px;
+    padding: var(--space-lg);
+  }
+
+  .hd-scroll {
+    padding-bottom: 120px;
+  }
+
+  /* No desktop, usamos Flexbox para colocar a coluna esquerda e direita lado a lado */
+  .hd-main-layout {
+    display: flex;
+    flex-direction: row;
+    gap: var(--space-xl);
+    align-items: flex-start;
+    width: 100%;
+  }
+
+  /* Distribui as duas colunas principais no Flexbox */
+  .hd-left-col {
+    flex: 1;
+    min-width: 0; /* Evita quebra de layout por overflow */
+  }
+
+  .hd-tabs-section {
+    flex: 1.2; /* Dá um pouco mais de espaço para as abas e habilidades */
+    min-width: 0; /* Evita quebra de layout por overflow */
+    margin-bottom: 0;
+  }
+
+  /* Menu inferior flutuante adaptado para a largura do layout */
+  .hd-bottom-nav {
+    max-width: 1000px;
+    border-radius: 16px 16px 0 0;
+  }
+}
+
+

@@ -916,3 +916,101 @@ body {
   color: var(--color-text);
 }
 
+/* =============================================================================
+   RESPONSIVIDADE FLUIDA E ELEGANTE (MOBILE-FIRST PARA DESKTOP)
+   Adiciona regras para que o app fique amplo e bonito no desktop, mantendo o
+   layout mobile limpo e focado.
+   ============================================================================= */
+
+@media (min-width: 768px) {
+  /* Landing Page Responsiva */
+  .landing-header {
+    padding: 24px 40px;
+  }
+  
+  .landing-scroll-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    width: 100%;
+    padding: 0 40px 140px 40px;
+  }
+
+  .hero-section {
+    padding: 0;
+    margin-top: 40px;
+    margin-bottom: 48px;
+  }
+
+  .hero-card {
+    aspect-ratio: 21 / 9; /* Mais horizontal no desktop */
+    max-height: 400px;
+  }
+
+  .section {
+    margin-bottom: 48px;
+  }
+
+  .section-header {
+    padding: 0;
+  }
+
+  .card-list {
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    width: 100%;
+    gap: 24px;
+  }
+
+  .card {
+    width: 100%;
+  }
+
+  .soundboard-section {
+    padding: 0;
+  }
+
+  .soundboard-card {
+    flex-direction: row;
+    align-items: center;
+    padding: 32px;
+    gap: 24px;
+  }
+
+  .soundboard-text-block {
+    flex: 1;
+  }
+
+  .soundboard-btn {
+    width: auto;
+    padding: 16px 28px;
+  }
+
+  .landing-bottom-bar {
+    padding: 32px 40px;
+  }
+
+  .cta-btn {
+    max-width: 400px;
+  }
+
+  /* Auth / Login / Cadastro no Desktop */
+  .auth-container {
+    max-width: 480px;
+    padding: 64px 32px;
+    background: var(--color-surface-container);
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+    margin: 80px auto;
+  }
+  
+  .auth-scroll-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+  }
+}
+
+
