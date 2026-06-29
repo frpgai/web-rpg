@@ -319,6 +319,33 @@
   margin-bottom: var(--space-lg);
 }
 
+.hd-section-header-with-toggle {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-sm);
+}
+
+.hd-skills-toggle-btn {
+  background: color-mix(in srgb, var(--color-surface-container) 40%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-primary) 10%, transparent);
+  border-radius: var(--radius-full);
+  color: var(--color-text-muted);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 4px var(--space-sm);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.hd-skills-toggle-btn:hover {
+  color: var(--color-primary);
+  border-color: color-mix(in srgb, var(--color-primary) 30%, transparent);
+  background: color-mix(in srgb, var(--color-primary) 5%, transparent);
+}
+
 .hd-section-title {
   font-family: var(--font-mono);
   font-size: 11px;
