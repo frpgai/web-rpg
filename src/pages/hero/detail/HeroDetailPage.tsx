@@ -110,7 +110,7 @@ function AbilityCard({ ability }: { ability: HeroAbility }) {
         )}
         {ability.range && (
           <span className={`hd-ability-meta hd-ability-meta--${isPassive ? 'passive' : 'action'}`}>
-            Alcance: {ability.range}
+            Alcance: {t(`ability_range.${ability.range}`, { ns: 'common', defaultValue: ability.range })}
           </span>
         )}
       </div>

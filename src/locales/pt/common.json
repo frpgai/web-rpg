@@ -12,5 +12,13 @@
     "bonus_action": "Ação Bônus",
     "reaction": "Reação",
     "passive": "Passiva"
+  },
+  "ability_range": {
+    "self": "Pessoal",
+    "touch": "Toque",
+    "special": "Especial",
+    "1.5m": "1,5 m",
+    "9m": "9 m",
+    "sight": "Visão"
   }
 }
