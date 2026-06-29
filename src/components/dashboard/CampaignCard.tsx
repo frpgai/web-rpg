@@ -31,23 +31,14 @@ export function CampaignCard({ campaign, onPress, active = false }: Props) {
             <span className="dashboard-campaign-card-active-badge-text">MISSÃO ATIVA</span>
           </div>
         )}
-        {campaign.ai_narration && (
-          <div
-            className="dashboard-campaign-card-badge"
-            style={{ backgroundColor: badge.bg, color: badge.text }}
-          >
-            <span className="dashboard-campaign-card-badge-text">IA</span>
-          </div>
-        )}
       </div>
       
       <div className="dashboard-campaign-card-bottom">
         <span className="dashboard-campaign-card-name">{campaign.name}</span>
-        {/* Spec A00110: System field shouldn't differentiate, but we'll print level ranges. */}
         <span className="dashboard-campaign-card-system">
-          Nv {campaign.level_range}
+          NV {campaign.level_range}
         </span>
-        {active ? (
+        {active && (
           <div className="dashboard-campaign-card-continue-row">
             <button
               className="dashboard-campaign-card-continue-button"
@@ -60,12 +51,6 @@ export function CampaignCard({ campaign, onPress, active = false }: Props) {
               <span className="dashboard-campaign-card-continue-text">CONTINUAR AVENTURA</span>
             </button>
           </div>
-        ) : (
-          <span className="dashboard-campaign-card-slots">
-            {campaign.open_slots === 0
-              ? 'Sem vagas'
-              : `${campaign.open_slots} vaga${campaign.open_slots > 1 ? 's' : ''} disponível`}
-          </span>
         )}
       </div>
     </div>
