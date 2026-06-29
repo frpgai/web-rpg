@@ -93,10 +93,18 @@ function AbilityCard({ ability }: { ability: HeroAbility }) {
   const type = ability.type;
   const isPassive = type === 'passive';
   const typeLabel = t(`ability_type.${type}`) || type;
+  const rangeValue = ability.range || 'Pessoal';
   return (
     <div className={`hd-ability-card hd-ability-card--${type}`}>
       <div className="hd-ability-header">
-        <h4 className={`hd-ability-name hd-ability-name--${type}`}>{ability.name}</h4>
+        <div className="hd-ability-title-row">
+          {ability.image_url ? (
+            <img src={ability.image_url} alt={ability.name} className="hd-ability-icon" />
+          ) : (
+            <span className="material-symbols-outlined hd-ability-icon-fallback">auto_fix_high</span>
+          )}
+          <h4 className={`hd-ability-name hd-ability-name--${type}`}>{ability.name}</h4>
+        </div>
         <span className={`hd-ability-badge hd-ability-badge--${type}`}>
           {typeLabel}
         </span>
@@ -108,11 +116,9 @@ function AbilityCard({ ability }: { ability: HeroAbility }) {
             Custo: {ability.mana_cost} MP
           </span>
         )}
-        {ability.range && (
-          <span className={`hd-ability-meta hd-ability-meta--${isPassive ? 'passive' : 'action'}`}>
-            Alcance: {t(`ability_range.${ability.range}`, { ns: 'common', defaultValue: ability.range })}
-          </span>
-        )}
+        <span className={`hd-ability-meta hd-ability-meta--${isPassive ? 'passive' : 'action'}`}>
+          Alcance: {t(`ability_range.${rangeValue}`, { ns: 'common', defaultValue: rangeValue })}
+        </span>
       </div>
     </div>
   );
@@ -182,6 +188,10 @@ export default function HeroDetailPage() {
               </div>
             )}
             <div className="hd-level-badge">NÍVEL {hero.level}</div>
+            <div className="hd-def-badge">
+              <span className="material-symbols-outlined">shield</span>
+              {hero.def}
+            </div>
           </div>
 
           <div className="hd-identity">
@@ -206,13 +216,6 @@ export default function HeroDetailPage() {
                 </div>
               )}
             </div>
-            {hero.active_session && (
-              <div className="hd-session-chip">
-                <span className="material-symbols-outlined">swords</span>
-                {hero.active_session.name}
-              </div>
-            )}
-
             {/* ── Status Bars ──────────────────────────────────── */}
             <div className="hd-bars">
               <div className="hd-bar-row">
