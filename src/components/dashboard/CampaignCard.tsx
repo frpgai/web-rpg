@@ -4,16 +4,6 @@ import './CampaignCard.css';
 
 export const CAMPAIGN_CARD_WIDTH = 320;
 
-type BadgeColor = { bg: string; text: string };
-
-function getBadgeColor(system: string): BadgeColor {
-  const s = system.toLowerCase();
-  if (s.includes('d&d') || s.includes('dnd')) return { bg: '#b91c1c', text: '#fee2e2' };
-  if (s.includes('pathfinder')) return { bg: '#92400e', text: '#fef3c7' };
-  if (s.includes('call')) return { bg: '#1e3a5f', text: '#bfdbfe' };
-  return { bg: 'rgba(215,186,255,0.2)', text: '#d7baff' };
-}
-
 type Props = {
   campaign: AvailableCampaign;
   onPress: () => void;
@@ -21,8 +11,6 @@ type Props = {
 };
 
 export function CampaignCard({ campaign, onPress, active = false }: Props) {
-  const badge = getBadgeColor(campaign.system);
-
   const inner = (
     <div className="dashboard-campaign-card-gradient">
       <div className="dashboard-campaign-card-top-row">
@@ -31,23 +19,14 @@ export function CampaignCard({ campaign, onPress, active = false }: Props) {
             <span className="dashboard-campaign-card-active-badge-text">MISSÃO ATIVA</span>
           </div>
         )}
-        {campaign.ai_narration && (
-          <div
-            className="dashboard-campaign-card-badge"
-            style={{ backgroundColor: badge.bg, color: badge.text }}
-          >
-            <span className="dashboard-campaign-card-badge-text">IA</span>
-          </div>
-        )}
       </div>
-      
+
       <div className="dashboard-campaign-card-bottom">
         <span className="dashboard-campaign-card-name">{campaign.name}</span>
-        {/* Spec A00110: System field shouldn't differentiate, but we'll print level ranges. */}
         <span className="dashboard-campaign-card-system">
           Nv {campaign.level_range}
         </span>
-        {active ? (
+        {active && (
           <div className="dashboard-campaign-card-continue-row">
             <button
               className="dashboard-campaign-card-continue-button"
@@ -60,12 +39,6 @@ export function CampaignCard({ campaign, onPress, active = false }: Props) {
               <span className="dashboard-campaign-card-continue-text">CONTINUAR AVENTURA</span>
             </button>
           </div>
-        ) : (
-          <span className="dashboard-campaign-card-slots">
-            {campaign.open_slots === 0
-              ? 'Sem vagas'
-              : `${campaign.open_slots} vaga${campaign.open_slots > 1 ? 's' : ''} disponível`}
-          </span>
         )}
       </div>
     </div>
