@@ -93,7 +93,7 @@ function AbilityCard({ ability }: { ability: HeroAbility }) {
   const type = ability.type;
   const isPassive = type === 'passive';
   const typeLabel = t(`ability_type.${type}`) || type;
-  const rangeValue = ability.range || 'self';
+  const rangeValue = ability.range;
   return (
     <div className={`hd-ability-card hd-ability-card--${type}`}>
       <div className="hd-ability-header">
