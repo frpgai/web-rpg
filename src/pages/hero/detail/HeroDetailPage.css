@@ -37,6 +37,7 @@
 /* Avatar */
 .hd-avatar-wrap {
   position: relative;
+  padding-bottom: 44px;
 }
 
 .hd-avatar {
