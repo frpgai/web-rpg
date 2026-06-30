@@ -12,6 +12,7 @@ import AestheticsPage from './pages/hero/create/aesthetics/AestheticsPage';
 import SummaryPage from './pages/hero/create/summary/SummaryPage';
 import HeroDetailPage from './pages/hero/detail/HeroDetailPage';
 import SelectSystemPage from './pages/SelectSystemPage';
+import CreateSessionPage from './pages/sessions/CreateSessionPage';
 import AppLayout from './layouts/AppLayout';
 import { PrivateRoute } from './components/common/PrivateRoute';
 import { useAuthStore } from './stores/authStore';
@@ -68,6 +69,8 @@ export default function App() {
                 <Route path="/app/hero/create/summary/:id" component={SummaryPage} />
 
                 <Route path="/app/select-system" component={SelectSystemPage} />
+
+                <Route path="/app/sessions/create/select-campaign" component={CreateSessionPage} />
 
                 <Route>
                   <div style={{ padding: '20px', textAlign: 'center' }}>

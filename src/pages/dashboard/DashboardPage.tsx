@@ -34,6 +34,10 @@ export default function DashboardPage() {
     setLocation('/app/hero/create/origins');
   };
 
+  const handleCreateSession = () => {
+    setLocation('/app/sessions/create/select-campaign');
+  };
+
   const handleCampaignPress = (id: string) => {
     setLocation(`/campaigns/${id}`);
   };
@@ -133,7 +137,7 @@ export default function DashboardPage() {
       </div>
 
       {/* FAB */}
-      <button className="fab" onClick={handleCreateHero} aria-label="Criar Herói">
+      <button className="fab" onClick={handleCreateSession} aria-label="Criar Sessão">
         <i className="material-icons" style={{ color: '#411478', fontSize: 28 }}>add</i>
       </button>
     </div>
