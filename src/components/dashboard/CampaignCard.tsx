@@ -24,7 +24,7 @@ export function CampaignCard({ campaign, onPress, active = false }: Props) {
       <div className="dashboard-campaign-card-bottom">
         <span className="dashboard-campaign-card-name">{campaign.name}</span>
         <span className="dashboard-campaign-card-system">
-          Nv {campaign.level_range}
+          NV {campaign.level_range}
         </span>
         {active && (
           <div className="dashboard-campaign-card-continue-row">
