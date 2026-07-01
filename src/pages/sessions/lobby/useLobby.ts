@@ -3,14 +3,24 @@ import { useLocation } from 'wouter';
 import { lobbyApi } from './lobbyApi';
 import { useSessionSocket } from './useSessionSocket';
 import { useUserStore } from '../../../stores/userStore';
-import type { SessionDetail } from '../../../types';
+import type { SessionDetail, SessionPlayer } from '../../../types';
 
 export function useLobby(sessionId: string) {
   const [, setLocation] = useLocation();
   const user = useUserStore((s) => s.user);
+  const fetchMe = useUserStore((s) => s.fetchMe);
+
+  useEffect(() => {
+    if (!user) {
+      fetchMe().catch((err) => console.error('Failed to load current user:', err));
+    }
+  }, [user, fetchMe]);
 
   const [session, setSession] = useState<SessionDetail | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [players, setPlayers] = useState<SessionPlayer[]>([]);
+  const [sessionLoading, setSessionLoading] = useState(true);
+  const [playersLoading, setPlayersLoading] = useState(true);
+  const loading = sessionLoading || playersLoading;
   const [error, setError] = useState<string | null>(null);
 
   const [starting, setStarting] = useState(false);
@@ -18,14 +28,15 @@ export function useLobby(sessionId: string) {
 
   const [copied, setCopied] = useState(false);
 
-  const fetchSession = useCallback(() => {
+  const fetchLobby = useCallback(() => {
     if (!sessionId) return;
     setError(null);
+
     lobbyApi
       .get(sessionId)
-      .then((data) => {
-        setSession(data);
-        if (data.status === 'active') {
+      .then((sessionData) => {
+        setSession(sessionData);
+        if (sessionData.status === 'active') {
           setLocation(`/app/sessions/${sessionId}`);
         }
       })
@@ -33,12 +44,29 @@ export function useLobby(sessionId: string) {
         console.error('Failed to load session:', err);
         setError('Não foi possível carregar o lobby da sessão.');
       })
-      .finally(() => setLoading(false));
+      .finally(() => setSessionLoading(false));
+
+    lobbyApi
+      .getPlayers(sessionId)
+      .then(setPlayers)
+      .catch((err) => {
+        console.error('Failed to load session players:', err);
+        setError('Não foi possível carregar o lobby da sessão.');
+      })
+      .finally(() => setPlayersLoading(false));
   }, [sessionId, setLocation]);
 
   useEffect(() => {
-    fetchSession();
-  }, [fetchSession]);
+    fetchLobby();
+  }, [fetchLobby]);
+
+  const refreshPlayers = useCallback(() => {
+    if (!sessionId) return;
+    lobbyApi
+      .getPlayers(sessionId)
+      .then(setPlayers)
+      .catch((err) => console.error('Failed to refresh session players:', err));
+  }, [sessionId]);
 
   useSessionSocket(
     sessionId,
@@ -48,14 +76,14 @@ export function useLobby(sessionId: string) {
           setLocation(`/app/sessions/${sessionId}`);
           return;
         }
-        fetchSession();
+        refreshPlayers();
       },
-      [fetchSession, setLocation, sessionId]
+      [refreshPlayers, setLocation, sessionId]
     )
   );
 
   const isOwner = !!user && !!session && session.owner_id === user.id;
-  const playersCount = session?.players.length ?? 0;
+  const playersCount = players.length;
   const minPlayers = session?.min_players ?? 0;
   const canStart = isOwner && playersCount >= minPlayers && !starting;
 
@@ -95,6 +123,7 @@ export function useLobby(sessionId: string) {
 
   return {
     session,
+    players,
     loading,
     error,
     isOwner,

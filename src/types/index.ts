@@ -389,6 +389,7 @@ export type SessionPlayerHero = {
   id: string;
   name: string;
   class: string;
+  level: number;
   avatar_url: string | null;
 };
 
@@ -410,7 +411,6 @@ export type SessionDetail = {
   owner_id: string;
   min_players: number;
   max_players: number;
-  players: SessionPlayer[];
 };
 
 export type StartSessionResponse = {

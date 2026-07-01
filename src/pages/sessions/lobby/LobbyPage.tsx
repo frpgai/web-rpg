@@ -21,7 +21,7 @@ function PlayerCard({ player }: { player: SessionPlayer }) {
         <span className="lobby-player-online-dot" />
       </div>
       <p className="lobby-player-name">{hero?.name ?? player.username}</p>
-      <p className="lobby-player-class">{hero ? hero.class : player.username}</p>
+      <p className="lobby-player-class">{hero ? `${hero.class} - Nível ${hero.level}` : player.username}</p>
       <div className={`lobby-player-status ${player.is_ready ? 'lobby-player-status-ready' : 'lobby-player-status-pending'}`}>
         {player.is_ready ? 'PRONTO' : 'CUSTOMIZANDO...'}
       </div>
@@ -57,6 +57,7 @@ export default function LobbyPage() {
 
   const {
     session,
+    players,
     loading,
     error,
     isOwner,
@@ -121,7 +122,7 @@ export default function LobbyPage() {
             </>
           ) : (
             <>
-              {session?.players.map((player) => (
+              {players.map((player) => (
                 <PlayerCard key={player.user_id} player={player} />
               ))}
               {Array.from({ length: emptySlots }).map((_, index) => (
@@ -158,7 +159,7 @@ export default function LobbyPage() {
             )}
           </button>
         ) : (
-          <p className="lobby-waiting-owner">Aguardando início pelo Mestre...</p>
+          <p className="lobby-waiting-owner">Aguardando início pelo Anfitrião...</p>
         )}
         <button type="button" className="lobby-cancel-button" onClick={goToDashboard}>
           Voltar
