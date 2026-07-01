@@ -7,9 +7,23 @@ interface BottomSheetProps {
   onClose: () => void;
   title: string;
   children: React.ReactNode;
+  /** Conteúdo extra exibido abaixo do título (ex: badges). */
+  headerExtra?: React.ReactNode;
+  /** Rodapé fixo (ex: botões de ação), renderizado fora da área de scroll. */
+  footer?: React.ReactNode;
+  /** Classe adicional aplicada ao painel, para permitir customizações pontuais. */
+  panelClassName?: string;
 }
 
-export function BottomSheet({ open, onClose, title, children }: BottomSheetProps) {
+export function BottomSheet({
+  open,
+  onClose,
+  title,
+  children,
+  headerExtra,
+  footer,
+  panelClassName,
+}: BottomSheetProps) {
   const overlayRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -31,10 +45,17 @@ export function BottomSheet({ open, onClose, title, children }: BottomSheetProps
         if (e.target === overlayRef.current) onClose();
       }}
     >
-      <div className="bottom-sheet-panel" role="dialog" aria-modal="true">
+      <div
+        className={`bottom-sheet-panel${panelClassName ? ` ${panelClassName}` : ''}`}
+        role="dialog"
+        aria-modal="true"
+      >
         <div className="bottom-sheet-handle" />
         <div className="bottom-sheet-header">
-          <h3 className="bottom-sheet-title">{title}</h3>
+          <div className="bottom-sheet-header-main">
+            <h3 className="bottom-sheet-title">{title}</h3>
+            {headerExtra}
+          </div>
           <button className="bottom-sheet-close" onClick={onClose} aria-label="Fechar">
             ✕
           </button>
@@ -42,6 +63,7 @@ export function BottomSheet({ open, onClose, title, children }: BottomSheetProps
         <div className="bottom-sheet-content">
           {children}
         </div>
+        {footer}
       </div>
     </div>,
     document.body,

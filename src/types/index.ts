@@ -44,6 +44,17 @@ export type CampaignListResponse = {
   next_cursor: string | null;
 };
 
+export type CampaignAdventureSummary = {
+  id: string;
+  title: string;
+  position: number;
+};
+
+export type CampaignDetail = CampaignListItem & {
+  description: string | null;
+  adventures: CampaignAdventureSummary[];
+};
+
 export type CampaignListParams = {
   q?: string;
   level_start?: number;

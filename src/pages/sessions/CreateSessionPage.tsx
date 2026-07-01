@@ -3,6 +3,7 @@ import { useLocation } from 'wouter';
 import { Toast } from '../../components/ui/Toast';
 import { Spinner } from '../../components/ui/Spinner';
 import { useCampaignSelection } from '../../hooks/useCampaignSelection';
+import { CampaignDetailSheet } from './CampaignDetailSheet';
 import type { CampaignListItem } from '../../types';
 import './CreateSessionPage.css';
 
@@ -15,6 +16,7 @@ function levelRangeLabel(item: CampaignListItem): string {
 export default function CreateSessionPage() {
   const [, setLocation] = useLocation();
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [detailCampaign, setDetailCampaign] = useState<CampaignListItem | null>(null);
   const {
     search,
     setSearch,
@@ -54,6 +56,14 @@ export default function CreateSessionPage() {
   }, []);
 
   const handleBack = () => setLocation('/app/dashboard');
+
+  const handleSelectCampaign = useCallback(
+    (_campaign: CampaignListItem) => {
+      setDetailCampaign(null);
+      showComingSoonToast();
+    },
+    [showComingSoonToast]
+  );
 
   return (
     <div className="create-session-root">
@@ -165,7 +175,7 @@ export default function CreateSessionPage() {
                     <button
                       type="button"
                       className="create-session-row-details"
-                      onClick={showComingSoonToast}
+                      onClick={() => setDetailCampaign(campaign)}
                     >
                       <span className="material-symbols-outlined create-session-row-details-icon">info</span>
                       Ver Detalhes
@@ -202,6 +212,12 @@ export default function CreateSessionPage() {
       </footer>
 
       <Toast message={toastMessage} onDismiss={() => setToastMessage(null)} />
+
+      <CampaignDetailSheet
+        campaign={detailCampaign}
+        onClose={() => setDetailCampaign(null)}
+        onSelectCampaign={handleSelectCampaign}
+      />
     </div>
   );
 }

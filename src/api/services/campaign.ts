@@ -1,5 +1,10 @@
 import { apiClient } from '../client';
-import type { AvailableCampaign, CampaignListParams, CampaignListResponse } from '../../types';
+import type {
+  AvailableCampaign,
+  CampaignDetail,
+  CampaignListParams,
+  CampaignListResponse,
+} from '../../types';
 
 function buildCampaignListSearchParams(params: CampaignListParams): URLSearchParams {
   const searchParams = new URLSearchParams();
@@ -18,4 +23,8 @@ export const campaignApi = {
     apiClient
       .get('api/v1/campaigns', { searchParams: buildCampaignListSearchParams(params) })
       .json<CampaignListResponse>(),
+  // NOTE: endpoint de detalhe (sinopse completa + capítulos) ainda não existe no
+  // backend — ver GET /api/v1/campaigns/{id} pendente em be-rpg. Consumido pelo
+  // Bottom Sheet de "Ver Detalhes" com fallback gracioso caso indisponível.
+  getDetail: (id: string) => apiClient.get(`api/v1/campaigns/${id}`).json<CampaignDetail>(),
 };
