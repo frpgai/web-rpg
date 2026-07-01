@@ -37,6 +37,8 @@ export type CampaignListItem = {
   level_start: number;
   level_end: number;
   tags: Tag[];
+  min_players?: number;
+  max_players?: number;
 };
 
 export type CampaignListResponse = {
@@ -367,6 +369,20 @@ export type PendingTurnNext = {
 export type PendingTurn = {
   total: number;
   next: PendingTurnNext | null;
+};
+
+export type CreateSessionRequest = {
+  campaign_id: string;
+  name: string;
+  is_private: boolean;
+  hero_id: string;
+};
+
+export type Session = {
+  id: string;
+  campaign_id: string;
+  name: string;
+  is_private: boolean;
 };
 
 export interface System {

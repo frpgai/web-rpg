@@ -1,13 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useLocation } from 'wouter';
-import { Toast } from '../../components/ui/Toast';
 import { Spinner } from '../../components/ui/Spinner';
 import { useCampaignSelection } from '../../hooks/useCampaignSelection';
 import { CampaignDetailSheet } from './CampaignDetailSheet';
 import type { CampaignListItem } from '../../types';
 import './CreateSessionPage.css';
-
-const COMING_SOON_MESSAGE = 'Em breve — funcionalidade ainda não disponível';
 
 function levelRangeLabel(item: CampaignListItem): string {
   return `Níveis ${item.level_start} a ${item.level_end}`;
@@ -15,7 +12,6 @@ function levelRangeLabel(item: CampaignListItem): string {
 
 export default function CreateSessionPage() {
   const [, setLocation] = useLocation();
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [detailCampaign, setDetailCampaign] = useState<CampaignListItem | null>(null);
   const {
     search,
@@ -51,18 +47,14 @@ export default function CreateSessionPage() {
     return () => observer.disconnect();
   }, [loadMore]);
 
-  const showComingSoonToast = useCallback(() => {
-    setToastMessage(COMING_SOON_MESSAGE);
-  }, []);
-
   const handleBack = () => setLocation('/app/dashboard');
 
-  const handleSelectCampaign = useCallback(
-    (_campaign: CampaignListItem) => {
+  const goToConfigureSession = useCallback(
+    (campaign: CampaignListItem) => {
       setDetailCampaign(null);
-      showComingSoonToast();
+      setLocation(`/app/sessions/new/configure/${campaign.id}`);
     },
-    [showComingSoonToast]
+    [setLocation]
   );
 
   return (
@@ -186,7 +178,7 @@ export default function CreateSessionPage() {
                     type="button"
                     className="create-session-row-select"
                     aria-label="Selecionar campanha"
-                    onClick={showComingSoonToast}
+                    onClick={() => goToConfigureSession(campaign)}
                   >
                     <span className="material-symbols-outlined">chevron_right</span>
                   </button>
@@ -211,12 +203,10 @@ export default function CreateSessionPage() {
         </button>
       </footer>
 
-      <Toast message={toastMessage} onDismiss={() => setToastMessage(null)} />
-
       <CampaignDetailSheet
         campaign={detailCampaign}
         onClose={() => setDetailCampaign(null)}
-        onSelectCampaign={handleSelectCampaign}
+        onSelectCampaign={goToConfigureSession}
       />
     </div>
   );
