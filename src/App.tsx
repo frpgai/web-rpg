@@ -13,7 +13,7 @@ import SummaryPage from './pages/hero/create/summary/SummaryPage';
 import HeroDetailPage from './pages/hero/detail/HeroDetailPage';
 import SelectSystemPage from './pages/SelectSystemPage';
 import CreateSessionPage from './pages/sessions/CreateSessionPage';
-import ConfigureSessionPage from './pages/sessions/ConfigureSessionPage';
+import ConfigureSessionPage from './pages/sessions/configure-session/ConfigureSessionPage';
 import AppLayout from './layouts/AppLayout';
 import { PrivateRoute } from './components/common/PrivateRoute';
 import { useAuthStore } from './stores/authStore';

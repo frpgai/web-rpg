@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useLocation } from 'wouter';
-import { campaignApi } from '../api/services/campaign';
-import { heroApi } from '../api/services/hero';
-import { sessionApi } from '../api/services/session';
-import { useUserStore } from '../stores/userStore';
-import type { CampaignDetail, Hero } from '../types';
+import { campaignApi } from '../../../api/services/campaign';
+import { heroApi } from '../../../api/services/hero';
+import { sessionApi } from './session';
+import { useUserStore } from '../../../stores/userStore';
+import type { CampaignDetail, Hero } from '../../../types';
 
 const DEFAULT_MIN_PLAYERS = 2;
 const DEFAULT_MAX_PLAYERS = 5;

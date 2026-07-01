@@ -1,7 +1,7 @@
 import { useLocation, useParams } from 'wouter';
-import { Spinner } from '../../components/ui/Spinner';
-import { useConfigureSession } from '../../hooks/useConfigureSession';
-import type { Hero } from '../../types';
+import { Spinner } from '../../../components/ui/Spinner';
+import { useConfigureSession } from './useConfigureSession';
+import type { Hero } from '../../../types';
 import './ConfigureSessionPage.css';
 
 function heroClassLabel(hero: Hero): string {
