@@ -1,6 +1,7 @@
 import { useLocation, useParams } from 'wouter';
 import { Spinner } from '../../../components/ui/Spinner';
 import { useConfigureSession } from './useConfigureSession';
+import { getAssetUrl } from '../../../utils/url';
 import type { Hero } from '../../../types';
 import './ConfigureSessionPage.css';
 
@@ -150,7 +151,7 @@ export default function ConfigureSessionPage() {
                       <div className="configurar-sessao-hero-avatar-wrap">
                         <div className="configurar-sessao-hero-avatar">
                           {hero.avatar_url ? (
-                            <img src={hero.avatar_url} alt={hero.name} />
+                            <img src={getAssetUrl(hero.avatar_url)} alt={hero.name} />
                           ) : (
                             <div className="configurar-sessao-hero-avatar-fallback" />
                           )}
