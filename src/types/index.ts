@@ -25,6 +25,34 @@ export type AvailableCampaign = {
   level_range: string;
 };
 
+export type Tag = {
+  id: string;
+  name: string;
+};
+
+export type CampaignListItem = {
+  id: string;
+  title: string;
+  cover_image_url: string | null;
+  level_start: number;
+  level_end: number;
+  tags: Tag[];
+};
+
+export type CampaignListResponse = {
+  items: CampaignListItem[];
+  next_cursor: string | null;
+};
+
+export type CampaignListParams = {
+  q?: string;
+  level_start?: number;
+  level_end?: number;
+  tag?: string[];
+  cursor?: string;
+  limit?: number;
+};
+
 export type User = {
   id: string;
   name: string;
