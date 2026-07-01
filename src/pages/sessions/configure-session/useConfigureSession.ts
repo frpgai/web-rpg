@@ -149,7 +149,7 @@ export function useConfigureSession(campaignId: string) {
         is_private: isPrivate,
         hero_id: selectedHeroId,
       });
-      setLocation(`/app/sessions/${session.id}`);
+      setLocation(`/app/sessions/${session.id}/lobby`);
     } catch (err) {
       console.error('Failed to create session:', err);
       setSubmitError('Não foi possível criar a sessão. Tente novamente.');
