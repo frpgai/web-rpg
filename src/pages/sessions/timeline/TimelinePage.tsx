@@ -1,0 +1,263 @@
+import { useEffect, useRef, useState } from 'react';
+import { useParams } from 'wouter';
+import { Spinner } from '../../../components/ui/Spinner';
+import { getAssetUrl } from '../../../utils/url';
+import { useTimeline } from './useTimeline';
+import { TypewriterText } from './TypewriterText';
+import type { SessionEvent, SessionPlayer } from '../../../types';
+import './TimelinePage.css';
+
+function extractEventText(event: SessionEvent): string {
+  const payload = event.payload as Record<string, unknown> | null;
+  if (payload && typeof payload === 'object') {
+    const candidate = payload.text ?? payload.narration ?? payload.message ?? payload.content;
+    if (typeof candidate === 'string') return candidate;
+  }
+  return event.type;
+}
+
+function EventRow({ event }: { event: SessionEvent }) {
+  const isNarration = event.type === 'narration' || event.type === 'scene_narration';
+  return (
+    <li className="timeline-event-row">
+      <p className="timeline-event-type">{event.type}</p>
+      <p className="timeline-event-text">
+        {isNarration ? <TypewriterText text={extractEventText(event)} /> : extractEventText(event)}
+      </p>
+    </li>
+  );
+}
+
+function HeroAvatar({ player, index }: { player: SessionPlayer; index: number }) {
+  const hero = player.hero;
+  return (
+    <div className="timeline-hero-avatar-wrapper">
+      <div
+        className={`timeline-hero-avatar ${index === 0 ? 'timeline-hero-avatar-active' : ''}`}
+      >
+        {hero?.avatar_url ? (
+          <img src={getAssetUrl(hero.avatar_url)} alt={hero.name} />
+        ) : (
+          <div className="timeline-hero-avatar-fallback">
+            <span className="material-symbols-outlined">person</span>
+          </div>
+        )}
+      </div>
+      <span
+        className={`timeline-hero-status-dot ${
+          player.is_ready ? 'timeline-hero-status-dot-ready' : ''
+        }`}
+      />
+    </div>
+  );
+}
+
+function QuickDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
+  return (
+    <div className={`timeline-drawer ${open ? 'timeline-drawer-open' : ''}`}>
+      <div className="timeline-drawer-backdrop" onClick={onClose} />
+      <aside className="timeline-drawer-panel">
+        <header className="timeline-drawer-header">
+          <h2 className="timeline-drawer-title">Consulta Rápida</h2>
+          <button className="timeline-drawer-close" onClick={onClose} aria-label="Fechar">
+            <span className="material-symbols-outlined">close</span>
+          </button>
+        </header>
+
+        <section className="timeline-drawer-section">
+          <h3 className="timeline-drawer-section-title">Ficha do Herói</h3>
+          <p className="timeline-drawer-empty">Ficha resumida indisponível nesta versão.</p>
+        </section>
+
+        <section className="timeline-drawer-section">
+          <h3 className="timeline-drawer-section-title">Inventário</h3>
+          <p className="timeline-drawer-empty">
+            Nenhum endpoint de inventário disponível ainda no backend.
+          </p>
+        </section>
+
+        <section className="timeline-drawer-section">
+          <h3 className="timeline-drawer-section-title">Diário da Campanha</h3>
+          <p className="timeline-drawer-empty">
+            Nenhum endpoint de diário disponível ainda no backend.
+          </p>
+        </section>
+      </aside>
+    </div>
+  );
+}
+
+export default function TimelinePage() {
+  const params = useParams<{ id: string }>();
+  const sessionId = params.id ?? '';
+
+  const {
+    session,
+    campaign,
+    players,
+    loading,
+    error,
+    events,
+    eventsLoading,
+    hasMore,
+    loadMoreEvents,
+    introEntered,
+    enterCampaign,
+    drawerOpen,
+    toggleDrawer,
+    goToDashboard,
+  } = useTimeline(sessionId);
+
+  const scrollRef = useRef<HTMLUListElement>(null);
+  const [autoScroll, setAutoScroll] = useState(true);
+  const [showNewBelow, setShowNewBelow] = useState(false);
+
+  useEffect(() => {
+    if (!introEntered) return;
+    const el = scrollRef.current;
+    if (!el) return;
+    if (autoScroll) {
+      el.scrollTop = el.scrollHeight;
+      setShowNewBelow(false);
+    } else {
+      setShowNewBelow(true);
+    }
+  }, [events, introEntered, autoScroll]);
+
+  function handleScroll() {
+    const el = scrollRef.current;
+    if (!el) return;
+    const distanceFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
+    setAutoScroll(distanceFromBottom < 80);
+    if (distanceFromBottom < 80) setShowNewBelow(false);
+
+    if (el.scrollTop < 60 && hasMore) {
+      loadMoreEvents();
+    }
+  }
+
+  function scrollToBottom() {
+    const el = scrollRef.current;
+    if (!el) return;
+    el.scrollTop = el.scrollHeight;
+    setAutoScroll(true);
+    setShowNewBelow(false);
+  }
+
+  if (loading) {
+    return (
+      <div className="timeline-root timeline-loading">
+        <Spinner color="var(--color-primary)" size="large" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="timeline-root timeline-loading">
+        <p className="timeline-error">{error}</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="timeline-root">
+      <header className="timeline-header">
+        <button className="timeline-back" onClick={goToDashboard} aria-label="Voltar ao Dashboard">
+          <span className="material-symbols-outlined">arrow_back</span>
+        </button>
+        <h1 className="timeline-header-title">{campaign?.title ?? session?.name ?? '...'}</h1>
+        <button className="timeline-drawer-trigger" onClick={toggleDrawer} aria-label="Abrir consulta rápida">
+          <span className="material-symbols-outlined">menu_book</span>
+        </button>
+      </header>
+
+      <main className="timeline-main">
+        <section className="timeline-intro-card">
+          <div className="timeline-intro-media">
+            {campaign?.cover_image_url ? (
+              <img src={getAssetUrl(campaign.cover_image_url)} alt={campaign?.title} />
+            ) : (
+              <div className="timeline-intro-media-fallback" />
+            )}
+            <div className="timeline-intro-media-gradient" />
+            {campaign?.intro_narration_audio_url ? (
+              <audio
+                className="timeline-intro-audio-native"
+                controls
+                src={getAssetUrl(campaign.intro_narration_audio_url)}
+              />
+            ) : (
+              <button className="timeline-intro-play-button" disabled aria-label="Narração indisponível">
+                <span className="material-symbols-outlined">play_arrow</span>
+              </button>
+            )}
+          </div>
+          <div className="timeline-intro-body">
+            <p className="timeline-intro-description">
+              {campaign?.description ?? 'Sem descrição disponível para esta campanha.'}
+            </p>
+          </div>
+        </section>
+
+        <section className="timeline-heroes-section">
+          <h3 className="timeline-heroes-title">Heróis na Expedição</h3>
+          <div className="timeline-heroes-row">
+            {players.map((player, index) => (
+              <HeroAvatar key={player.user_id} player={player} index={index} />
+            ))}
+          </div>
+        </section>
+
+        {!introEntered ? (
+          <section className="timeline-cta-section">
+            <button className="timeline-cta-button" onClick={enterCampaign}>
+              <span>{campaign?.start_cta_label || 'Iniciar Aventura'}</span>
+            </button>
+            {campaign?.start_cta_subtext && (
+              <span className="timeline-cta-subtext">{campaign.start_cta_subtext}</span>
+            )}
+          </section>
+        ) : (
+          <section className="timeline-events-section">
+            <h3 className="timeline-events-title">Linha do Tempo</h3>
+            {hasMore && (
+              <button className="timeline-load-more" onClick={loadMoreEvents}>
+                Carregar mais eventos
+              </button>
+            )}
+            <ul className="timeline-events-list" ref={scrollRef} onScroll={handleScroll}>
+              {eventsLoading ? (
+                <li className="timeline-events-loading">
+                  <Spinner color="var(--color-primary)" size="small" />
+                </li>
+              ) : events.length === 0 ? (
+                <li className="timeline-events-empty">
+                  Nenhum evento registrado ainda nesta sessão.
+                </li>
+              ) : (
+                events.map((event) => <EventRow key={event.seq} event={event} />)
+              )}
+            </ul>
+            {showNewBelow && (
+              <button className="timeline-new-events-button" onClick={scrollToBottom}>
+                Novas ações abaixo
+                <span className="material-symbols-outlined">arrow_downward</span>
+              </button>
+            )}
+          </section>
+        )}
+      </main>
+
+      {introEntered && (
+        <footer className="timeline-action-bar">
+          <p className="timeline-action-bar-placeholder">
+            Aguardando ações do turno atual...
+          </p>
+        </footer>
+      )}
+
+      <QuickDrawer open={drawerOpen} onClose={toggleDrawer} />
+    </div>
+  );
+}

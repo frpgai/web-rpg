@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useLocation } from 'wouter';
 import { lobbyApi } from './lobbyApi';
-import { useSessionSocket } from './useSessionSocket';
+import { useSessionSocket } from '../../../hooks/useSessionSocket';
 import { useUserStore } from '../../../stores/userStore';
 import type { SessionDetail, SessionPlayer } from '../../../types';
 
@@ -86,6 +86,8 @@ export function useLobby(sessionId: string) {
   const playersCount = players.length;
   const minPlayers = session?.min_players ?? 0;
   const canStart = isOwner && playersCount >= minPlayers && !starting;
+  const startButtonTooltip =
+    isOwner && playersCount < minPlayers ? 'Aguardando heróis suficientes...' : undefined;
 
   const inviteLink = session ? `${window.location.origin}${window.location.pathname}#/join/${session.invite_code}` : '';
 
@@ -109,9 +111,25 @@ export function useLobby(sessionId: string) {
     try {
       await lobbyApi.start(sessionId);
       setLocation(`/app/sessions/${sessionId}`);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to start session:', err);
-      setStartError('Não foi possível iniciar a aventura. Tente novamente.');
+      const status: number | undefined = err?.response?.status;
+      let body: { code?: string; message?: string } | null = null;
+      try {
+        body = err?.response ? await err.response.clone().json() : null;
+      } catch {
+        body = null;
+      }
+
+      if (status === 422 && body?.code === 'MIN_PLAYERS_NOT_MET') {
+        setStartError(body.message ?? 'A sessão ainda não atingiu o número mínimo de jogadores.');
+      } else if (status === 403) {
+        setStartError('Apenas o anfitrião pode iniciar a aventura.');
+      } else if (status === 422) {
+        setStartError('A sessão não está pronta para ser iniciada.');
+      } else {
+        setStartError('Não foi possível iniciar a aventura. Tente novamente.');
+      }
     } finally {
       setStarting(false);
     }
@@ -133,6 +151,7 @@ export function useLobby(sessionId: string) {
     canStart,
     starting,
     startError,
+    startButtonTooltip,
     startSession,
     inviteLink,
     copied,

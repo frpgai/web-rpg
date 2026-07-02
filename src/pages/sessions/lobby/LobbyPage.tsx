@@ -67,6 +67,7 @@ export default function LobbyPage() {
     canStart,
     starting,
     startError,
+    startButtonTooltip,
     startSession,
     inviteLink,
     copied,
@@ -148,6 +149,7 @@ export default function LobbyPage() {
             className={`lobby-start-button ${canStart ? 'lobby-start-button-active' : ''}`}
             onClick={startSession}
             disabled={!canStart}
+            title={startButtonTooltip}
           >
             {starting ? (
               <Spinner color="var(--color-on-primary)" size="small" />
