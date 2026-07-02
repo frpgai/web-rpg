@@ -159,7 +159,7 @@ export default function LobbyPage() {
             )}
           </button>
         ) : (
-          <p className="lobby-waiting-owner">Aguardando início pelo Anfitrião...</p>
+          <p className="lobby-waiting-owner">Aguardando início pelo Host...</p>
         )}
         <button type="button" className="lobby-cancel-button" onClick={goToDashboard}>
           Voltar
