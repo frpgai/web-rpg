@@ -385,6 +385,51 @@ export type Session = {
   is_private: boolean;
 };
 
+export type SessionPlayerHero = {
+  id: string;
+  name: string;
+  class: string;
+  level: number;
+  avatar_url: string | null;
+};
+
+export type SessionPlayer = {
+  user_id: string;
+  username: string;
+  is_owner: boolean;
+  hero: SessionPlayerHero | null;
+  is_ready: boolean;
+};
+
+export type SessionStatus = 'lobby' | 'active' | 'finished';
+
+export type SessionDetail = {
+  id: string;
+  name: string;
+  invite_code: string;
+  status: SessionStatus;
+  owner_id: string;
+  min_players: number;
+  max_players: number;
+};
+
+export type StartSessionResponse = {
+  id: string;
+  status: SessionStatus;
+  started_at: string;
+};
+
+export type SessionSocketEventType =
+  | 'session_joined'
+  | 'session_left'
+  | 'player_ready_changed'
+  | 'session_started';
+
+export type SessionSocketEvent = {
+  type: SessionSocketEventType;
+  payload?: unknown;
+};
+
 export interface System {
   id: string;
   slug: string;

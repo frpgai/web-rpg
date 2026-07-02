@@ -14,6 +14,7 @@ import HeroDetailPage from './pages/hero/detail/HeroDetailPage';
 import SelectSystemPage from './pages/SelectSystemPage';
 import CreateSessionPage from './pages/sessions/CreateSessionPage';
 import ConfigureSessionPage from './pages/sessions/configure-session/ConfigureSessionPage';
+import LobbyPage from './pages/sessions/lobby/LobbyPage';
 import AppLayout from './layouts/AppLayout';
 import { PrivateRoute } from './components/common/PrivateRoute';
 import { useAuthStore } from './stores/authStore';
@@ -73,6 +74,7 @@ export default function App() {
 
                 <Route path="/app/sessions/create/select-campaign" component={CreateSessionPage} />
                 <Route path="/app/sessions/new/configure/:campaignId" component={ConfigureSessionPage} />
+                <Route path="/app/sessions/:id/lobby" component={LobbyPage} />
 
                 <Route>
                   <div style={{ padding: '20px', textAlign: 'center' }}>
