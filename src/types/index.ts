@@ -55,6 +55,12 @@ export type CampaignAdventureSummary = {
 export type CampaignDetail = CampaignListItem & {
   description: string | null;
   adventures: CampaignAdventureSummary[];
+  start_cta_label?: string;
+  start_cta_subtext?: string | null;
+  // NOTA: GET /api/v1/campaigns/{id} ainda não retorna intro_narration_audio_url
+  // (a coluna existe no banco e é usada internamente por session.Start, mas não
+  // é exposta neste endpoint) — tratar como opcional até o backend expor.
+  intro_narration_audio_url?: string | null;
 };
 
 export type CampaignListParams = {
@@ -407,18 +413,40 @@ export type SessionStatus = 'lobby' | 'active' | 'finished';
 
 export type SessionDetail = {
   id: string;
+  campaign_id: string;
   name: string;
   invite_code: string;
   status: SessionStatus;
   owner_id: string;
   min_players: number;
   max_players: number;
+  current_adventure_id?: string | null;
+  current_scene_id?: string | null;
+  current_turn_player_id?: string | null;
 };
 
 export type StartSessionResponse = {
   id: string;
   status: SessionStatus;
   started_at: string;
+  current_adventure_id?: string | null;
+  current_scene_id?: string | null;
+  current_turn_player_id?: string | null;
+};
+
+export type SessionEvent = {
+  seq: number;
+  session_id: string;
+  scene_id: string;
+  session_player_id?: string | null;
+  type: string;
+  payload: unknown;
+  created_at: string;
+};
+
+export type SessionEventsPage = {
+  items: SessionEvent[];
+  next_cursor: string | null;
 };
 
 export type SessionSocketEventType =

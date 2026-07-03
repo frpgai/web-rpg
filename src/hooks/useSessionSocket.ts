@@ -1,10 +1,11 @@
 import { useEffect, useRef } from 'react';
-import { useAuthStore } from '../../../stores/authStore';
-import type { SessionSocketEvent } from '../../../types';
+import { useAuthStore } from '../stores/authStore';
+import type { SessionSocketEvent } from '../types';
 
 /**
  * Conecta automaticamente ao WebSocket da sessão e notifica o chamador
- * a cada evento recebido, para que o lobby possa re-buscar o estado atual.
+ * a cada evento recebido. Usado pelo Lobby (para saber quando a sessão
+ * inicia) e pela Mesa de Jogo / Timeline (para atualizar a timeline ao vivo).
  */
 export function useSessionSocket(sessionId: string, onEvent: (event: SessionSocketEvent) => void) {
   const token = useAuthStore((s) => s.token);
