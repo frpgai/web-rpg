@@ -6,6 +6,13 @@ import './AppLayout.css';
 const TAB_ROUTES: { pattern: RegExp; tab: BottomNavTab }[] = [
   { pattern: /^\/app\/dashboard/, tab: 'home' },
   { pattern: /^\/app\/hero\/[^/]+$/, tab: 'heroes' },
+  // Timeline da sessão (/app/sessions/:id) — a screen Stitch mostra a tab
+  // "Mesas" ativa, que não existe no BottomNav atual (home/heroes/social/
+  // settings). Mapeada para "home" por ser a tab semanticamente mais
+  // próxima de "mesas de jogo" hoje; reportado para validação do usuário.
+  // O regex exclui deliberadamente /app/sessions/:id/lobby, que tem seu
+  // próprio tratamento de navegação.
+  { pattern: /^\/app\/sessions\/[^/]+$/, tab: 'home' },
 ];
 
 const NAV_DESTINATIONS: Record<BottomNavTab, string> = {

@@ -52,40 +52,14 @@ function HeroAvatar({ player, index }: { player: SessionPlayer; index: number })
   );
 }
 
-function QuickDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
-  return (
-    <div className={`timeline-drawer ${open ? 'timeline-drawer-open' : ''}`}>
-      <div className="timeline-drawer-backdrop" onClick={onClose} />
-      <aside className="timeline-drawer-panel">
-        <header className="timeline-drawer-header">
-          <h2 className="timeline-drawer-title">Consulta Rápida</h2>
-          <button className="timeline-drawer-close" onClick={onClose} aria-label="Fechar">
-            <span className="material-symbols-outlined">close</span>
-          </button>
-        </header>
-
-        <section className="timeline-drawer-section">
-          <h3 className="timeline-drawer-section-title">Ficha do Herói</h3>
-          <p className="timeline-drawer-empty">Ficha resumida indisponível nesta versão.</p>
-        </section>
-
-        <section className="timeline-drawer-section">
-          <h3 className="timeline-drawer-section-title">Inventário</h3>
-          <p className="timeline-drawer-empty">
-            Nenhum endpoint de inventário disponível ainda no backend.
-          </p>
-        </section>
-
-        <section className="timeline-drawer-section">
-          <h3 className="timeline-drawer-section-title">Diário da Campanha</h3>
-          <p className="timeline-drawer-empty">
-            Nenhum endpoint de diário disponível ainda no backend.
-          </p>
-        </section>
-      </aside>
-    </div>
-  );
-}
+// NOTA (pendente de decisão do usuário): o componente QuickDrawer ("Consulta
+// Rápida") foi removido junto com seu único gatilho de abertura (o botão do
+// header, que não existe na screen Stitch 2dfb1622b97942779052362b50f8f1e2).
+// Não há nenhum outro elemento na screen correta que abra essa gaveta. O
+// hook useTimeline ainda expõe `drawerOpen`/`toggleDrawer` (não removidos de
+// lá para não impactar outros possíveis consumidores), mas esta tela não os
+// usa mais. Se a gaveta de consulta rápida ainda for necessária, precisa de
+// um novo gatilho definido pelo usuário/spec.
 
 export default function TimelinePage() {
   const params = useParams<{ id: string }>();
@@ -103,9 +77,6 @@ export default function TimelinePage() {
     loadMoreEvents,
     introEntered,
     enterCampaign,
-    drawerOpen,
-    toggleDrawer,
-    goToDashboard,
   } = useTimeline(sessionId);
 
   const scrollRef = useRef<HTMLUListElement>(null);
@@ -163,13 +134,7 @@ export default function TimelinePage() {
   return (
     <div className="timeline-root">
       <header className="timeline-header">
-        <button className="timeline-back" onClick={goToDashboard} aria-label="Voltar ao Dashboard">
-          <span className="material-symbols-outlined">arrow_back</span>
-        </button>
         <h1 className="timeline-header-title">{campaign?.title ?? session?.name ?? '...'}</h1>
-        <button className="timeline-drawer-trigger" onClick={toggleDrawer} aria-label="Abrir consulta rápida">
-          <span className="material-symbols-outlined">menu_book</span>
-        </button>
       </header>
 
       <main className="timeline-main">
@@ -256,8 +221,6 @@ export default function TimelinePage() {
           </p>
         </footer>
       )}
-
-      <QuickDrawer open={drawerOpen} onClose={toggleDrawer} />
     </div>
   );
 }
