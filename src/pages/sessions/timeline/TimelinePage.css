@@ -112,14 +112,6 @@
   opacity: 0.5;
 }
 
-.timeline-intro-audio-native {
-  position: absolute;
-  bottom: var(--space-sm);
-  left: var(--space-sm);
-  right: var(--space-sm);
-  width: calc(100% - var(--space-md));
-}
-
 .timeline-intro-body {
   padding: var(--space-lg);
   display: flex;

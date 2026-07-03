@@ -96,6 +96,8 @@ export default function TimelinePage() {
   // reprodução; limitado a MAX_INTRO_AUDIO_RETRIES para evitar loop infinito.
   const introAudioRetryCountRef = useRef(0);
   const introAudioRetryTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const introAudioRef = useRef<HTMLAudioElement>(null);
+  const [introAudioPlaying, setIntroAudioPlaying] = useState(false);
 
   useEffect(() => {
     return () => {
@@ -116,6 +118,16 @@ export default function TimelinePage() {
 
   function handleIntroAudioLoaded() {
     introAudioRetryCountRef.current = 0;
+  }
+
+  function toggleIntroAudio() {
+    const audio = introAudioRef.current;
+    if (!audio) return;
+    if (audio.paused) {
+      audio.play();
+    } else {
+      audio.pause();
+    }
   }
 
   useEffect(() => {
@@ -182,13 +194,26 @@ export default function TimelinePage() {
             )}
             <div className="timeline-intro-media-gradient" />
             {campaign?.intro_narration_audio_url ? (
-              <audio
-                className="timeline-intro-audio-native"
-                controls
-                src={getAssetUrl(campaign.intro_narration_audio_url)}
-                onError={handleIntroAudioError}
-                onLoadedData={handleIntroAudioLoaded}
-              />
+              <>
+                <audio
+                  ref={introAudioRef}
+                  src={getAssetUrl(campaign.intro_narration_audio_url)}
+                  onError={handleIntroAudioError}
+                  onLoadedData={handleIntroAudioLoaded}
+                  onPlay={() => setIntroAudioPlaying(true)}
+                  onPause={() => setIntroAudioPlaying(false)}
+                  onEnded={() => setIntroAudioPlaying(false)}
+                />
+                <button
+                  className="timeline-intro-play-button"
+                  onClick={toggleIntroAudio}
+                  aria-label={introAudioPlaying ? 'Pausar narração' : 'Reproduzir narração'}
+                >
+                  <span className="material-symbols-outlined">
+                    {introAudioPlaying ? 'pause' : 'play_arrow'}
+                  </span>
+                </button>
+              </>
             ) : (
               <button className="timeline-intro-play-button" disabled aria-label="Narração indisponível">
                 <span className="material-symbols-outlined">play_arrow</span>
