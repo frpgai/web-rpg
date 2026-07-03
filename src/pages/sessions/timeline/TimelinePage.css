@@ -106,20 +106,32 @@
   justify-content: center;
   color: var(--color-on-primary);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  flex-shrink: 0;
 }
 
 .timeline-intro-play-button:disabled {
   opacity: 0.5;
 }
 
-/* Seekbar (elemento não presente no design Stitch para esta tela — fallback
+/* Controls row (elemento não presente no design Stitch para esta tela — fallback
    coerente com os tokens usados no botão play/pause: fill em --color-primary,
-   track em --color-outline-variant). */
-.timeline-intro-seekbar-wrapper {
+   track em --color-outline-variant). Play button ao lado da seekbar. */
+.timeline-intro-controls {
   position: absolute;
   left: var(--space-lg);
   right: var(--space-lg);
-  bottom: calc(var(--space-lg) + 76px);
+  bottom: var(--space-lg);
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.timeline-intro-controls .timeline-intro-play-button {
+  position: static;
+}
+
+.timeline-intro-seekbar-wrapper {
+  flex: 1;
   display: flex;
   flex-direction: column;
   gap: var(--space-xs);

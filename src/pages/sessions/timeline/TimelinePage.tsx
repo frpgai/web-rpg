@@ -236,30 +236,32 @@ export default function TimelinePage() {
                   onTimeUpdate={handleIntroAudioTimeUpdate}
                   onLoadedMetadata={handleIntroAudioLoadedMetadata}
                 />
-                <button
-                  className="timeline-intro-play-button"
-                  onClick={toggleIntroAudio}
-                  aria-label={introAudioPlaying ? 'Pausar narração' : 'Reproduzir narração'}
-                >
-                  <span className="material-symbols-outlined">
-                    {introAudioPlaying ? 'pause' : 'play_arrow'}
-                  </span>
-                </button>
-                <div className="timeline-intro-seekbar-wrapper">
-                  <input
-                    type="range"
-                    className="timeline-intro-seekbar"
-                    min={0}
-                    max={introDuration || 0}
-                    step={0.1}
-                    value={introCurrentTime}
-                    onChange={handleIntroSeek}
-                    disabled={!introDuration}
-                    aria-label="Progresso da narração"
-                  />
-                  <span className="timeline-intro-time">
-                    {formatAudioTime(introCurrentTime)} / {formatAudioTime(introDuration)}
-                  </span>
+                <div className="timeline-intro-controls">
+                  <button
+                    className="timeline-intro-play-button"
+                    onClick={toggleIntroAudio}
+                    aria-label={introAudioPlaying ? 'Pausar narração' : 'Reproduzir narração'}
+                  >
+                    <span className="material-symbols-outlined">
+                      {introAudioPlaying ? 'pause' : 'play_arrow'}
+                    </span>
+                  </button>
+                  <div className="timeline-intro-seekbar-wrapper">
+                    <input
+                      type="range"
+                      className="timeline-intro-seekbar"
+                      min={0}
+                      max={introDuration || 0}
+                      step={0.1}
+                      value={introCurrentTime}
+                      onChange={handleIntroSeek}
+                      disabled={!introDuration}
+                      aria-label="Progresso da narração"
+                    />
+                    <span className="timeline-intro-time">
+                      {formatAudioTime(introCurrentTime)} / {formatAudioTime(introDuration)}
+                    </span>
+                  </div>
                 </div>
               </>
             ) : (
