@@ -58,6 +58,14 @@ function HeroAvatar({ player, index }: { player: SessionPlayer; index: number })
 const MAX_INTRO_AUDIO_RETRIES = 2;
 const INTRO_AUDIO_RETRY_DELAY_MS = 800;
 
+function formatAudioTime(seconds: number): string {
+  if (!Number.isFinite(seconds) || seconds < 0) return '0:00';
+  const totalSeconds = Math.floor(seconds);
+  const minutes = Math.floor(totalSeconds / 60);
+  const secs = totalSeconds % 60;
+  return `${minutes}:${secs.toString().padStart(2, '0')}`;
+}
+
 // NOTA (pendente de decisão do usuário): o componente QuickDrawer ("Consulta
 // Rápida") foi removido junto com seu único gatilho de abertura (o botão do
 // header, que não existe na screen Stitch 2dfb1622b97942779052362b50f8f1e2).
@@ -98,6 +106,8 @@ export default function TimelinePage() {
   const introAudioRetryTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const introAudioRef = useRef<HTMLAudioElement>(null);
   const [introAudioPlaying, setIntroAudioPlaying] = useState(false);
+  const [introCurrentTime, setIntroCurrentTime] = useState(0);
+  const [introDuration, setIntroDuration] = useState(0);
 
   useEffect(() => {
     return () => {
@@ -128,6 +138,26 @@ export default function TimelinePage() {
     } else {
       audio.pause();
     }
+  }
+
+  function handleIntroAudioTimeUpdate() {
+    const audio = introAudioRef.current;
+    if (!audio) return;
+    setIntroCurrentTime(audio.currentTime);
+  }
+
+  function handleIntroAudioLoadedMetadata() {
+    const audio = introAudioRef.current;
+    if (!audio) return;
+    setIntroDuration(audio.duration);
+  }
+
+  function handleIntroSeek(event: React.ChangeEvent<HTMLInputElement>) {
+    const audio = introAudioRef.current;
+    if (!audio) return;
+    const value = Number(event.target.value);
+    audio.currentTime = value;
+    setIntroCurrentTime(value);
   }
 
   useEffect(() => {
@@ -203,6 +233,8 @@ export default function TimelinePage() {
                   onPlay={() => setIntroAudioPlaying(true)}
                   onPause={() => setIntroAudioPlaying(false)}
                   onEnded={() => setIntroAudioPlaying(false)}
+                  onTimeUpdate={handleIntroAudioTimeUpdate}
+                  onLoadedMetadata={handleIntroAudioLoadedMetadata}
                 />
                 <button
                   className="timeline-intro-play-button"
@@ -213,6 +245,22 @@ export default function TimelinePage() {
                     {introAudioPlaying ? 'pause' : 'play_arrow'}
                   </span>
                 </button>
+                <div className="timeline-intro-seekbar-wrapper">
+                  <input
+                    type="range"
+                    className="timeline-intro-seekbar"
+                    min={0}
+                    max={introDuration || 0}
+                    step={0.1}
+                    value={introCurrentTime}
+                    onChange={handleIntroSeek}
+                    disabled={!introDuration}
+                    aria-label="Progresso da narração"
+                  />
+                  <span className="timeline-intro-time">
+                    {formatAudioTime(introCurrentTime)} / {formatAudioTime(introDuration)}
+                  </span>
+                </div>
               </>
             ) : (
               <button className="timeline-intro-play-button" disabled aria-label="Narração indisponível">

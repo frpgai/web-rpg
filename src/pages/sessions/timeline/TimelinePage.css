@@ -112,6 +112,80 @@
   opacity: 0.5;
 }
 
+/* Seekbar (elemento não presente no design Stitch para esta tela — fallback
+   coerente com os tokens usados no botão play/pause: fill em --color-primary,
+   track em --color-outline-variant). */
+.timeline-intro-seekbar-wrapper {
+  position: absolute;
+  left: var(--space-lg);
+  right: var(--space-lg);
+  bottom: calc(var(--space-lg) + 76px);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.timeline-intro-seekbar {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 4px;
+  border-radius: var(--radius-full);
+  background: var(--color-outline-variant);
+  cursor: pointer;
+}
+
+.timeline-intro-seekbar:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+
+.timeline-intro-seekbar::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: var(--radius-full);
+  background: var(--color-outline-variant);
+}
+
+.timeline-intro-seekbar::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 12px;
+  height: 12px;
+  border-radius: var(--radius-full);
+  background: var(--color-primary);
+  border: 2px solid var(--color-on-primary);
+  margin-top: -4px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+}
+
+.timeline-intro-seekbar::-moz-range-track {
+  height: 4px;
+  border-radius: var(--radius-full);
+  background: var(--color-outline-variant);
+}
+
+.timeline-intro-seekbar::-moz-range-progress {
+  height: 4px;
+  border-radius: var(--radius-full);
+  background: var(--color-primary);
+}
+
+.timeline-intro-seekbar::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  border-radius: var(--radius-full);
+  background: var(--color-primary);
+  border: 2px solid var(--color-on-primary);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+}
+
+.timeline-intro-time {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--color-text-muted);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+}
+
 .timeline-intro-body {
   padding: var(--space-lg);
   display: flex;
