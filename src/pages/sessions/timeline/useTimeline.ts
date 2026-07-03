@@ -98,6 +98,19 @@ export function useTimeline(sessionId: string) {
     }, [loadMoreEvents])
   );
 
+  // Refetch dedicado da campanha, usado quando a URL assinada do áudio de
+  // introdução expira (1h) e o elemento <audio> dispara erro de carregamento.
+  // Retorna a Promise para o chamador poder controlar retries/loop.
+  const refetchCampaign = useCallback(() => {
+    if (!session) return Promise.resolve();
+    return timelineApi
+      .getCampaign(session.campaign_id)
+      .then(setCampaign)
+      .catch((err) => {
+        console.error('Failed to refetch campaign for audio URL renewal:', err);
+      });
+  }, [session]);
+
   const enterCampaign = useCallback(() => {
     // Não existe endpoint específico de "transição" — a sessão já está
     // `active` neste ponto (GET /sessions/:id/start já foi chamado no Lobby).
@@ -123,6 +136,7 @@ export function useTimeline(sessionId: string) {
     loadMoreEvents,
     introEntered,
     enterCampaign,
+    refetchCampaign,
     drawerOpen,
     toggleDrawer,
     goToDashboard,

@@ -57,9 +57,10 @@ export type CampaignDetail = CampaignListItem & {
   adventures: CampaignAdventureSummary[];
   start_cta_label?: string;
   start_cta_subtext?: string | null;
-  // NOTA: GET /api/v1/campaigns/{id} ainda não retorna intro_narration_audio_url
-  // (a coluna existe no banco e é usada internamente por session.Start, mas não
-  // é exposta neste endpoint) — tratar como opcional até o backend expor.
+  // URL assinada do Cloudflare R2, totalmente qualificada, válida por 1 hora.
+  // Omitida/null quando a campanha não tem áudio de introdução. Como expira,
+  // o consumidor deve tratar falha de carregamento fazendo refetch da campanha
+  // (ver TimelinePage/useTimeline) para obter uma nova URL assinada.
   intro_narration_audio_url?: string | null;
 };
 
