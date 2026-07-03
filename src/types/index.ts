@@ -376,6 +376,8 @@ export type CreateSessionRequest = {
   name: string;
   is_private: boolean;
   hero_id: string;
+  min_players: number;
+  max_players: number;
 };
 
 export type Session = {

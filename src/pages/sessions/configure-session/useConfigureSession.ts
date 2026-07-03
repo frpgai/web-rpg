@@ -148,6 +148,8 @@ export function useConfigureSession(campaignId: string) {
         name: name.trim(),
         is_private: isPrivate,
         hero_id: selectedHeroId,
+        min_players: minPlayers,
+        max_players: participantLimit,
       });
       setLocation(`/app/sessions/${session.id}/lobby`);
     } catch (err) {
