@@ -52,6 +52,12 @@ function HeroAvatar({ player, index }: { player: SessionPlayer; index: number })
   );
 }
 
+// Limite de tentativas de refetch da campanha ao falhar o carregamento do
+// áudio de introdução (URL assinada expira em 1h). Evita loop infinito caso
+// o refetch continue retornando uma URL que falha por outro motivo.
+const MAX_INTRO_AUDIO_RETRIES = 2;
+const INTRO_AUDIO_RETRY_DELAY_MS = 800;
+
 // NOTA (pendente de decisão do usuário): o componente QuickDrawer ("Consulta
 // Rápida") foi removido junto com seu único gatilho de abertura (o botão do
 // header, que não existe na screen Stitch 2dfb1622b97942779052362b50f8f1e2).
@@ -77,11 +83,40 @@ export default function TimelinePage() {
     loadMoreEvents,
     introEntered,
     enterCampaign,
+    refetchCampaign,
   } = useTimeline(sessionId);
 
   const scrollRef = useRef<HTMLUListElement>(null);
   const [autoScroll, setAutoScroll] = useState(true);
   const [showNewBelow, setShowNewBelow] = useState(false);
+
+  // Retry/resiliência para expiração da URL assinada do áudio de introdução
+  // (válida por 1h — ver spec 00190). Ao detectar erro de carregamento,
+  // refaz o fetch da campanha para obter uma nova URL assinada e retoma a
+  // reprodução; limitado a MAX_INTRO_AUDIO_RETRIES para evitar loop infinito.
+  const introAudioRetryCountRef = useRef(0);
+  const introAudioRetryTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (introAudioRetryTimeoutRef.current) {
+        clearTimeout(introAudioRetryTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  function handleIntroAudioError() {
+    if (introAudioRetryCountRef.current >= MAX_INTRO_AUDIO_RETRIES) return;
+    introAudioRetryCountRef.current += 1;
+    if (introAudioRetryTimeoutRef.current) clearTimeout(introAudioRetryTimeoutRef.current);
+    introAudioRetryTimeoutRef.current = setTimeout(() => {
+      refetchCampaign();
+    }, INTRO_AUDIO_RETRY_DELAY_MS);
+  }
+
+  function handleIntroAudioLoaded() {
+    introAudioRetryCountRef.current = 0;
+  }
 
   useEffect(() => {
     if (!introEntered) return;
@@ -151,6 +186,8 @@ export default function TimelinePage() {
                 className="timeline-intro-audio-native"
                 controls
                 src={getAssetUrl(campaign.intro_narration_audio_url)}
+                onError={handleIntroAudioError}
+                onLoadedData={handleIntroAudioLoaded}
               />
             ) : (
               <button className="timeline-intro-play-button" disabled aria-label="Narração indisponível">
