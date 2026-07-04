@@ -13,6 +13,7 @@ type Props = {
 const TYPEWRITER_SPEED_MS = 18;
 const PARAGRAPH_GAP_MS = 400;
 const FADE_TO_BLACK_MS = 1200;
+const VOICE_WAVE_DELAYS = [0.1, 0.3, 0.2, 0.5, 0.4, 0.7, 0.2, 0.1];
 
 function splitParagraphs(text?: string | null): string[] {
   if (!text) return [];
@@ -109,24 +110,41 @@ export function StorytellingScreen({ adventure, onEnter }: Props) {
         />
       )}
 
-      <div className="storytelling-content">
-        <h1 className="storytelling-title">{adventure?.title ?? '...'}</h1>
-        <div className="storytelling-narration">
-          {paragraphs.map((paragraph, index) => (
-            <p key={index} className="storytelling-paragraph">
-              <TypewriterText text={paragraph} speedMs={TYPEWRITER_SPEED_MS} />
-            </p>
-          ))}
-        </div>
-      </div>
+      <section className="storytelling-overlay">
+        <div className="storytelling-card">
+          <span className="storytelling-eyebrow">A Jornada Começa</span>
+          <h1 className="storytelling-title">{adventure?.title ?? '...'}</h1>
+          <div className="storytelling-divider" />
+          <div className="storytelling-narration">
+            {paragraphs.map((paragraph, index) => (
+              <p key={index} className="storytelling-paragraph">
+                <TypewriterText text={paragraph} speedMs={TYPEWRITER_SPEED_MS} />
+              </p>
+            ))}
+          </div>
 
-      <button
-        className={`storytelling-cta ${narrationEnded ? 'storytelling-cta-visible' : ''}`}
-        onClick={handleEnter}
-        disabled={!narrationEnded}
-      >
-        Entrar no Capítulo
-      </button>
+          {!narrationEnded && (
+            <div className="storytelling-voice-wave" aria-label="Narração Ativa">
+              {Array.from({ length: 8 }).map((_, index) => (
+                <span
+                  key={index}
+                  className="storytelling-voice-wave-bar"
+                  style={{ animationDelay: `${VOICE_WAVE_DELAYS[index % VOICE_WAVE_DELAYS.length]}s` }}
+                />
+              ))}
+            </div>
+          )}
+
+          <button
+            className={`storytelling-cta ${narrationEnded ? 'storytelling-cta-visible' : ''}`}
+            onClick={handleEnter}
+            disabled={!narrationEnded}
+          >
+            <span className="material-symbols-outlined storytelling-cta-icon">play_arrow</span>
+            Iniciar Capítulo
+          </button>
+        </div>
+      </section>
 
       <div className={`storytelling-fade ${fading ? 'storytelling-fade-active' : ''}`} />
     </div>
