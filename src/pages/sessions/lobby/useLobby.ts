@@ -37,7 +37,7 @@ export function useLobby(sessionId: string) {
       .then((sessionData) => {
         setSession(sessionData);
         if (sessionData.status === 'active') {
-          setLocation(`/app/sessions/${sessionId}`);
+          setLocation(`/app/sessions/${sessionId}/play`);
         }
       })
       .catch((err) => {
@@ -73,7 +73,7 @@ export function useLobby(sessionId: string) {
     useCallback(
       (event) => {
         if (event.type === 'session_started') {
-          setLocation(`/app/sessions/${sessionId}`);
+          setLocation(`/app/sessions/${sessionId}/play`);
           return;
         }
         refreshPlayers();
@@ -110,7 +110,7 @@ export function useLobby(sessionId: string) {
     setStarting(true);
     try {
       await lobbyApi.start(sessionId);
-      setLocation(`/app/sessions/${sessionId}`);
+      setLocation(`/app/sessions/${sessionId}/play`);
     } catch (err: any) {
       console.error('Failed to start session:', err);
       const status: number | undefined = err?.response?.status;

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { useParams } from 'wouter';
+import { useLocation, useParams } from 'wouter';
 import { Spinner } from '../../../components/ui/Spinner';
 import { getAssetUrl } from '../../../utils/url';
 import { useTimeline } from './useTimeline';
@@ -78,6 +78,7 @@ function formatAudioTime(seconds: number): string {
 export default function TimelinePage() {
   const params = useParams<{ id: string }>();
   const sessionId = params.id ?? '';
+  const [, setLocation] = useLocation();
 
   const {
     session,
@@ -90,9 +91,10 @@ export default function TimelinePage() {
     hasMore,
     loadMoreEvents,
     introEntered,
-    enterCampaign,
     refetchCampaign,
   } = useTimeline(sessionId);
+
+  const enterCampaign = () => setLocation(`/app/sessions/${sessionId}/play`);
 
   const scrollRef = useRef<HTMLUListElement>(null);
   const [autoScroll, setAutoScroll] = useState(true);
