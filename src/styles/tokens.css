@@ -19,8 +19,10 @@
   --color-primary:           #d7baff;
   --color-primary-container: #bd93f9;
   --color-on-primary:        #411478;
+  --color-on-primary-container: #4e2484;
   --color-secondary:         #ffb86c;
   --color-tertiary:          #31e368;
+  --color-gold:              #d4af37;
 
   /* ── Text ────────────────────────────────────────────────────────────────── */
   --color-text:              #e4e1e9;
