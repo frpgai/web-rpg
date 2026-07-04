@@ -1,0 +1,22 @@
+.play-root {
+  display: flex;
+  flex-direction: column;
+  min-height: 100svh;
+  width: 100%;
+  max-width: 480px;
+  margin: 0 auto;
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  box-sizing: border-box;
+}
+
+.play-loading {
+  align-items: center;
+  justify-content: center;
+}
+
+.play-error {
+  color: var(--color-error);
+  text-align: center;
+  padding: var(--space-lg);
+}

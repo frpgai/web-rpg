@@ -450,6 +450,87 @@ export type SessionEventsPage = {
   next_cursor: string | null;
 };
 
+// ── Mesa de Jogo (Storytelling, Mapa, Diálogos de NPC) — spec A00153 ────────
+
+export type Adventure = {
+  id: string;
+  title: string;
+  media_url?: string | null;
+  media_type?: 'video' | 'image' | null;
+  audio_transition_file?: string | null;
+  transition_sfx?: string | null;
+  intro_narration?: string | null;
+  intro_narration_audio_file?: string | null;
+  narration_style?: string | null;
+  ambient_soundtrack_file?: string | null;
+  ambient_soundtrack?: string | null;
+};
+
+export type SceneNPC = {
+  id: string;
+  name: string;
+  avatar_url?: string | null;
+};
+
+export type ScenePointOfInterest = {
+  id: string;
+  name: string;
+  type: string;
+  enabled: boolean;
+  sort_order: number;
+};
+
+export type SceneDetail = {
+  id: string;
+  map_prompt?: string | null;
+  map_image_url?: string | null;
+  intro_narration?: string | null;
+  audio_transition_file?: string | null;
+  transition_sfx?: string | null;
+  intro_narration_audio_file?: string | null;
+  narration_style?: string | null;
+  ambient_soundtrack_file?: string | null;
+  ambient_soundtrack?: string | null;
+  npcs: SceneNPC[];
+  points_of_interest: ScenePointOfInterest[];
+};
+
+export type DialogueOptionView = {
+  id: string;
+  label: string;
+  next_node_id?: string | null;
+  requires_skill_check: boolean;
+  skill?: string | null;
+  dc?: number | null;
+  success_node_id?: string | null;
+  failure_node_id?: string | null;
+  sort_order: number;
+  conditions: unknown[];
+};
+
+export type DialogueNodeView = {
+  id: string;
+  node_key: string;
+  text: string;
+  audio_url?: string | null;
+  video_url?: string | null;
+  is_root: boolean;
+  options: DialogueOptionView[];
+};
+
+export type NPCDialogueTree = {
+  npc_id: string;
+  root_node_id?: string | null;
+  nodes: DialogueNodeView[];
+};
+
+export type CreateEventType = 'adventure_started' | 'npc_dialogue_choice' | 'dice_roll';
+
+export type CreateEventRequest = {
+  type: CreateEventType;
+  payload: Record<string, unknown>;
+};
+
 export type SessionSocketEventType =
   | 'session_joined'
   | 'session_left'
