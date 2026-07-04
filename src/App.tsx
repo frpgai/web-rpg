@@ -16,6 +16,7 @@ import CreateSessionPage from './pages/sessions/CreateSessionPage';
 import ConfigureSessionPage from './pages/sessions/configure-session/ConfigureSessionPage';
 import LobbyPage from './pages/sessions/lobby/LobbyPage';
 import TimelinePage from './pages/sessions/timeline/TimelinePage';
+import PlayPage from './pages/sessions/play/PlayPage';
 import AppLayout from './layouts/AppLayout';
 import { PrivateRoute } from './components/common/PrivateRoute';
 import { useAuthStore } from './stores/authStore';
@@ -76,6 +77,7 @@ export default function App() {
                 <Route path="/app/sessions/create/select-campaign" component={CreateSessionPage} />
                 <Route path="/app/sessions/new/configure/:campaignId" component={ConfigureSessionPage} />
                 <Route path="/app/sessions/:id/lobby" component={LobbyPage} />
+                <Route path="/app/sessions/:id/play" component={PlayPage} />
                 <Route path="/app/sessions/:id" component={TimelinePage} />
 
                 <Route>

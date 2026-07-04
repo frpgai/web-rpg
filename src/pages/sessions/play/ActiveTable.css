@@ -1,0 +1,53 @@
+.activetable-root {
+  display: flex;
+  flex-direction: column;
+  min-height: 100svh;
+  width: 100%;
+  max-width: 480px;
+  margin: 0 auto;
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  box-sizing: border-box;
+  position: relative;
+}
+
+.activetable-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  padding: var(--space-md);
+  background-color: var(--color-surface-lowest);
+  border-bottom: 1px solid var(--color-outline-variant);
+}
+
+.activetable-header-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 18px;
+  color: var(--color-text);
+}
+
+.activetable-poi-toast {
+  position: fixed;
+  bottom: calc(72px + var(--space-md));
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 150;
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-md);
+  background-color: var(--color-surface-high);
+  color: var(--color-text);
+  font-size: 13px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.activetable-poi-toast button {
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  display: flex;
+}
