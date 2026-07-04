@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { sessionApi } from '../../../api/services/session';
 import { useSessionSocket } from '../../../hooks/useSessionSocket';
+import { useAuthStore } from '../../../stores/authStore';
 import { useInvestigatePoi } from './useInvestigatePoi';
 import { MapViewer } from './MapViewer';
 import { TimelineFeed } from './TimelineFeed';
@@ -29,7 +30,20 @@ export function ActiveTable({ sessionId, sessionName, scene, onSceneRefresh }: P
   const [poiNotice, setPoiNotice] = useState<{ poi: ScenePointOfInterest; kind: 'move' } | null>(null);
   const [discoveredPoiId, setDiscoveredPoiId] = useState<string | null>(null);
   const [localResultEvents, setLocalResultEvents] = useState<SessionEvent[]>([]);
+  const [currentHeroId, setCurrentHeroId] = useState<string | null>(null);
   const { investigate, investigating, errorMessage, clearError } = useInvestigatePoi();
+  const currentUserId = useAuthStore((state) => state.user?.id);
+
+  useEffect(() => {
+    if (!currentUserId) return;
+    sessionApi
+      .getPlayers(sessionId)
+      .then((players) => {
+        const me = players.find((p) => p.user_id === currentUserId);
+        setCurrentHeroId(me?.hero?.id ?? null);
+      })
+      .catch((err) => console.error('Failed to load session players:', err));
+  }, [sessionId, currentUserId]);
 
   const fetchEvents = useCallback(() => {
     setEventsLoading(true);
@@ -52,24 +66,24 @@ export function ActiveTable({ sessionId, sessionName, scene, onSceneRefresh }: P
   const handleInvestigate = useCallback(async () => {
     const poi = scene.points_of_interest.find((p) => !p.enabled);
     if (!poi) return;
+    if (!currentHeroId) return; // herói do jogador ainda não resolvido
 
-    const response = await investigate(scene.id, poi.id, sessionId);
+    const response = await investigate(scene.id, poi.id, sessionId, currentHeroId);
     if (!response) return; // erro já exposto via errorMessage/toast
 
+    const resultLabel = response.success ? 'Sucesso' : 'Falha';
     const text = response.success ? response.success_text : response.failure_text;
-    if (text) {
-      setLocalResultEvents((prev) => [
-        ...prev,
-        {
-          seq: Date.now(),
-          session_id: sessionId,
-          scene_id: scene.id,
-          type: 'poi_investigation_result',
-          payload: { text },
-          created_at: new Date().toISOString(),
-        },
-      ]);
-    }
+    setLocalResultEvents((prev) => [
+      ...prev,
+      {
+        seq: Date.now(),
+        session_id: sessionId,
+        scene_id: scene.id,
+        type: 'poi_investigation_result',
+        payload: { text: `${resultLabel} (${response.total}) — ${text ?? ''}`.trim() },
+        created_at: new Date().toISOString(),
+      },
+    ]);
 
     if (response.success) {
       setDiscoveredPoiId(response.poi_id);
@@ -77,7 +91,7 @@ export function ActiveTable({ sessionId, sessionName, scene, onSceneRefresh }: P
       window.setTimeout(() => setDiscoveredPoiId(null), 3000);
     }
     fetchEvents();
-  }, [scene, sessionId, investigate, onSceneRefresh, fetchEvents]);
+  }, [scene, sessionId, currentHeroId, investigate, onSceneRefresh, fetchEvents]);
 
   return (
     <div className="activetable-root">

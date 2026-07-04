@@ -5,7 +5,12 @@ import { rollD20 } from '../../../utils/dice';
 import type { InvestigatePoiResponse } from '../../../types';
 
 type Result = {
-  investigate: (sceneId: string, poiId: string, sessionId: string) => Promise<InvestigatePoiResponse | null>;
+  investigate: (
+    sceneId: string,
+    poiId: string,
+    sessionId: string,
+    heroId: string
+  ) => Promise<InvestigatePoiResponse | null>;
   investigating: boolean;
   errorMessage: string | null;
   clearError: () => void;
@@ -32,31 +37,26 @@ async function messageForError(err: unknown): Promise<string> {
 /**
  * Fluxo de "Investigar" um POI oculto — spec A00153.
  *
- * NOTA (limitação conhecida / decisão pendente): o backend
- * (be-rpg branch feature/poi-investigation, PR #68 — ainda não mergeada em
- * main) espera `result` já somado (d20 + bônus de perícia do herói) e só
- * compara `result >= dc`, sem somar bônus nenhum ele mesmo. Somar o bônus de
- * perícia aqui violaria a Regra de Ouro de web-rpg/CLAUDE.md ("nenhum
- * cálculo de stats no frontend"). Por isso, por enquanto, `result` é apenas
- * o d20 puro — o líder/usuário precisa decidir se o contrato do backend
- * deve mudar para receber só o d20 e somar o bônus do herói já conhecido no
- * banco, ou se essa soma no cliente é uma exceção aprovada. Ver mensagem
- * enviada para a sessão principal reportando esse conflito.
+ * O cliente envia apenas o d20 puro (`roll`, 1-20) e o `hero_id` ativo do
+ * jogador; o backend (be-rpg branch feature/poi-investigation, PR #68,
+ * commit 4c7baa0) resolve modificador de atributo + bônus de proficiência
+ * da perícia configurada no POI e soma ao roll, retornando `total` já
+ * calculado. Nenhum cálculo de stats (modificador/proficiência/resultado
+ * final) acontece aqui, conforme a Regra de Ouro de web-rpg/CLAUDE.md.
  */
 export function useInvestigatePoi(): Result {
   const [investigating, setInvestigating] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const investigate = useCallback(async (sceneId: string, poiId: string, sessionId: string) => {
+  const investigate = useCallback(async (sceneId: string, poiId: string, sessionId: string, heroId: string) => {
     setInvestigating(true);
     setErrorMessage(null);
     try {
       const roll = rollD20();
-      // TODO: somar bônus de perícia do herói ao `roll` antes de enviar,
-      // assim que a decisão acima for tomada. Hoje envia o d20 puro.
       const response = await sceneApi.investigatePoi(sceneId, poiId, {
         session_id: sessionId,
-        result: roll,
+        hero_id: heroId,
+        roll,
       });
       return response;
     } catch (err) {
