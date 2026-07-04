@@ -8,6 +8,9 @@ type Props = {
   scene: SceneDetail;
   onSelectNpc: (npc: SceneNPC) => void;
   onSelectPoi: (poi: ScenePointOfInterest) => void;
+  // id do POI recém-descoberto via "Investigar" (sucesso) — recebe o pulso
+  // luminoso dourado de descoberta por alguns segundos.
+  discoveredPoiId?: string | null;
 };
 
 const MIN_SCALE = 0.6;
@@ -26,7 +29,7 @@ function hashToPercent(id: string, salt: number): number {
   return 12 + (hash % 76); // mantém os pins entre 12% e 88% do canvas
 }
 
-export function MapViewer({ scene, onSelectNpc, onSelectPoi }: Props) {
+export function MapViewer({ scene, onSelectNpc, onSelectPoi, discoveredPoiId }: Props) {
   const [scale, setScale] = useState(1);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const dragOrigin = useRef<{ x: number; y: number } | null>(null);
@@ -103,7 +106,9 @@ export function MapViewer({ scene, onSelectNpc, onSelectPoi }: Props) {
             <button
               key={poi.id}
               type="button"
-              className="mapviewer-pin mapviewer-pin-poi"
+              className={`mapviewer-pin mapviewer-pin-poi${
+                poi.id === discoveredPoiId ? ' mapviewer-pin-discovered' : ''
+              }`}
               style={{
                 left: `${poi.x_coordinate ?? hashToPercent(poi.id, index + 3)}%`,
                 top: `${poi.y_coordinate ?? hashToPercent(poi.id, index + 23)}%`,

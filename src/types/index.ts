@@ -480,6 +480,28 @@ export type ScenePointOfInterest = {
   sort_order: number;
   x_coordinate?: number | null;
   y_coordinate?: number | null;
+  skill_check?: string | null;
+  dc?: number | null;
+  success_text?: string | null;
+  failure_text?: string | null;
+};
+
+// Payload de POST /api/v1/scenes/{scene_id}/pois/{poi_id}/investigate
+// (be-rpg branch feature/poi-investigation, PR #68 — ainda não mergeada em
+// main; contrato confirmado lendo internal/scene/model.go e service.go
+// nessa branch). `result` é o valor final do teste de perícia (d20 + bônus)
+// já somado — o backend só compara `result >= dc`, não soma bônus nenhum.
+export type InvestigatePoiRequest = {
+  session_id: string;
+  result: number;
+};
+
+export type InvestigatePoiResponse = {
+  poi_id: string;
+  success: boolean;
+  enabled: boolean;
+  success_text?: string | null;
+  failure_text?: string | null;
 };
 
 export type SceneDetail = {

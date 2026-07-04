@@ -84,3 +84,20 @@
   border-radius: var(--radius-sm);
   white-space: nowrap;
 }
+
+/* Pulso luminoso dourado ao descobrir um POI via Investigar (sucesso). */
+.mapviewer-pin-discovered .material-symbols-outlined {
+  animation: mapviewer-pin-discover-pulse 1.4s ease-out 2;
+}
+
+@keyframes mapviewer-pin-discover-pulse {
+  0% {
+    box-shadow: 0 0 0 0 var(--color-secondary);
+  }
+  70% {
+    box-shadow: 0 0 0 12px color-mix(in srgb, var(--color-secondary) 0%, transparent);
+  }
+  100% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-secondary) 0%, transparent);
+  }
+}
