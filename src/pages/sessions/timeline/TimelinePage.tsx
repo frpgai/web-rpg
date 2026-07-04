@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { useParams } from 'wouter';
+import { useParams, useLocation } from 'wouter';
 import { Spinner } from '../../../components/ui/Spinner';
 import { getAssetUrl } from '../../../utils/url';
 import { useTimeline } from './useTimeline';
@@ -78,6 +78,7 @@ function formatAudioTime(seconds: number): string {
 export default function TimelinePage() {
   const params = useParams<{ id: string }>();
   const sessionId = params.id ?? '';
+  const [, setLocation] = useLocation();
 
   const {
     session,
@@ -90,9 +91,16 @@ export default function TimelinePage() {
     hasMore,
     loadMoreEvents,
     introEntered,
-    enterCampaign,
     refetchCampaign,
   } = useTimeline(sessionId);
+
+  // Decisão de produto: a spec 00153-mesa-jogo prevalece sobre a
+  // 00190-iniciar-campanha para este CTA — o clique aqui navega para a Mesa
+  // de Jogo Ativa (/play), em vez de apenas revelar a timeline in-place
+  // (comportamento do `enterCampaign` do hook, usado por outras telas).
+  function goToMesaDeJogo() {
+    setLocation(`/app/sessions/${sessionId}/play`);
+  }
 
   const scrollRef = useRef<HTMLUListElement>(null);
   const [autoScroll, setAutoScroll] = useState(true);
@@ -288,7 +296,7 @@ export default function TimelinePage() {
 
         {!introEntered ? (
           <section className="timeline-cta-section">
-            <button className="timeline-cta-button" onClick={enterCampaign}>
+            <button className="timeline-cta-button" onClick={goToMesaDeJogo}>
               <span>{campaign?.start_cta_label || 'Iniciar Aventura'}</span>
             </button>
             {campaign?.start_cta_subtext && (
