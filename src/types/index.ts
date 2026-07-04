@@ -478,6 +478,8 @@ export type ScenePointOfInterest = {
   type: string;
   enabled: boolean;
   sort_order: number;
+  x_coordinate?: number | null;
+  y_coordinate?: number | null;
 };
 
 export type SceneDetail = {

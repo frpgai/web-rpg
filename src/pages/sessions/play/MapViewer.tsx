@@ -13,11 +13,11 @@ type Props = {
 const MIN_SCALE = 0.6;
 const MAX_SCALE = 2.5;
 
-// NOTA (limitação conhecida — spec A00153 seção 4.1): o schema atual de
-// `scenes.npcs`/`points_of_interest` não tem coluna de posição/coordenadas no
-// mapa. Os pins são posicionados de forma determinística (hash do id), não
-// aleatória, para não "pular" a cada re-render — mas não refletem uma
-// posição real definida pelo mestre. Reportado para decisão futura de schema.
+// NOTA (limitação conhecida): `scene_points_of_interest` já tem colunas reais
+// de coordenada (x_coordinate/y_coordinate, 0-100, be-rpg commit 7d69de2),
+// usadas abaixo. `scenes.npcs` ainda NÃO tem coluna de posição no backend —
+// os pins de NPC continuam com posição determinística (hash do id) até que
+// o schema seja estendido para NPCs também.
 function hashToPercent(id: string, salt: number): number {
   let hash = salt;
   for (let i = 0; i < id.length; i += 1) {
@@ -105,8 +105,8 @@ export function MapViewer({ scene, onSelectNpc, onSelectPoi }: Props) {
               type="button"
               className="mapviewer-pin mapviewer-pin-poi"
               style={{
-                left: `${hashToPercent(poi.id, index + 3)}%`,
-                top: `${hashToPercent(poi.id, index + 23)}%`,
+                left: `${poi.x_coordinate ?? hashToPercent(poi.id, index + 3)}%`,
+                top: `${poi.y_coordinate ?? hashToPercent(poi.id, index + 23)}%`,
               }}
               onClick={() => onSelectPoi(poi)}
               aria-label={poi.name}
