@@ -1,12 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
 import { getAssetUrl } from '../../../utils/url';
 import { useAmbientVolume } from '../../../utils/useAmbientVolume';
+import { SessionHeader } from '../../../components/navigation/SessionHeader';
 import { TypewriterText } from '../timeline/TypewriterText';
 import type { Adventure } from '../../../types';
 import './StorytellingScreen.css';
 
 type Props = {
   adventure: Adventure | null;
+  sessionName: string;
   onEnter: () => Promise<unknown>;
 };
 
@@ -23,7 +25,7 @@ function splitParagraphs(text?: string | null): string[] {
     .filter(Boolean);
 }
 
-export function StorytellingScreen({ adventure, onEnter }: Props) {
+export function StorytellingScreen({ adventure, sessionName, onEnter }: Props) {
   const paragraphs = splitParagraphs(adventure?.intro_narration);
   const transitionSrc = adventure?.audio_transition_file || adventure?.transition_sfx;
   const narrationSrc = adventure?.intro_narration_audio_file;
@@ -77,6 +79,8 @@ export function StorytellingScreen({ adventure, onEnter }: Props) {
 
   return (
     <div className="storytelling-root">
+      <SessionHeader title={sessionName} />
+
       <div className="storytelling-media">
         {adventure?.media_type === 'video' && adventure.media_url ? (
           <video

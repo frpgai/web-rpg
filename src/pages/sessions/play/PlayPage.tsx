@@ -28,7 +28,13 @@ export default function PlayPage() {
   }
 
   if (phase === 'storytelling') {
-    return <StorytellingScreen adventure={adventure} onEnter={enterTable} />;
+    return (
+      <StorytellingScreen
+        adventure={adventure}
+        sessionName={session?.name ?? '...'}
+        onEnter={enterTable}
+      />
+    );
   }
 
   if (!scene) {

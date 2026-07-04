@@ -18,7 +18,7 @@ const adventure: Adventure = {
 
 describe('StorytellingScreen', () => {
   it('renderiza o título, o eyebrow e o divisor cinematográfico', () => {
-    render(<StorytellingScreen adventure={adventure} onEnter={vi.fn()} />);
+    render(<StorytellingScreen adventure={adventure} sessionName="Mesa de Sexta" onEnter={vi.fn()} />);
 
     expect(screen.getByText('Capítulo 1: As Noites que Devoram')).toBeInTheDocument();
     expect(screen.getByText('A Jornada Começa')).toBeInTheDocument();
@@ -26,7 +26,7 @@ describe('StorytellingScreen', () => {
   });
 
   it('renderiza os parágrafos de narração e o visualizador de voz com 8 barras', () => {
-    render(<StorytellingScreen adventure={adventure} onEnter={vi.fn()} />);
+    render(<StorytellingScreen adventure={adventure} sessionName="Mesa de Sexta" onEnter={vi.fn()} />);
 
     const paragraphs = document.querySelectorAll('.storytelling-paragraph');
     expect(paragraphs).toHaveLength(2);
@@ -36,7 +36,7 @@ describe('StorytellingScreen', () => {
   });
 
   it('renderiza o CTA desabilitado até a narração terminar', () => {
-    render(<StorytellingScreen adventure={adventure} onEnter={vi.fn()} />);
+    render(<StorytellingScreen adventure={adventure} sessionName="Mesa de Sexta" onEnter={vi.fn()} />);
 
     const cta = screen.getByRole('button', { name: /entrar no capítulo/i });
     expect(cta).toBeDisabled();
@@ -44,7 +44,12 @@ describe('StorytellingScreen', () => {
   });
 
   it('renderiza fallback de mídia quando a aventura não tem media_url', () => {
-    render(<StorytellingScreen adventure={adventure} onEnter={vi.fn()} />);
+    render(<StorytellingScreen adventure={adventure} sessionName="Mesa de Sexta" onEnter={vi.fn()} />);
     expect(document.querySelector('.storytelling-media-fallback')).not.toBeNull();
+  });
+
+  it('renderiza o SessionHeader com o nome da sessão', () => {
+    render(<StorytellingScreen adventure={adventure} sessionName="Mesa de Sexta" onEnter={vi.fn()} />);
+    expect(screen.getByRole('heading', { name: 'Mesa de Sexta' })).toBeInTheDocument();
   });
 });
