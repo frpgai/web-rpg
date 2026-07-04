@@ -28,6 +28,9 @@
   --color-outline:           #968e9c;
   --color-outline-variant:   #4a4451;
   --color-error:             #ffb4ab;
+  /* Ouro envelhecido escuro — usado no gradiente de fallback do overlay
+     cinematográfico de storytelling (spec 00153) quando não há media_url. */
+  --color-gold-aged-dark:    #2a2110;
 
   /* ── Spacing ─────────────────────────────────────────────────────────────── */
   --space-xs:  4px;
