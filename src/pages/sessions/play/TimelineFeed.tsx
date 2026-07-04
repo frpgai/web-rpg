@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import { getAssetUrl } from '../../../utils/url';
 import { useAmbientVolume } from '../../../utils/useAmbientVolume';
 import { Spinner } from '../../../components/ui/Spinner';
-import { TypewriterText } from '../timeline/TypewriterText';
+import { TypewriterText } from './TypewriterText';
 import type { SceneDetail, SessionEvent } from '../../../types';
 import './TimelineFeed.css';
 

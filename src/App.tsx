@@ -12,10 +12,9 @@ import AestheticsPage from './pages/hero/create/aesthetics/AestheticsPage';
 import SummaryPage from './pages/hero/create/summary/SummaryPage';
 import HeroDetailPage from './pages/hero/detail/HeroDetailPage';
 import SelectSystemPage from './pages/SelectSystemPage';
-import CreateSessionPage from './pages/sessions/CreateSessionPage';
+import CreateSessionPage from './pages/sessions/configure-session/CreateSessionPage';
 import ConfigureSessionPage from './pages/sessions/configure-session/ConfigureSessionPage';
-import LobbyPage from './pages/sessions/lobby/LobbyPage';
-import TimelinePage from './pages/sessions/timeline/TimelinePage';
+import LobbyPage from './pages/sessions/configure-session/lobby/LobbyPage';
 import PlayPage from './pages/sessions/play/PlayPage';
 import AppLayout from './layouts/AppLayout';
 import { PrivateRoute } from './components/common/PrivateRoute';
@@ -78,7 +77,6 @@ export default function App() {
                 <Route path="/app/sessions/new/configure/:campaignId" component={ConfigureSessionPage} />
                 <Route path="/app/sessions/:id/lobby" component={LobbyPage} />
                 <Route path="/app/sessions/:id/play" component={PlayPage} />
-                <Route path="/app/sessions/:id" component={TimelinePage} />
 
                 <Route>
                   <div style={{ padding: '20px', textAlign: 'center' }}>

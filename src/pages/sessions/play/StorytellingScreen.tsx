@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { getAssetUrl } from '../../../utils/url';
 import { useAmbientVolume } from '../../../utils/useAmbientVolume';
-import { TypewriterText } from '../timeline/TypewriterText';
+import { TypewriterText } from './TypewriterText';
 import type { Adventure } from '../../../types';
 import './StorytellingScreen.css';
 
