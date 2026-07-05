@@ -467,6 +467,21 @@ export type SessionEventsPage = {
   next_cursor: string | null;
 };
 
+export type InvestigatePoiRequest = {
+  session_id: string;
+  hero_id: string;
+  roll: number;
+};
+
+export type InvestigatePoiResponse = {
+  poi_id: string;
+  success: boolean;
+  enabled: boolean;
+  total: number;
+  success_text?: string | null;
+  failure_text?: string | null;
+};
+
 // ── Mesa de Jogo (Storytelling, Mapa, Diálogos de NPC) — spec A00153 ────────
 
 export type Adventure = {
@@ -487,14 +502,22 @@ export type SceneNPC = {
   id: string;
   name: string;
   avatar_url?: string | null;
+  x_coordinate?: number | null;
+  y_coordinate?: number | null;
 };
 
 export type ScenePointOfInterest = {
   id: string;
   name: string;
   type: string;
+  skill_check?: string | null;
+  dc?: number | null;
+  success_text?: string | null;
+  failure_text?: string | null;
   enabled: boolean;
   sort_order: number;
+  x_coordinate?: number | null;
+  y_coordinate?: number | null;
 };
 
 export type SceneDetail = {

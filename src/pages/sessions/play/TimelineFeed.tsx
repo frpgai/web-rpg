@@ -48,6 +48,31 @@ function DiceRollRow({ event }: { event: SessionEvent }) {
   );
 }
 
+function PoiInvestigationRow({ event, scene }: { event: SessionEvent; scene: SceneDetail }) {
+  const poi = scene.points_of_interest.find((p) => p.id === event.poi_id);
+  const narration = event.success ? poi?.success_text : poi?.failure_text;
+
+  return (
+    <li className="timelinefeed-row timelinefeed-row-dice">
+      <span className="timelinefeed-dice-badge">d20</span>
+      <div className="timelinefeed-dice-body">
+        <span className="timelinefeed-dice-total">
+          {poi?.name ?? 'Local'}: {event.roll ?? '?'} {(event.modifier ?? 0) >= 0 ? '+' : ''}
+          {event.modifier ?? 0} = {event.total ?? '?'} (CD {event.dc ?? '?'})
+        </span>
+        <span
+          className={`timelinefeed-dice-result ${
+            event.success ? 'timelinefeed-dice-result-success' : 'timelinefeed-dice-result-failure'
+          }`}
+        >
+          {event.success ? 'Sucesso' : 'Falha'}
+        </span>
+        {narration && <p className="timelinefeed-npc-text">{narration}</p>}
+      </div>
+    </li>
+  );
+}
+
 function NpcSpeechRow({ event, scene }: { event: SessionEvent; scene: SceneDetail }) {
   const payload = (event.payload ?? {}) as Record<string, unknown>;
   const npcId = typeof payload.npc_id === 'string' ? payload.npc_id : undefined;
@@ -112,6 +137,9 @@ export function TimelineFeed({ scene, events, loading }: Props) {
             if (event.type === 'dice_roll') return <DiceRollRow key={event.seq} event={event} />;
             if (event.type === 'npc_dialogue_choice') {
               return <NpcSpeechRow key={event.seq} event={event} scene={scene} />;
+            }
+            if (event.type === 'poi_investigation') {
+              return <PoiInvestigationRow key={event.seq} event={event} scene={scene} />;
             }
             return (
               <li key={event.seq} className="timelinefeed-row timelinefeed-row-generic">

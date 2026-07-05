@@ -84,3 +84,22 @@
   border-radius: var(--radius-sm);
   white-space: nowrap;
 }
+
+/* Pulso luminoso dourado ao descobrir um POI oculto via investigação
+   (spec A00153 seção 4.3) — só aplicado na primeira renderização após a
+   descoberta, controlado por `justDiscoveredPoiId` no ActiveTable. */
+.mapviewer-pin-poi-discovered .material-symbols-outlined {
+  animation: mapviewer-pulse-discovered 1.6s ease-out 3;
+}
+
+@keyframes mapviewer-pulse-discovered {
+  0% {
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5), 0 0 0 0 var(--color-secondary);
+  }
+  70% {
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5), 0 0 0 12px transparent;
+  }
+  100% {
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5), 0 0 0 0 transparent;
+  }
+}

@@ -5,6 +5,7 @@ import { MapViewer } from './MapViewer';
 import { TimelineFeed } from './TimelineFeed';
 import { ActionDock } from './ActionDock';
 import { NPCDialogueModal } from './NPCDialogueModal';
+import { InvestigateModal } from './InvestigateModal';
 import type { SceneDetail, SceneNPC, ScenePointOfInterest, SessionEvent } from '../../../types';
 import './ActiveTable.css';
 
@@ -12,21 +13,25 @@ type Props = {
   sessionId: string;
   sessionName: string;
   scene: SceneDetail;
+  onRefreshScene: () => Promise<void> | void;
 };
 
-export function ActiveTable({ sessionId, sessionName, scene }: Props) {
+export function ActiveTable({ sessionId, sessionName, scene, onRefreshScene }: Props) {
   const [events, setEvents] = useState<SessionEvent[]>([]);
   const [eventsLoading, setEventsLoading] = useState(true);
   const [activeNpc, setActiveNpc] = useState<SceneNPC | null>(null);
-  // "Mover"/"Investigar" não têm endpoint de persistência dedicado hoje (os
-  // tipos client-submissíveis são narrative_entered/npc_dialogue_choice/
-  // dice_roll/poi_investigation — ver be-rpg session/model.go) — exibimos
-  // apenas feedback
-  // local em vez de inventar um cálculo de rolagem no frontend (proibido
-  // pela Regra de Ouro em web-rpg/CLAUDE.md). Documentado como limitação.
-  const [poiNotice, setPoiNotice] = useState<{ poi: ScenePointOfInterest; kind: 'move' | 'investigate' } | null>(
-    null
-  );
+  const [investigateOpen, setInvestigateOpen] = useState(false);
+  // POI recém-descoberto por uma investigação bem-sucedida nesta sessão de
+  // tela (spec A00153 seção 4.3, passo 6) — usado para acionar o pulso
+  // luminoso dourado do pin no MapViewer apenas na primeira renderização
+  // após a descoberta.
+  const [justDiscoveredPoiId, setJustDiscoveredPoiId] = useState<string | null>(null);
+  // "Mover" não tem endpoint de persistência dedicado hoje (a spec não exige
+  // persistência para movimento, só para investigação) — exibimos apenas
+  // feedback local em vez de inventar um cálculo/endpoint no frontend
+  // (proibido pela Regra de Ouro em web-rpg/CLAUDE.md). Documentado como
+  // limitação.
+  const [poiNotice, setPoiNotice] = useState<{ poi: ScenePointOfInterest; kind: 'move' } | null>(null);
 
   const fetchEvents = useCallback(() => {
     setEventsLoading(true);
@@ -56,6 +61,7 @@ export function ActiveTable({ sessionId, sessionName, scene }: Props) {
         scene={scene}
         onSelectNpc={setActiveNpc}
         onSelectPoi={(poi) => setPoiNotice({ poi, kind: 'move' })}
+        justDiscoveredPoiId={justDiscoveredPoiId}
       />
 
       <TimelineFeed scene={scene} events={events} loading={eventsLoading} />
@@ -65,9 +71,7 @@ export function ActiveTable({ sessionId, sessionName, scene }: Props) {
         hasActiveCombat={false}
         onSpeak={() => setActiveNpc(scene.npcs[0] ?? null)}
         onMove={() => setPoiNotice(scene.points_of_interest[0] ? { poi: scene.points_of_interest[0], kind: 'move' } : null)}
-        onInvestigate={() =>
-          setPoiNotice(scene.points_of_interest[0] ? { poi: scene.points_of_interest[0], kind: 'investigate' } : null)
-        }
+        onInvestigate={() => setInvestigateOpen(true)}
         onCombat={() => {}}
       />
 
@@ -80,13 +84,22 @@ export function ActiveTable({ sessionId, sessionName, scene }: Props) {
         />
       )}
 
+      {investigateOpen && (
+        <InvestigateModal
+          sessionId={sessionId}
+          scene={scene}
+          onClose={() => setInvestigateOpen(false)}
+          onEventLogged={() => {
+            fetchEvents();
+            onRefreshScene();
+          }}
+          onDiscovered={(poiId) => setJustDiscoveredPoiId(poiId)}
+        />
+      )}
+
       {poiNotice && (
         <div className="activetable-poi-toast" role="status">
-          <span>
-            {poiNotice.kind === 'move'
-              ? `Deslocando-se para ${poiNotice.poi.name}...`
-              : `Investigando ${poiNotice.poi.name}...`}
-          </span>
+          <span>Deslocando-se para {poiNotice.poi.name}...</span>
           <button type="button" onClick={() => setPoiNotice(null)} aria-label="Fechar aviso">
             <span className="material-symbols-outlined">close</span>
           </button>

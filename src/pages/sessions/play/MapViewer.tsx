@@ -8,16 +8,17 @@ type Props = {
   scene: SceneDetail;
   onSelectNpc: (npc: SceneNPC) => void;
   onSelectPoi: (poi: ScenePointOfInterest) => void;
+  justDiscoveredPoiId?: string | null;
 };
 
 const MIN_SCALE = 0.6;
 const MAX_SCALE = 2.5;
 
-// NOTA (limitação conhecida — spec A00153 seção 4.1): o schema atual de
-// `scenes.npcs`/`points_of_interest` não tem coluna de posição/coordenadas no
-// mapa. Os pins são posicionados de forma determinística (hash do id), não
-// aleatória, para não "pular" a cada re-render — mas não refletem uma
-// posição real definida pelo mestre. Reportado para decisão futura de schema.
+// NOTA: `scenes.npcs`/`points_of_interest` já trazem `x_coordinate`/
+// `y_coordinate` reais (0-100) definidos pelo mestre — usados como posição
+// principal do pin. `hashToPercent` fica apenas como fallback determinístico
+// (não aleatório, para não "pular" a cada re-render) para os casos em que a
+// coordenada ainda não foi cadastrada (ex: NPCs/POIs legados sem posição).
 function hashToPercent(id: string, salt: number): number {
   let hash = salt;
   for (let i = 0; i < id.length; i += 1) {
@@ -26,7 +27,20 @@ function hashToPercent(id: string, salt: number): number {
   return 12 + (hash % 76); // mantém os pins entre 12% e 88% do canvas
 }
 
-export function MapViewer({ scene, onSelectNpc, onSelectPoi }: Props) {
+function resolvePosition(
+  coordX: number | null | undefined,
+  coordY: number | null | undefined,
+  id: string,
+  saltX: number,
+  saltY: number
+): { left: number; top: number } {
+  return {
+    left: typeof coordX === 'number' ? coordX : hashToPercent(id, saltX),
+    top: typeof coordY === 'number' ? coordY : hashToPercent(id, saltY),
+  };
+}
+
+export function MapViewer({ scene, onSelectNpc, onSelectPoi, justDiscoveredPoiId }: Props) {
   const [scale, setScale] = useState(1);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const dragOrigin = useRef<{ x: number; y: number } | null>(null);
@@ -76,45 +90,48 @@ export function MapViewer({ scene, onSelectNpc, onSelectPoi }: Props) {
           </div>
         )}
 
-        {scene.npcs.map((npc, index) => (
-          <button
-            key={npc.id}
-            type="button"
-            className="mapviewer-pin mapviewer-pin-npc"
-            style={{
-              left: `${hashToPercent(npc.id, index + 1)}%`,
-              top: `${hashToPercent(npc.id, index + 17)}%`,
-            }}
-            onClick={() => onSelectNpc(npc)}
-            aria-label={`Falar com ${npc.name}`}
-          >
-            {npc.avatar_url ? (
-              <img src={getAssetUrl(npc.avatar_url)} alt={npc.name} />
-            ) : (
-              <span className="material-symbols-outlined">person</span>
-            )}
-            <span className="mapviewer-pin-label">{npc.name}</span>
-          </button>
-        ))}
+        {scene.npcs.map((npc, index) => {
+          const position = resolvePosition(npc.x_coordinate, npc.y_coordinate, npc.id, index + 1, index + 17);
+          return (
+            <button
+              key={npc.id}
+              type="button"
+              className="mapviewer-pin mapviewer-pin-npc"
+              style={{ left: `${position.left}%`, top: `${position.top}%` }}
+              onClick={() => onSelectNpc(npc)}
+              aria-label={`Falar com ${npc.name}`}
+            >
+              {npc.avatar_url ? (
+                <img src={getAssetUrl(npc.avatar_url)} alt={npc.name} />
+              ) : (
+                <span className="material-symbols-outlined">person</span>
+              )}
+              <span className="mapviewer-pin-label">{npc.name}</span>
+            </button>
+          );
+        })}
 
         {scene.points_of_interest
           .filter((poi) => poi.enabled)
-          .map((poi, index) => (
-            <button
-              key={poi.id}
-              type="button"
-              className="mapviewer-pin mapviewer-pin-poi"
-              style={{
-                left: `${hashToPercent(poi.id, index + 3)}%`,
-                top: `${hashToPercent(poi.id, index + 23)}%`,
-              }}
-              onClick={() => onSelectPoi(poi)}
-              aria-label={poi.name}
-            >
-              <span className="material-symbols-outlined">place</span>
-              <span className="mapviewer-pin-label">{poi.name}</span>
-            </button>
-          ))}
+          .map((poi, index) => {
+            const position = resolvePosition(poi.x_coordinate, poi.y_coordinate, poi.id, index + 3, index + 23);
+            const justDiscovered = poi.id === justDiscoveredPoiId;
+            return (
+              <button
+                key={poi.id}
+                type="button"
+                className={`mapviewer-pin mapviewer-pin-poi${
+                  justDiscovered ? ' mapviewer-pin-poi-discovered' : ''
+                }`}
+                style={{ left: `${position.left}%`, top: `${position.top}%` }}
+                onClick={() => onSelectPoi(poi)}
+                aria-label={poi.name}
+              >
+                <span className="material-symbols-outlined">place</span>
+                <span className="mapviewer-pin-label">{poi.name}</span>
+              </button>
+            );
+          })}
       </div>
     </div>
   );

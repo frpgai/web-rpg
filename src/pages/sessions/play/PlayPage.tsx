@@ -21,6 +21,7 @@ export default function PlayPage() {
     refetchCampaign,
     enterStorytelling,
     enterTable,
+    refreshScene,
   } = usePlaySession(sessionId);
 
   if (phase === 'loading') {
@@ -63,5 +64,12 @@ export default function PlayPage() {
     );
   }
 
-  return <ActiveTable sessionId={sessionId} sessionName={session?.name ?? '...'} scene={scene} />;
+  return (
+    <ActiveTable
+      sessionId={sessionId}
+      sessionName={session?.name ?? '...'}
+      scene={scene}
+      onRefreshScene={refreshScene}
+    />
+  );
 }
