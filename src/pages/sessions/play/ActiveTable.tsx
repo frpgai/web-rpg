@@ -19,8 +19,9 @@ export function ActiveTable({ sessionId, sessionName, scene }: Props) {
   const [eventsLoading, setEventsLoading] = useState(true);
   const [activeNpc, setActiveNpc] = useState<SceneNPC | null>(null);
   // "Mover"/"Investigar" não têm endpoint de persistência dedicado hoje (os
-  // 3 tipos client-submissíveis são adventure_started/npc_dialogue_choice/
-  // dice_roll — ver be-rpg session/model.go) — exibimos apenas feedback
+  // tipos client-submissíveis são narrative_entered/npc_dialogue_choice/
+  // dice_roll/poi_investigation — ver be-rpg session/model.go) — exibimos
+  // apenas feedback
   // local em vez de inventar um cálculo de rolagem no frontend (proibido
   // pela Regra de Ouro em web-rpg/CLAUDE.md). Documentado como limitação.
   const [poiNotice, setPoiNotice] = useState<{ poi: ScenePointOfInterest; kind: 'move' | 'investigate' } | null>(

@@ -441,7 +441,24 @@ export type SessionEvent = {
   scene_id: string;
   session_player_id?: string | null;
   type: string;
-  payload: unknown;
+  // Colunas tipadas (be-rpg PR #69) — substituem o antigo `payload` JSONB
+  // para os 4 tipos de evento client-submissíveis. Cada tipo só preenche o
+  // subconjunto relevante; o resto vem undefined/null.
+  entity_type?: 'campaign' | 'adventure' | 'scene' | null; // narrative_entered
+  entity_id?: string | null; // narrative_entered
+  hero_id?: string | null; // dice_roll / poi_investigation
+  skill_check?: string | null; // dice_roll / poi_investigation
+  roll?: number | null; // dice_roll / poi_investigation
+  modifier?: number | null; // dice_roll / poi_investigation
+  total?: number | null; // dice_roll / poi_investigation
+  dc?: number | null; // poi_investigation
+  success?: boolean | null; // dice_roll / poi_investigation
+  poi_id?: string | null; // poi_investigation
+  npc_id?: string | null; // npc_dialogue_choice
+  dialogue_node_id?: string | null; // npc_dialogue_choice
+  dialogue_option_id?: string | null; // npc_dialogue_choice
+  choice_text?: string | null; // npc_dialogue_choice
+  payload: unknown; // fallback JSONB para tipos futuros sem colunas dedicadas
   created_at: string;
 };
 
@@ -524,11 +541,16 @@ export type NPCDialogueTree = {
   nodes: DialogueNodeView[];
 };
 
-export type CreateEventType = 'adventure_started' | 'npc_dialogue_choice' | 'dice_roll';
+export type CreateEventType = 'narrative_entered' | 'npc_dialogue_choice' | 'dice_roll';
 
 export type CreateEventRequest = {
   type: CreateEventType;
-  payload: Record<string, unknown>;
+  // narrative_entered usa colunas tipadas (be-rpg PR #69) em vez de payload.
+  entity_type?: 'campaign' | 'adventure' | 'scene';
+  entity_id?: string;
+  // npc_dialogue_choice / dice_roll ainda usam payload genérico — fora do
+  // escopo desta migração pontual (só narrative_entered foi convertido aqui).
+  payload?: Record<string, unknown>;
 };
 
 export type SessionSocketEventType =

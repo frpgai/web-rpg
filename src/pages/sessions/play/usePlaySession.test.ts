@@ -54,7 +54,7 @@ describe('usePlaySession — máquina de estados (campaign-intro / storytelling 
     mockedSessionApi.getPlayers.mockResolvedValue([]);
   });
 
-  it('starts at campaign-intro when there is no adventure_started event yet', async () => {
+  it('starts at campaign-intro when there is no narrative_entered event yet', async () => {
     mockedSessionApi.get.mockResolvedValue(baseSession());
     mockedSessionApi.getEvents.mockResolvedValue({ items: [], next_cursor: null } as any);
 
@@ -81,10 +81,10 @@ describe('usePlaySession — máquina de estados (campaign-intro / storytelling 
     expect(mockSetLocation).not.toHaveBeenCalled();
   });
 
-  it('skips directly to table when adventure_started event already exists for current adventure', async () => {
+  it('skips directly to table when narrative_entered event already exists for current adventure', async () => {
     mockedSessionApi.get.mockResolvedValue(baseSession({ current_scene_id: 'scene1' }));
     mockedSessionApi.getEvents.mockResolvedValue({
-      items: [{ seq: 1, type: 'adventure_started', payload: { adventure_id: 'a1' } }],
+      items: [{ seq: 1, type: 'narrative_entered', entity_type: 'adventure', entity_id: 'a1' }],
       next_cursor: null,
     } as any);
     mockedSceneApi.get.mockResolvedValue({ id: 'scene1' } as any);
@@ -105,7 +105,7 @@ describe('usePlaySession — máquina de estados (campaign-intro / storytelling 
     await waitFor(() => expect(mockSetLocation).toHaveBeenCalledWith('/app/sessions/s1/lobby'));
   });
 
-  it('enterTable logs adventure_started event and loads the current scene', async () => {
+  it('enterTable logs narrative_entered event and loads the current scene', async () => {
     mockedSessionApi.get.mockResolvedValue(baseSession({ current_scene_id: 'scene1' }));
     mockedSessionApi.getEvents.mockResolvedValue({ items: [], next_cursor: null } as any);
     mockedSessionApi.createEvent.mockResolvedValue({} as any);
@@ -119,8 +119,9 @@ describe('usePlaySession — máquina de estados (campaign-intro / storytelling 
     });
 
     expect(mockedSessionApi.createEvent).toHaveBeenCalledWith('s1', {
-      type: 'adventure_started',
-      payload: { adventure_id: 'a1' },
+      type: 'narrative_entered',
+      entity_type: 'adventure',
+      entity_id: 'a1',
     });
     await waitFor(() => expect(result.current.phase).toBe('table'));
     expect(result.current.scene?.id).toBe('scene1');

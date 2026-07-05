@@ -7,12 +7,11 @@ import type { Adventure, CampaignDetail, SceneDetail, SessionDetail, SessionPlay
 
 type Phase = 'loading' | 'campaign-intro' | 'storytelling' | 'table';
 
-// TODO: renomear para narrative_entered quando PR do backend for mergeado —
-// o evento que marca "aventura/capítulo já iniciado" está sendo migrado de
-// adventure_started para narrative_entered (entity_type=adventure) por um
-// agente de backend em paralelo; nenhum dos dois nomes estava mergeado em
-// main do be-rpg no momento desta implementação, então mantemos o nome atual.
-const ADVENTURE_STARTED_EVENT_TYPE = 'adventure_started';
+// Evento que marca "aventura/capítulo já iniciado" (be-rpg PR #69):
+// narrative_entered com entity_type='adventure', entity_id=<adventure_id>,
+// substituindo o antigo adventure_started (payload JSONB).
+const NARRATIVE_ENTERED_EVENT_TYPE = 'narrative_entered';
+const ADVENTURE_ENTITY_TYPE = 'adventure';
 
 /**
  * Máquina de estados única da Mesa de Jogo Ativa (rota /app/sessions/:id/play):
@@ -25,10 +24,10 @@ const ADVENTURE_STARTED_EVENT_TYPE = 'adventure_started';
  * 'storytelling' — overlay cinemático do capítulo (spec 00153), inalterado.
  * 'table' — Mesa de Jogo Ativa (`ActiveTable`), inalterada.
  *
- * Regra de pulo automático: se já existe um evento
- * `ADVENTURE_STARTED_EVENT_TYPE` para a aventura corrente da sessão, pula
- * direto para 'table', sem passar por 'campaign-intro' nem 'storytelling'
- * (mesma checagem que já existia em usePlaySession antes da fusão).
+ * Regra de pulo automático: se já existe um evento `narrative_entered` com
+ * entity_type='adventure' para a aventura corrente da sessão, pula direto
+ * para 'table', sem passar por 'campaign-intro' nem 'storytelling' (mesma
+ * checagem que já existia em usePlaySession antes da fusão).
  *
  * NOTA (limitação conhecida): o tipo `SessionPlayer` retornado por
  * `GET /sessions/:id/players` não expõe o `session_player.id` (apenas
@@ -87,9 +86,9 @@ export function usePlaySession(sessionId: string) {
 
         const alreadyStarted = eventsPage.items.some(
           (event) =>
-            event.type === ADVENTURE_STARTED_EVENT_TYPE &&
-            (event.payload as Record<string, unknown> | null)?.adventure_id ===
-              sessionData.current_adventure_id
+            event.type === NARRATIVE_ENTERED_EVENT_TYPE &&
+            event.entity_type === ADVENTURE_ENTITY_TYPE &&
+            event.entity_id === sessionData.current_adventure_id
         );
 
         if (alreadyStarted) {
@@ -139,11 +138,12 @@ export function usePlaySession(sessionId: string) {
     if (!session) return Promise.resolve();
     return sessionApi
       .createEvent(sessionId, {
-        type: ADVENTURE_STARTED_EVENT_TYPE,
-        payload: { adventure_id: session.current_adventure_id },
+        type: NARRATIVE_ENTERED_EVENT_TYPE,
+        entity_type: ADVENTURE_ENTITY_TYPE,
+        entity_id: session.current_adventure_id ?? undefined,
       })
       .catch((err) => {
-        console.error('Failed to log adventure_started event:', err);
+        console.error('Failed to log narrative_entered event:', err);
       })
       .finally(() => {
         setPhase('table');
