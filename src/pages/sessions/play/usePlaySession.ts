@@ -7,35 +7,27 @@ import type { Adventure, CampaignDetail, SceneDetail, SessionDetail, SessionPlay
 
 type Phase = 'loading' | 'campaign-intro' | 'storytelling' | 'table';
 
-// Evento que marca "aventura/capítulo já iniciado" (be-rpg PR #69):
-// narrative_entered com entity_type='adventure', entity_id=<adventure_id>,
-// substituindo o antigo adventure_started (payload JSONB).
-const NARRATIVE_ENTERED_EVENT_TYPE = 'narrative_entered';
-const ADVENTURE_ENTITY_TYPE = 'adventure';
-
 /**
  * Máquina de estados única da Mesa de Jogo Ativa (rota /app/sessions/:id/play):
  *
  * 'campaign-intro' — conteúdo absorvido de TimelinePage.tsx (spec 00190):
  *   título da campanha, áudio de introdução geral, avatares dos heróis
- *   participantes e CTA. Fase local, não persistida no backend. Ao clicar no
- *   CTA (ver `enterStorytelling`), avança para 'storytelling' sem navegação
- *   de rota.
+ *   participantes e CTA. Ao clicar no CTA (ver `enterStorytelling`), grava o
+ *   evento de progresso `campaign` para o jogador atual e avança para
+ *   'storytelling' sem navegação de rota.
  * 'storytelling' — overlay cinemático do capítulo (spec 00153), inalterado.
  * 'table' — Mesa de Jogo Ativa (`ActiveTable`), inalterada.
  *
- * Regra de pulo automático: se já existe um evento `narrative_entered` com
- * entity_type='adventure' para a aventura corrente da sessão, pula direto
- * para 'table', sem passar por 'campaign-intro' nem 'storytelling' (mesma
- * checagem que já existia em usePlaySession antes da fusão).
- *
- * NOTA (limitação conhecida): o tipo `SessionPlayer` retornado por
- * `GET /sessions/:id/players` não expõe o `session_player.id` (apenas
- * `user_id`), e `SessionEvent.session_player_id` referencia esse id que não
- * temos localmente. Por isso a checagem de "já iniciou" é feita por
- * aventura (qualquer jogador que já registrou o evento para a aventura
- * corrente pula a cinemática), não estritamente por jogador atual como o
- * texto da spec sugere. Documentado para o líder validar.
+ * Fonte de verdade da fase (spec A00153/A00190, be-rpg PR #69):
+ * GET /sessions/:id/players-events retorna os eventos de progresso do
+ * JOGADOR AUTENTICADO ATUAL nesta sessão (`session_player_id` já resolvido
+ * pelo backend a partir do JWT — substitui a checagem antiga por
+ * `session_events`/`narrative_entered`, que não permitia checar por jogador
+ * específico):
+ * - Sem evento `event_type === 'campaign'` → 'campaign-intro'.
+ * - Com `campaign` mas sem `event_type === 'adventure'` com
+ *   `event_id === session.current_adventure_id` → 'storytelling'.
+ * - Com ambos → 'table'.
  */
 export function usePlaySession(sessionId: string) {
   const [, setLocation] = useLocation();
@@ -75,8 +67,8 @@ export function usePlaySession(sessionId: string) {
     if (!sessionId) return;
     setError(null);
 
-    Promise.all([sessionApi.get(sessionId), sessionApi.getEvents(sessionId, undefined, 100)])
-      .then(([sessionData, eventsPage]) => {
+    Promise.all([sessionApi.get(sessionId), sessionApi.getPlayerEvents(sessionId)])
+      .then(([sessionData, playerEvents]) => {
         setSession(sessionData);
 
         if (sessionData.status === 'lobby') {
@@ -84,18 +76,25 @@ export function usePlaySession(sessionId: string) {
           return;
         }
 
-        const alreadyStarted = eventsPage.items.some(
+        const hasEnteredCampaign = playerEvents.some((event) => event.event_type === 'campaign');
+        const hasEnteredAdventure = playerEvents.some(
           (event) =>
-            event.type === NARRATIVE_ENTERED_EVENT_TYPE &&
-            event.entity_type === ADVENTURE_ENTITY_TYPE &&
-            event.entity_id === sessionData.current_adventure_id
+            event.event_type === 'adventure' && event.event_id === sessionData.current_adventure_id
         );
 
-        if (alreadyStarted) {
+        if (hasEnteredCampaign && hasEnteredAdventure) {
           setPhase('table');
           if (sessionData.current_scene_id) {
             return loadScene(sessionData.current_scene_id);
           }
+          return;
+        }
+
+        if (hasEnteredCampaign) {
+          setPhase('storytelling');
+          sessionApi.getAdventure(sessionId).then(setAdventure).catch((err) => {
+            console.error('Failed to load adventure for storytelling:', err);
+          });
           return;
         }
 
@@ -125,25 +124,33 @@ export function usePlaySession(sessionId: string) {
   }, [session]);
 
   // Avança de 'campaign-intro' para 'storytelling' — clique no CTA da tela de
-  // introdução. Sem navegação de rota (já estamos em /play).
+  // introdução. Grava o evento de progresso 'campaign' do jogador atual antes
+  // de avançar. Sem navegação de rota (já estamos em /play).
   const enterStorytelling = useCallback(() => {
-    if (!sessionId) return;
+    if (!sessionId || !session) return;
+    sessionApi
+      .createPlayerEvent(sessionId, {
+        event_type: 'campaign',
+        event_id: session.campaign_id,
+      })
+      .catch((err) => {
+        console.error('Failed to log campaign player event:', err);
+      });
     setPhase('storytelling');
     sessionApi.getAdventure(sessionId).then(setAdventure).catch((err) => {
       console.error('Failed to load adventure for storytelling:', err);
     });
-  }, [sessionId]);
+  }, [sessionId, session]);
 
   const enterTable = useCallback(() => {
     if (!session) return Promise.resolve();
     return sessionApi
-      .createEvent(sessionId, {
-        type: NARRATIVE_ENTERED_EVENT_TYPE,
-        entity_type: ADVENTURE_ENTITY_TYPE,
-        entity_id: session.current_adventure_id ?? undefined,
+      .createPlayerEvent(sessionId, {
+        event_type: 'adventure',
+        event_id: session.current_adventure_id ?? '',
       })
       .catch((err) => {
-        console.error('Failed to log narrative_entered event:', err);
+        console.error('Failed to log adventure player event:', err);
       })
       .finally(() => {
         setPhase('table');

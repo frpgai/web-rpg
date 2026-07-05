@@ -467,6 +467,26 @@ export type SessionEventsPage = {
   next_cursor: string | null;
 };
 
+// ── Progresso do jogador na sessão (be-rpg PR #69, spec A00153/A00190) ──────
+// Substitui a checagem de fase de `usePlaySession` que antes lia
+// `session_events`/`narrative_entered` (não permitia checar por jogador).
+
+export type SessionPlayerEventType = 'campaign' | 'adventure' | 'scene' | 'play_active';
+
+export type SessionPlayerEvent = {
+  id: string;
+  session_id: string;
+  session_player_id: string;
+  event_type: SessionPlayerEventType;
+  event_id: string;
+  created_at: string;
+};
+
+export type CreatePlayerEventRequest = {
+  event_type: SessionPlayerEventType;
+  event_id: string;
+};
+
 export type InvestigatePoiRequest = {
   session_id: string;
   hero_id: string;
