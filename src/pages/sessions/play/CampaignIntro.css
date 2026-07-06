@@ -9,6 +9,9 @@
   color: var(--color-text);
   box-sizing: border-box;
   position: relative;
+  /* Espaço para o SessionHeader (64px) e SessionBottomNav (~80px) fixos */
+  padding-top: 64px;
+  padding-bottom: 80px;
 }
 
 /* Header */

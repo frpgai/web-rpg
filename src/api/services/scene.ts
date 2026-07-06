@@ -3,6 +3,9 @@ import type { InvestigatePoiRequest, InvestigatePoiResponse, SceneDetail } from 
 
 export const sceneApi = {
   get: (sceneId: string) => apiClient.get(`api/v1/scenes/${sceneId}`).json<SceneDetail>(),
+  // be-rpg branch feature/poi-investigation (PR #68) — ainda não mergeada em
+  // main. Contrato confirmado lendo internal/scene/handler.go/service.go
+  // nessa branch: POST /api/v1/scenes/{scene_id}/pois/{poi_id}/investigate.
   investigatePoi: (sceneId: string, poiId: string, body: InvestigatePoiRequest) =>
     apiClient
       .post(`api/v1/scenes/${sceneId}/pois/${poiId}/investigate`, { json: body })

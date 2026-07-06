@@ -1,0 +1,55 @@
+/* =============================================================================
+   SessionHeader — TopAppBar das telas de sessão ativa
+   Stitch project 15326270198202696484, screens 5a5d72af972449828dca5c2df0e8ab62
+   e fa77bf96766d4bbcafa4ea2ff29c6d43 ("fixed top-0 w-full ... h-16")
+   ============================================================================= */
+
+.sessionheader-root {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 64px;
+  padding: 0 20px;
+  background-color: color-mix(in srgb, var(--color-bg) 80%, transparent);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  box-sizing: border-box;
+}
+
+.sessionheader-icon-btn {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--color-primary);
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.sessionheader-icon-btn:active {
+  transform: scale(0.95);
+}
+
+.sessionheader-title {
+  flex: 1;
+  margin: 0;
+  padding: 0 var(--space-sm);
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--color-primary);
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

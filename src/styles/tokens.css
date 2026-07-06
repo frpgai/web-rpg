@@ -19,8 +19,10 @@
   --color-primary:           #d7baff;
   --color-primary-container: #bd93f9;
   --color-on-primary:        #411478;
+  --color-on-primary-container: #4e2484;
   --color-secondary:         #ffb86c;
   --color-tertiary:          #31e368;
+  --color-gold:              #d4af37;
 
   /* ── Text ────────────────────────────────────────────────────────────────── */
   --color-text:              #e4e1e9;
@@ -28,6 +30,9 @@
   --color-outline:           #968e9c;
   --color-outline-variant:   #4a4451;
   --color-error:             #ffb4ab;
+  /* Ouro envelhecido escuro — usado no gradiente de fallback do overlay
+     cinematográfico de storytelling (spec 00153) quando não há media_url. */
+  --color-gold-aged-dark:    #2a2110;
 
   /* ── Spacing ─────────────────────────────────────────────────────────────── */
   --space-xs:  4px;
