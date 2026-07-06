@@ -518,9 +518,15 @@ export type Adventure = {
   ambient_soundtrack?: string | null;
 };
 
+// SceneNPC — resolvido no contexto de uma sessão de jogo específica (GET
+// /api/v1/sessions/{session_id}/scenes/{scene_id}, be-rpg PR #70). `name` é
+// o nome de exibição já resolvido pelo backend (nome real se descoberto/sem
+// unknown_name configurado, ou o unknown_name/"Desconhecido" caso contrário)
+// — mapeado de `display_name` no payload da API.
 export type SceneNPC = {
   id: string;
   name: string;
+  name_discovered: boolean;
   avatar_url?: string | null;
   x_coordinate?: number | null;
   y_coordinate?: number | null;
@@ -540,17 +546,18 @@ export type ScenePointOfInterest = {
   y_coordinate?: number | null;
 };
 
+// SceneDetail — resposta de GET /api/v1/sessions/{session_id}/scenes/{scene_id}
+// (be-rpg PR #70, branch feature/scene-session-endpoint). Substitui o
+// endpoint antigo GET /api/v1/scenes/{id} (não escopado por sessão) — os
+// campos de mídia mudaram de nome (ex: `map_image_url` -> `map_url`,
+// `audio_transition_file`/`transition_sfx` -> `audio_transition_url`).
 export type SceneDetail = {
   id: string;
-  map_prompt?: string | null;
-  map_image_url?: string | null;
+  map_url: string;
   intro_narration?: string | null;
-  audio_transition_file?: string | null;
-  transition_sfx?: string | null;
-  intro_narration_audio_file?: string | null;
-  narration_style?: string | null;
-  ambient_soundtrack_file?: string | null;
-  ambient_soundtrack?: string | null;
+  intro_narration_audio_url?: string | null;
+  ambient_soundtrack_url?: string | null;
+  audio_transition_url?: string | null;
   npcs: SceneNPC[];
   points_of_interest: ScenePointOfInterest[];
 };

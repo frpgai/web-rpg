@@ -1,22 +1,22 @@
+/* Overlay full-screen (spec 00153/dialogos.md seção 4): bloqueia interação
+   com o mapa de fundo enquanto o diálogo com o NPC está ativo. */
 .npcdialogue-overlay {
   position: fixed;
   inset: 0;
   z-index: 200;
   display: flex;
-  align-items: flex-end;
+  align-items: stretch;
   justify-content: center;
-  background-color: rgba(14, 14, 19, 0.7);
+  background-color: var(--color-surface-lowest);
 }
 
 .npcdialogue-modal {
   width: 100%;
   max-width: 480px;
-  max-height: 80svh;
+  height: 100svh;
   display: flex;
   flex-direction: column;
   background-color: var(--color-surface-container);
-  border-top-left-radius: var(--radius-lg);
-  border-top-right-radius: var(--radius-lg);
   overflow: hidden;
 }
 
@@ -56,12 +56,105 @@
   cursor: pointer;
 }
 
+.npcdialogue-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--color-outline-variant);
+}
+
+.npcdialogue-tab {
+  flex: 1;
+  padding: var(--space-sm) var(--space-md);
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  cursor: pointer;
+}
+
+.npcdialogue-tab-active {
+  color: var(--color-primary);
+  border-bottom-color: var(--color-primary);
+}
+
 .npcdialogue-body {
   padding: var(--space-md);
   overflow-y: auto;
+  flex: 1;
   display: flex;
   flex-direction: column;
   gap: var(--space-md);
+}
+
+.npcdialogue-empty {
+  color: var(--color-text-muted);
+  font-size: 14px;
+}
+
+.npcdialogue-group-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.npcdialogue-group-entry {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-md);
+  background-color: var(--color-surface-low);
+  border: 1px solid var(--color-outline-variant);
+}
+
+.npcdialogue-group-entry-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.npcdialogue-group-entry-hero {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--color-secondary);
+}
+
+.npcdialogue-group-entry-date {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--color-text-muted);
+}
+
+.npcdialogue-group-entry-choice {
+  margin: 0;
+  font-size: 14px;
+  color: var(--color-text);
+}
+
+.npcdialogue-group-entry-response {
+  margin: 0;
+  font-size: 13px;
+  font-style: italic;
+  color: var(--color-text-muted);
+}
+
+.npcdialogue-group-entry-replay {
+  align-self: flex-start;
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  background: none;
+  border: none;
+  color: var(--color-primary);
+  font-size: 12px;
+  cursor: pointer;
+  padding: 0;
 }
 
 .npcdialogue-loading {

@@ -54,8 +54,12 @@ export function MapViewer({ scene, justDiscoveredPoiId }: Props) {
   const [showGrid, setShowGrid] = useState(false);
   const canvasRef = useRef<HTMLDivElement | null>(null);
 
-  // Modo dev: arrastar pins pra descobrir a posição x/y (%) real no mapa,
-  // sem persistir nada — só pra calibrar as coordenadas manualmente no banco.
+  // Modo dev ("Modo Edição (Pins)"): só disponível em build de desenvolvimento
+  // (import.meta.env.DEV — convenção padrão do Vite, ver vite.config.ts).
+  // Arrastar um pin não persiste nada via API — atualiza apenas o estado
+  // local em memória e loga a query SQL UPDATE sugerida no console, para o
+  // desenvolvedor copiar manualmente (spec A00153/scene.md seção 2).
+  const isDevBuild = import.meta.env.DEV;
   const [devMode, setDevMode] = useState(false);
   const [overrides, setOverrides] = useState<Record<string, DevOverride>>({});
   const draggingPinId = useRef<string | null>(null);
@@ -82,9 +86,19 @@ export function MapViewer({ scene, justDiscoveredPoiId }: Props) {
 
   function handlePointerUp() {
     if (draggingPinId.current) {
-      const coord = overrides[draggingPinId.current];
+      const id = draggingPinId.current;
+      const coord = overrides[id];
       if (coord) {
-        console.log(`[mapviewer-dev] ${draggingPinId.current} -> x=${coord.x.toFixed(1)} y=${coord.y.toFixed(1)}`);
+        const isNpc = scene.npcs.some((npc) => npc.id === id);
+        // Coordenadas reais moram em scene_npc_dialogues (por NPC) e
+        // scene_points_of_interest (por POI) — não nas tabelas de descoberta
+        // por sessão (sessions_scenes_npcs/sessions_scenes_poi), que só
+        // guardam name_discovered/enabled por sessão (be-rpg PR #70).
+        const table = isNpc ? 'scene_npc_dialogues' : 'scene_points_of_interest';
+        console.log(
+          `[mapviewer-dev] Reposicionado ${id} -> x=${coord.x.toFixed(1)} y=${coord.y.toFixed(1)}\n` +
+            `UPDATE ${table} SET x_coordinate = ${coord.x.toFixed(1)}, y_coordinate = ${coord.y.toFixed(1)} WHERE id = '${id}';`
+        );
       }
     }
     draggingPinId.current = null;
@@ -107,13 +121,15 @@ export function MapViewer({ scene, justDiscoveredPoiId }: Props) {
         >
           {showGrid ? 'Grid ON' : 'Grid OFF'}
         </button>
-        <button
-          type="button"
-          className={`mapviewer-dev-toggle${devMode ? ' mapviewer-dev-toggle-active' : ''}`}
-          onClick={() => setDevMode((v) => !v)}
-        >
-          {devMode ? 'Dev: arrastar ON' : 'Dev: arrastar OFF'}
-        </button>
+        {isDevBuild && (
+          <button
+            type="button"
+            className={`mapviewer-dev-toggle${devMode ? ' mapviewer-dev-toggle-active' : ''}`}
+            onClick={() => setDevMode((v) => !v)}
+          >
+            Modo Edição (Pins) {devMode ? 'ON' : 'OFF'}
+          </button>
+        )}
       </div>
 
       <div
@@ -129,18 +145,18 @@ export function MapViewer({ scene, justDiscoveredPoiId }: Props) {
           className="mapviewer-canvas"
           style={{ transform: `translate(${offset.x}px, ${offset.y}px) scale(${scale})` }}
         >
-          {scene.map_image_url ? (
+          {scene.map_url ? (
             <img
               className="mapviewer-image"
-              src={getAssetUrl(scene.map_image_url)}
-              alt={scene.map_prompt ?? 'Mapa da cena'}
+              src={getAssetUrl(scene.map_url)}
+              alt="Mapa da cena"
               draggable={false}
               onError={handleImageError}
             />
           ) : (
             <div className="mapviewer-placeholder">
               <span className="material-symbols-outlined">map</span>
-              <p>{scene.map_prompt ?? 'Mapa ainda não gerado para esta cena.'}</p>
+              <p>Mapa ainda não gerado para esta cena.</p>
             </div>
           )}
 
@@ -181,7 +197,7 @@ export function MapViewer({ scene, justDiscoveredPoiId }: Props) {
                 )}
                 <span className="mapviewer-pin-label">
                   {npc.name}
-                  {devMode && ` (${position.left.toFixed(1)}, ${position.top.toFixed(1)})`}
+                  {devMode && ` — X: ${position.left.toFixed(1)} | Y: ${position.top.toFixed(1)}`}
                 </span>
               </div>
             );
@@ -208,7 +224,7 @@ export function MapViewer({ scene, justDiscoveredPoiId }: Props) {
                   <span className="material-symbols-outlined">place</span>
                   <span className="mapviewer-pin-label">
                     {poi.name}
-                    {devMode && ` (${position.left.toFixed(1)}, ${position.top.toFixed(1)})`}
+                    {devMode && ` — X: ${position.left.toFixed(1)} | Y: ${position.top.toFixed(1)}`}
                   </span>
                 </div>
               );

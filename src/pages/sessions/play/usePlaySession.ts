@@ -42,13 +42,13 @@ export function usePlaySession(sessionId: string) {
 
   const loadScene = useCallback((sceneId: string) => {
     return sceneApi
-      .get(sceneId)
+      .getForSession(sessionId, sceneId)
       .then(setScene)
       .catch((err) => {
         console.error('Failed to load current scene:', err);
         setError('Não foi possível carregar a cena atual.');
       });
-  }, []);
+  }, [sessionId]);
 
   const loadCampaignIntroData = useCallback((campaignId: string) => {
     campaignApi

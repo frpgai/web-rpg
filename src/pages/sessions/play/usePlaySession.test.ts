@@ -21,7 +21,7 @@ vi.mock('../../../api/services/session', () => ({
 
 vi.mock('../../../api/services/scene', () => ({
   sceneApi: {
-    get: vi.fn(),
+    getForSession: vi.fn(),
   },
 }));
 
@@ -106,7 +106,7 @@ describe('usePlaySession — máquina de estados (campaign-intro / storytelling 
       { id: 'e1', session_id: 's1', session_player_id: 'sp1', event_type: 'campaign', event_id: 'c1', created_at: '' },
       { id: 'e2', session_id: 's1', session_player_id: 'sp1', event_type: 'adventure', event_id: 'a1', created_at: '' },
     ]);
-    mockedSceneApi.get.mockResolvedValue({ id: 'scene1' } as any);
+    mockedSceneApi.getForSession.mockResolvedValue({ id: 'scene1' } as any);
 
     const { result } = renderHook(() => usePlaySession('s1'));
 
@@ -128,7 +128,7 @@ describe('usePlaySession — máquina de estados (campaign-intro / storytelling 
     mockedSessionApi.get.mockResolvedValue(baseSession({ current_scene_id: 'scene1' }));
     mockedSessionApi.getPlayerEvents.mockResolvedValue([]);
     mockedSessionApi.createPlayerEvent.mockResolvedValue({} as any);
-    mockedSceneApi.get.mockResolvedValue({ id: 'scene1' } as any);
+    mockedSceneApi.getForSession.mockResolvedValue({ id: 'scene1' } as any);
 
     const { result } = renderHook(() => usePlaySession('s1'));
     await waitFor(() => expect(result.current.phase).toBe('campaign-intro'));
