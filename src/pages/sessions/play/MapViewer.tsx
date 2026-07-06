@@ -52,14 +52,13 @@ export function MapViewer({ scene, justDiscoveredPoiId }: Props) {
   const offset = { x: 0, y: 0 };
   const [imageError, setImageError] = useState<string | null>(null);
   const [showGrid, setShowGrid] = useState(false);
+  const [showNames, setShowNames] = useState(true);
   const canvasRef = useRef<HTMLDivElement | null>(null);
 
-  // Modo dev ("Modo Edição (Pins)"): só disponível em build de desenvolvimento
-  // (import.meta.env.DEV — convenção padrão do Vite, ver vite.config.ts).
-  // Arrastar um pin não persiste nada via API — atualiza apenas o estado
-  // local em memória e loga a query SQL UPDATE sugerida no console, para o
-  // desenvolvedor copiar manualmente (spec A00153/scene.md seção 2).
-  const isDevBuild = import.meta.env.DEV;
+  // Modo dev ("Modo Edição (Pins)"): arrastar um pin não persiste nada via
+  // API — atualiza apenas o estado local em memória e loga a query SQL
+  // UPDATE sugerida no console, para o desenvolvedor copiar manualmente
+  // (spec A00153/scene.md seção 2).
   const [devMode, setDevMode] = useState(false);
   const [overrides, setOverrides] = useState<Record<string, DevOverride>>({});
   const draggingPinId = useRef<string | null>(null);
@@ -108,6 +107,7 @@ export function MapViewer({ scene, justDiscoveredPoiId }: Props) {
     if (!devMode) return;
     event.stopPropagation();
     event.preventDefault();
+    event.currentTarget.setPointerCapture(event.pointerId);
     draggingPinId.current = id;
   }
 
@@ -121,15 +121,20 @@ export function MapViewer({ scene, justDiscoveredPoiId }: Props) {
         >
           {showGrid ? 'Grid ON' : 'Grid OFF'}
         </button>
-        {isDevBuild && (
-          <button
-            type="button"
-            className={`mapviewer-dev-toggle${devMode ? ' mapviewer-dev-toggle-active' : ''}`}
-            onClick={() => setDevMode((v) => !v)}
-          >
-            Modo Edição (Pins) {devMode ? 'ON' : 'OFF'}
-          </button>
-        )}
+        <button
+          type="button"
+          className={`mapviewer-dev-toggle${showNames ? ' mapviewer-dev-toggle-active' : ''}`}
+          onClick={() => setShowNames((v) => !v)}
+        >
+          {showNames ? 'Nomes ON' : 'Nomes OFF'}
+        </button>
+        <button
+          type="button"
+          className={`mapviewer-dev-toggle${devMode ? ' mapviewer-dev-toggle-active' : ''}`}
+          onClick={() => setDevMode((v) => !v)}
+        >
+          Modo Edição (Pins) {devMode ? 'ON' : 'OFF'}
+        </button>
       </div>
 
       <div
@@ -191,11 +196,13 @@ export function MapViewer({ scene, justDiscoveredPoiId }: Props) {
                 aria-label={npc.name}
               >
                 {npc.avatar_url ? (
-                  <img src={getAssetUrl(npc.avatar_url)} alt={npc.name} />
+                  <img src={getAssetUrl(npc.avatar_url)} alt={npc.name} draggable={false} />
                 ) : (
                   <span className="material-symbols-outlined">person</span>
                 )}
-                <span className="mapviewer-pin-label">
+                <span
+                  className={`mapviewer-pin-label${!showNames && !devMode ? ' mapviewer-pin-label-hover-only' : ''}`}
+                >
                   {npc.name}
                   {devMode && ` — X: ${position.left.toFixed(1)} | Y: ${position.top.toFixed(1)}`}
                 </span>
@@ -222,7 +229,9 @@ export function MapViewer({ scene, justDiscoveredPoiId }: Props) {
                   aria-label={poi.name}
                 >
                   <span className="material-symbols-outlined">place</span>
-                  <span className="mapviewer-pin-label">
+                  <span
+                    className={`mapviewer-pin-label${!showNames && !devMode ? ' mapviewer-pin-label-hover-only' : ''}`}
+                  >
                     {poi.name}
                     {devMode && ` — X: ${position.left.toFixed(1)} | Y: ${position.top.toFixed(1)}`}
                   </span>
