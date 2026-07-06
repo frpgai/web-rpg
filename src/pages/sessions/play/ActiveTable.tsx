@@ -57,12 +57,7 @@ export function ActiveTable({ sessionId, sessionName, scene, onRefreshScene }: P
         <h1 className="activetable-header-title">{sessionName}</h1>
       </header>
 
-      <MapViewer
-        scene={scene}
-        onSelectNpc={setActiveNpc}
-        onSelectPoi={(poi) => setPoiNotice({ poi, kind: 'move' })}
-        justDiscoveredPoiId={justDiscoveredPoiId}
-      />
+      <MapViewer scene={scene} justDiscoveredPoiId={justDiscoveredPoiId} />
 
       <TimelineFeed scene={scene} events={events} loading={eventsLoading} />
 
