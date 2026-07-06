@@ -8,6 +8,7 @@ import './MapViewer.css';
 type Props = {
   scene: SceneDetail;
   justDiscoveredPoiId?: string | null;
+  onPoiClick?: (poiId: string) => void;
 };
 
 // Zoom via wheel desligado temporariamente — constantes mantidas para religar.
@@ -44,10 +45,11 @@ function resolvePosition(
 
 type DevOverride = { x: number; y: number };
 
-// Pins de NPC/POI são puramente marcadores visuais geográficos (spec A00153
-// seção 4.1) — sem clique/interação. Falar com NPC e investigar POI são
-// ações delegadas ao ActionDock/timeline, nunca ao pin no mapa.
-export function MapViewer({ scene, justDiscoveredPoiId }: Props) {
+// Pins de NPC são marcadores visuais geográficos (spec A00153 seção 4.1) —
+// sem clique/interação; falar com NPC é ação delegada ao ActionDock/timeline.
+// Pins de POI, fora do modo dev, abrem a bottom sheet de detalhes
+// (POIDetailSheet) ao clique — spec 00153-mesa-jogo/scene.md seção 3.1.
+export function MapViewer({ scene, justDiscoveredPoiId, onPoiClick }: Props) {
   const [scale] = useState(1);
   const offset = { x: 0, y: 0 };
   const [imageError, setImageError] = useState<string | null>(null);
@@ -226,13 +228,14 @@ export function MapViewer({ scene, justDiscoveredPoiId }: Props) {
                   }${devMode ? ' mapviewer-pin-dev' : ''}`}
                   style={{ left: `${position.left}%`, top: `${position.top}%` }}
                   onPointerDown={(event) => handlePinPointerDown(poi.id, event)}
+                  onClick={() => !devMode && onPoiClick?.(poi.id)}
                   aria-label={poi.name}
                 >
                   <span className="material-symbols-outlined">place</span>
                   <span
                     className={`mapviewer-pin-label${!showNames && !devMode ? ' mapviewer-pin-label-hover-only' : ''}`}
                   >
-                    {poi.name}
+                    {poi.short_name || poi.name}
                     {devMode && ` — X: ${position.left.toFixed(1)} | Y: ${position.top.toFixed(1)}`}
                   </span>
                 </div>

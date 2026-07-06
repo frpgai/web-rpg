@@ -535,11 +535,18 @@ export type SceneNPC = {
 export type ScenePointOfInterest = {
   id: string;
   name: string;
+  // Nome curto do catálogo (`pois.name`), com fallback para `name` quando o
+  // POI não está vinculado ao catálogo (be-rpg PR #70). Usado no rótulo do
+  // pin do mapa — `name` completo fica reservado à modal de detalhes.
+  short_name: string;
   type: string;
   skill_check?: string | null;
   dc?: number | null;
   success_text?: string | null;
   failure_text?: string | null;
+  // Narrativa contextual exibida antes de qualquer rolagem de dados —
+  // distinta de success_text/failure_text (pós-teste de perícia).
+  description?: string | null;
   enabled: boolean;
   sort_order: number;
   x_coordinate?: number | null;

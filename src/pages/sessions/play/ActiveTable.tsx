@@ -7,6 +7,7 @@ import { TimelineFeed } from './TimelineFeed';
 import { ActionDock } from './ActionDock';
 import { NPCDialogueModal } from './NPCDialogueModal';
 import { InvestigateModal } from './InvestigateModal';
+import { POIDetailSheet } from './POIDetailSheet';
 import type { SceneDetail, SceneNPC, ScenePointOfInterest, SessionEvent } from '../../../types';
 import './ActiveTable.css';
 
@@ -33,6 +34,9 @@ export function ActiveTable({ sessionId, sessionName, scene, onRefreshScene }: P
   // (proibido pela Regra de Ouro em web-rpg/CLAUDE.md). Documentado como
   // limitação.
   const [poiNotice, setPoiNotice] = useState<{ poi: ScenePointOfInterest; kind: 'move' } | null>(null);
+  // POI selecionado ao clicar num pin no mapa (fora do modo dev) — abre a
+  // bottom sheet de detalhes (spec 00153-mesa-jogo/scene.md seção 3.1).
+  const [selectedPoi, setSelectedPoi] = useState<ScenePointOfInterest | null>(null);
 
   const fetchEvents = useCallback(() => {
     setEventsLoading(true);
@@ -56,7 +60,14 @@ export function ActiveTable({ sessionId, sessionName, scene, onRefreshScene }: P
     <div className="activetable-root">
       <SessionHeader title={sessionName} />
 
-      <MapViewer scene={scene} justDiscoveredPoiId={justDiscoveredPoiId} />
+      <MapViewer
+        scene={scene}
+        justDiscoveredPoiId={justDiscoveredPoiId}
+        onPoiClick={(poiId) => {
+          const poi = scene.points_of_interest.find((p) => p.id === poiId) ?? null;
+          setSelectedPoi(poi);
+        }}
+      />
 
       <TimelineFeed scene={scene} events={events} loading={eventsLoading} />
 
@@ -88,6 +99,21 @@ export function ActiveTable({ sessionId, sessionName, scene, onRefreshScene }: P
             onRefreshScene();
           }}
           onDiscovered={(poiId) => setJustDiscoveredPoiId(poiId)}
+        />
+      )}
+
+      {selectedPoi && (
+        <POIDetailSheet
+          poi={selectedPoi}
+          onClose={() => setSelectedPoi(null)}
+          onMove={() => {
+            setPoiNotice({ poi: selectedPoi, kind: 'move' });
+            setSelectedPoi(null);
+          }}
+          onInvestigate={() => {
+            setInvestigateOpen(true);
+            setSelectedPoi(null);
+          }}
         />
       )}
 

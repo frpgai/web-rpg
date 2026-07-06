@@ -1,0 +1,88 @@
+.poidetailsheet-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  background-color: rgba(14, 14, 19, 0.7);
+}
+
+.poidetailsheet-modal {
+  width: 100%;
+  max-width: 480px;
+  max-height: 80svh;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--color-surface-container);
+  border-top-left-radius: var(--radius-lg);
+  border-top-right-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.poidetailsheet-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-md);
+  border-bottom: 1px solid var(--color-outline-variant);
+  color: var(--color-secondary);
+}
+
+.poidetailsheet-title {
+  flex: 1;
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 18px;
+  color: var(--color-secondary);
+}
+
+.poidetailsheet-close {
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  cursor: pointer;
+}
+
+.poidetailsheet-body {
+  padding: var(--space-md);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.poidetailsheet-description {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--color-text);
+}
+
+.poidetailsheet-description-empty {
+  color: var(--color-text-muted);
+  font-style: italic;
+}
+
+.poidetailsheet-actions {
+  display: flex;
+  gap: var(--space-sm);
+}
+
+.poidetailsheet-action {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-xs);
+  padding: var(--space-sm) var(--space-md);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-md);
+  background-color: var(--color-surface-low);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+}
