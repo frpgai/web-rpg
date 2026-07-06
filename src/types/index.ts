@@ -478,6 +478,34 @@ export type ScenePointOfInterest = {
   type: string;
   enabled: boolean;
   sort_order: number;
+  x_coordinate?: number | null;
+  y_coordinate?: number | null;
+  skill_check?: string | null;
+  dc?: number | null;
+  success_text?: string | null;
+  failure_text?: string | null;
+};
+
+// Payload de POST /api/v1/scenes/{scene_id}/pois/{poi_id}/investigate
+// (be-rpg branch feature/poi-investigation, PR #68, commit 4c7baa0 — ainda
+// não mergeada em main; contrato confirmado lendo internal/scene/model.go e
+// service.go nessa branch). O frontend envia apenas o d20 puro (`roll`,
+// 1-20) e o `hero_id` ativo — o backend resolve modificador de atributo +
+// bônus de proficiência da perícia do POI e soma ao roll, retornando o
+// `total` já calculado. Nenhum cálculo de stats acontece no cliente.
+export type InvestigatePoiRequest = {
+  session_id: string;
+  hero_id: string;
+  roll: number;
+};
+
+export type InvestigatePoiResponse = {
+  poi_id: string;
+  success: boolean;
+  enabled: boolean;
+  total: number;
+  success_text?: string | null;
+  failure_text?: string | null;
 };
 
 export type SceneDetail = {

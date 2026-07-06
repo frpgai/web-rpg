@@ -9,7 +9,7 @@ export default function PlayPage() {
   const params = useParams<{ id: string }>();
   const sessionId = params.id ?? '';
 
-  const { session, adventure, scene, phase, error, enterTable } = usePlaySession(sessionId);
+  const { session, adventure, scene, phase, error, enterTable, refreshScene } = usePlaySession(sessionId);
 
   if (phase === 'loading') {
     return (
@@ -39,5 +39,12 @@ export default function PlayPage() {
     );
   }
 
-  return <ActiveTable sessionId={sessionId} sessionName={session?.name ?? '...'} scene={scene} />;
+  return (
+    <ActiveTable
+      sessionId={sessionId}
+      sessionName={session?.name ?? '...'}
+      scene={scene}
+      onSceneRefresh={refreshScene}
+    />
+  );
 }
