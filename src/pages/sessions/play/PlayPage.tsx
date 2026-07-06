@@ -1,6 +1,7 @@
 import { useParams } from 'wouter';
 import { Spinner } from '../../../components/ui/Spinner';
 import { usePlaySession } from './usePlaySession';
+import { CampaignIntro } from './CampaignIntro';
 import { StorytellingScreen } from './StorytellingScreen';
 import { ActiveTable } from './ActiveTable';
 import './PlayPage.css';
@@ -9,7 +10,19 @@ export default function PlayPage() {
   const params = useParams<{ id: string }>();
   const sessionId = params.id ?? '';
 
-  const { session, adventure, scene, phase, error, enterTable, refreshScene } = usePlaySession(sessionId);
+  const {
+    session,
+    campaign,
+    players,
+    adventure,
+    scene,
+    phase,
+    error,
+    refetchCampaign,
+    enterStorytelling,
+    enterTable,
+    refreshScene,
+  } = usePlaySession(sessionId);
 
   if (phase === 'loading') {
     return (
@@ -24,6 +37,18 @@ export default function PlayPage() {
       <div className="play-root play-loading">
         <p className="play-error">{error}</p>
       </div>
+    );
+  }
+
+  if (phase === 'campaign-intro') {
+    return (
+      <CampaignIntro
+        session={session}
+        campaign={campaign}
+        players={players}
+        onEnter={enterStorytelling}
+        refetchCampaign={refetchCampaign}
+      />
     );
   }
 
@@ -50,7 +75,7 @@ export default function PlayPage() {
       sessionId={sessionId}
       sessionName={session?.name ?? '...'}
       scene={scene}
-      onSceneRefresh={refreshScene}
+      onRefreshScene={refreshScene}
     />
   );
 }

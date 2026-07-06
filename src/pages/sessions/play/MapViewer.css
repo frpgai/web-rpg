@@ -1,24 +1,79 @@
+.mapviewer-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.mapviewer-toolbar {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 2;
+  display: flex;
+  gap: 6px;
+}
+
+.mapviewer-dev-toggle {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-outline);
+  background-color: rgba(14, 14, 19, 0.75);
+  color: var(--color-text-muted);
+  cursor: pointer;
+}
+
+.mapviewer-dev-toggle-active {
+  border-color: var(--color-secondary);
+  color: var(--color-secondary);
+}
+
+.mapviewer-pin-dev {
+  cursor: grab;
+  pointer-events: auto;
+}
+
+.mapviewer-dev-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--space-sm);
+  background-color: var(--color-surface-container);
+  border-top: 1px solid var(--color-outline);
+  max-height: 120px;
+  overflow-y: auto;
+}
+
+.mapviewer-dev-panel code {
+  font-size: 11px;
+  color: var(--color-text-muted);
+  word-break: break-all;
+}
+
 .mapviewer-root {
   position: relative;
   width: 100%;
-  height: 42svh;
+  max-height: 60svh;
   overflow: hidden;
   background-color: var(--color-surface-lowest);
   touch-action: none;
-  cursor: grab;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .mapviewer-canvas {
   position: relative;
   width: 100%;
-  height: 100%;
+  aspect-ratio: 1 / 1;
+  max-height: 60svh;
   transform-origin: center center;
 }
 
 .mapviewer-image {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
   user-select: none;
   pointer-events: none;
 }
@@ -42,6 +97,28 @@
   color: var(--color-outline);
 }
 
+.mapviewer-image-error {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+.mapviewer-image-error code {
+  font-size: var(--text-xs, 11px);
+  word-break: break-all;
+  color: var(--color-danger, var(--color-text-muted));
+}
+
+.mapviewer-grid {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(to right, rgba(220, 220, 230, 0.35) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(220, 220, 230, 0.35) 1px, transparent 1px);
+  background-position: 0 0;
+}
+
 .mapviewer-pin {
   position: absolute;
   display: flex;
@@ -49,10 +126,7 @@
   align-items: center;
   gap: 2px;
   transform: translate(-50%, -50%);
-  border: none;
-  background: none;
-  padding: 0;
-  cursor: pointer;
+  pointer-events: none;
 }
 
 .mapviewer-pin img,
@@ -71,6 +145,9 @@
 }
 
 .mapviewer-pin-poi .material-symbols-outlined {
+  width: 24px;
+  height: 24px;
+  font-size: 16px;
   border-color: var(--color-secondary);
   color: var(--color-secondary);
 }
@@ -85,19 +162,21 @@
   white-space: nowrap;
 }
 
-/* Pulso luminoso dourado ao descobrir um POI via Investigar (sucesso). */
-.mapviewer-pin-discovered .material-symbols-outlined {
-  animation: mapviewer-pin-discover-pulse 1.4s ease-out 2;
+/* Pulso luminoso dourado ao descobrir um POI oculto via investigação
+   (spec A00153 seção 4.3) — só aplicado na primeira renderização após a
+   descoberta, controlado por `justDiscoveredPoiId` no ActiveTable. */
+.mapviewer-pin-poi-discovered .material-symbols-outlined {
+  animation: mapviewer-pulse-discovered 1.6s ease-out 3;
 }
 
-@keyframes mapviewer-pin-discover-pulse {
+@keyframes mapviewer-pulse-discovered {
   0% {
-    box-shadow: 0 0 0 0 var(--color-secondary);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5), 0 0 0 0 var(--color-secondary);
   }
   70% {
-    box-shadow: 0 0 0 12px color-mix(in srgb, var(--color-secondary) 0%, transparent);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5), 0 0 0 12px transparent;
   }
   100% {
-    box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-secondary) 0%, transparent);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5), 0 0 0 0 transparent;
   }
 }

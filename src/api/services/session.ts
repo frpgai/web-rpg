@@ -2,10 +2,12 @@ import { apiClient } from '../client';
 import type {
   Adventure,
   CreateEventRequest,
+  CreatePlayerEventRequest,
   SessionDetail,
   SessionEvent,
   SessionEventsPage,
   SessionPlayer,
+  SessionPlayerEvent,
   StartSessionResponse,
 } from '../../types';
 
@@ -31,4 +33,13 @@ export const sessionApi = {
       .get(`api/v1/sessions/${sessionId}/events`, { searchParams })
       .json<SessionEventsPage>();
   },
+  // Eventos de progresso do jogador autenticado atual (be-rpg PR #69) —
+  // fonte correta para decidir a fase da máquina de estados de
+  // usePlaySession (substitui a checagem por session_events genéricos).
+  getPlayerEvents: (sessionId: string) =>
+    apiClient.get(`api/v1/sessions/${sessionId}/players-events`).json<SessionPlayerEvent[]>(),
+  createPlayerEvent: (sessionId: string, body: CreatePlayerEventRequest) =>
+    apiClient
+      .post(`api/v1/sessions/${sessionId}/players-events`, { json: body })
+      .json<SessionPlayerEvent>(),
 };

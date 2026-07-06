@@ -441,13 +441,65 @@ export type SessionEvent = {
   scene_id: string;
   session_player_id?: string | null;
   type: string;
-  payload: unknown;
+  // Colunas tipadas (be-rpg PR #69) — substituem o antigo `payload` JSONB
+  // para os 4 tipos de evento client-submissíveis. Cada tipo só preenche o
+  // subconjunto relevante; o resto vem undefined/null.
+  entity_type?: 'campaign' | 'adventure' | 'scene' | null; // narrative_entered
+  entity_id?: string | null; // narrative_entered
+  hero_id?: string | null; // dice_roll / poi_investigation
+  skill_check?: string | null; // dice_roll / poi_investigation
+  roll?: number | null; // dice_roll / poi_investigation
+  modifier?: number | null; // dice_roll / poi_investigation
+  total?: number | null; // dice_roll / poi_investigation
+  dc?: number | null; // poi_investigation
+  success?: boolean | null; // dice_roll / poi_investigation
+  poi_id?: string | null; // poi_investigation
+  npc_id?: string | null; // npc_dialogue_choice
+  dialogue_node_id?: string | null; // npc_dialogue_choice
+  dialogue_option_id?: string | null; // npc_dialogue_choice
+  choice_text?: string | null; // npc_dialogue_choice
+  payload: unknown; // fallback JSONB para tipos futuros sem colunas dedicadas
   created_at: string;
 };
 
 export type SessionEventsPage = {
   items: SessionEvent[];
   next_cursor: string | null;
+};
+
+// ── Progresso do jogador na sessão (be-rpg PR #69, spec A00153/A00190) ──────
+// Substitui a checagem de fase de `usePlaySession` que antes lia
+// `session_events`/`narrative_entered` (não permitia checar por jogador).
+
+export type SessionPlayerEventType = 'campaign' | 'adventure' | 'scene' | 'play_active';
+
+export type SessionPlayerEvent = {
+  id: string;
+  session_id: string;
+  session_player_id: string;
+  event_type: SessionPlayerEventType;
+  event_id: string;
+  created_at: string;
+};
+
+export type CreatePlayerEventRequest = {
+  event_type: SessionPlayerEventType;
+  event_id: string;
+};
+
+export type InvestigatePoiRequest = {
+  session_id: string;
+  hero_id: string;
+  roll: number;
+};
+
+export type InvestigatePoiResponse = {
+  poi_id: string;
+  success: boolean;
+  enabled: boolean;
+  total: number;
+  success_text?: string | null;
+  failure_text?: string | null;
 };
 
 // ── Mesa de Jogo (Storytelling, Mapa, Diálogos de NPC) — spec A00153 ────────
@@ -470,42 +522,22 @@ export type SceneNPC = {
   id: string;
   name: string;
   avatar_url?: string | null;
+  x_coordinate?: number | null;
+  y_coordinate?: number | null;
 };
 
 export type ScenePointOfInterest = {
   id: string;
   name: string;
   type: string;
-  enabled: boolean;
-  sort_order: number;
-  x_coordinate?: number | null;
-  y_coordinate?: number | null;
   skill_check?: string | null;
   dc?: number | null;
   success_text?: string | null;
   failure_text?: string | null;
-};
-
-// Payload de POST /api/v1/scenes/{scene_id}/pois/{poi_id}/investigate
-// (be-rpg branch feature/poi-investigation, PR #68, commit 4c7baa0 — ainda
-// não mergeada em main; contrato confirmado lendo internal/scene/model.go e
-// service.go nessa branch). O frontend envia apenas o d20 puro (`roll`,
-// 1-20) e o `hero_id` ativo — o backend resolve modificador de atributo +
-// bônus de proficiência da perícia do POI e soma ao roll, retornando o
-// `total` já calculado. Nenhum cálculo de stats acontece no cliente.
-export type InvestigatePoiRequest = {
-  session_id: string;
-  hero_id: string;
-  roll: number;
-};
-
-export type InvestigatePoiResponse = {
-  poi_id: string;
-  success: boolean;
   enabled: boolean;
-  total: number;
-  success_text?: string | null;
-  failure_text?: string | null;
+  sort_order: number;
+  x_coordinate?: number | null;
+  y_coordinate?: number | null;
 };
 
 export type SceneDetail = {
@@ -552,11 +584,16 @@ export type NPCDialogueTree = {
   nodes: DialogueNodeView[];
 };
 
-export type CreateEventType = 'adventure_started' | 'npc_dialogue_choice' | 'dice_roll';
+export type CreateEventType = 'narrative_entered' | 'npc_dialogue_choice' | 'dice_roll';
 
 export type CreateEventRequest = {
   type: CreateEventType;
-  payload: Record<string, unknown>;
+  // narrative_entered usa colunas tipadas (be-rpg PR #69) em vez de payload.
+  entity_type?: 'campaign' | 'adventure' | 'scene';
+  entity_id?: string;
+  // npc_dialogue_choice / dice_roll ainda usam payload genérico — fora do
+  // escopo desta migração pontual (só narrative_entered foi convertido aqui).
+  payload?: Record<string, unknown>;
 };
 
 export type SessionSocketEventType =

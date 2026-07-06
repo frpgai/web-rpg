@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useLocation } from 'wouter';
-import { Spinner } from '../../components/ui/Spinner';
-import { useCampaignSelection } from '../../hooks/useCampaignSelection';
-import { CampaignDetailSheet } from './CampaignDetailSheet';
-import type { CampaignListItem } from '../../types';
+import { Spinner } from '../../../components/ui/Spinner';
+import { useCampaignSelection } from '../../../hooks/useCampaignSelection';
+import { CampaignDetailSheet } from '../CampaignDetailSheet';
+import type { CampaignListItem } from '../../../types';
 import './CreateSessionPage.css';
 
 function levelRangeLabel(item: CampaignListItem): string {

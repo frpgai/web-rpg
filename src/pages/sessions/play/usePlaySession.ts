@@ -1,25 +1,40 @@
 import { useCallback, useEffect, useState } from 'react';
+import { useLocation } from 'wouter';
 import { sessionApi } from '../../../api/services/session';
 import { sceneApi } from '../../../api/services/scene';
-import type { Adventure, SceneDetail, SessionDetail } from '../../../types';
+import { campaignApi } from '../../../api/services/campaign';
+import type { Adventure, CampaignDetail, SceneDetail, SessionDetail, SessionPlayer } from '../../../types';
 
-type Phase = 'loading' | 'storytelling' | 'table';
+type Phase = 'loading' | 'campaign-intro' | 'storytelling' | 'table';
 
 /**
- * Decide entre a tela de Storytelling cinemática e a Mesa de Jogo Ativa,
- * verificando se já existe um evento `adventure_started` para a aventura
- * corrente da sessão (spec A00153 seção 2).
+ * Máquina de estados única da Mesa de Jogo Ativa (rota /app/sessions/:id/play):
  *
- * NOTA (limitação conhecida): o tipo `SessionPlayer` retornado por
- * `GET /sessions/:id/players` não expõe o `session_player.id` (apenas
- * `user_id`), e `SessionEvent.session_player_id` referencia esse id que não
- * temos localmente. Por isso a checagem de "já iniciou" é feita por
- * aventura (qualquer jogador que já registrou `adventure_started` para a
- * aventura corrente pula a cinemática), não estritamente por jogador atual
- * como o texto da spec sugere. Documentado para o líder validar.
+ * 'campaign-intro' — conteúdo absorvido de TimelinePage.tsx (spec 00190):
+ *   título da campanha, áudio de introdução geral, avatares dos heróis
+ *   participantes e CTA. Ao clicar no CTA (ver `enterStorytelling`), grava o
+ *   evento de progresso `campaign` para o jogador atual e avança para
+ *   'storytelling' sem navegação de rota.
+ * 'storytelling' — overlay cinemático do capítulo (spec 00153), inalterado.
+ * 'table' — Mesa de Jogo Ativa (`ActiveTable`), inalterada.
+ *
+ * Fonte de verdade da fase (spec A00153/A00190, be-rpg PR #69):
+ * GET /sessions/:id/players-events retorna os eventos de progresso do
+ * JOGADOR AUTENTICADO ATUAL nesta sessão (`session_player_id` já resolvido
+ * pelo backend a partir do JWT — substitui a checagem antiga por
+ * `session_events`/`narrative_entered`, que não permitia checar por jogador
+ * específico):
+ * - Sem evento `event_type === 'campaign'` → 'campaign-intro'.
+ * - Com `campaign` mas sem `event_type === 'adventure'` com
+ *   `event_id === session.current_adventure_id` → 'storytelling'.
+ * - Com ambos → 'table'.
  */
 export function usePlaySession(sessionId: string) {
+  const [, setLocation] = useLocation();
+
   const [session, setSession] = useState<SessionDetail | null>(null);
+  const [campaign, setCampaign] = useState<CampaignDetail | null>(null);
+  const [players, setPlayers] = useState<SessionPlayer[]>([]);
   const [adventure, setAdventure] = useState<Adventure | null>(null);
   const [scene, setScene] = useState<SceneDetail | null>(null);
   const [phase, setPhase] = useState<Phase>('loading');
@@ -35,22 +50,39 @@ export function usePlaySession(sessionId: string) {
       });
   }, []);
 
+  const loadCampaignIntroData = useCallback((campaignId: string) => {
+    campaignApi
+      .getDetail(campaignId)
+      .then(setCampaign)
+      .catch((err) => console.error('Failed to load campaign for intro:', err));
+
+    sessionApi
+      .getPlayers(sessionId)
+      .then(setPlayers)
+      .catch((err) => console.error('Failed to load session players:', err));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sessionId]);
+
   const load = useCallback(() => {
     if (!sessionId) return;
     setError(null);
 
-    Promise.all([sessionApi.get(sessionId), sessionApi.getEvents(sessionId, undefined, 100)])
-      .then(([sessionData, eventsPage]) => {
+    Promise.all([sessionApi.get(sessionId), sessionApi.getPlayerEvents(sessionId)])
+      .then(([sessionData, playerEvents]) => {
         setSession(sessionData);
 
-        const alreadyStarted = eventsPage.items.some(
+        if (sessionData.status === 'lobby') {
+          setLocation(`/app/sessions/${sessionId}/lobby`);
+          return;
+        }
+
+        const hasEnteredCampaign = playerEvents.some((event) => event.event_type === 'campaign');
+        const hasEnteredAdventure = playerEvents.some(
           (event) =>
-            event.type === 'adventure_started' &&
-            (event.payload as Record<string, unknown> | null)?.adventure_id ===
-              sessionData.current_adventure_id
+            event.event_type === 'adventure' && event.event_id === sessionData.current_adventure_id
         );
 
-        if (alreadyStarted) {
+        if (hasEnteredCampaign && hasEnteredAdventure) {
           setPhase('table');
           if (sessionData.current_scene_id) {
             return loadScene(sessionData.current_scene_id);
@@ -58,28 +90,67 @@ export function usePlaySession(sessionId: string) {
           return;
         }
 
-        setPhase('storytelling');
-        return sessionApi.getAdventure(sessionId).then(setAdventure);
+        if (hasEnteredCampaign) {
+          setPhase('storytelling');
+          sessionApi.getAdventure(sessionId).then(setAdventure).catch((err) => {
+            console.error('Failed to load adventure for storytelling:', err);
+          });
+          return;
+        }
+
+        setPhase('campaign-intro');
+        loadCampaignIntroData(sessionData.campaign_id);
       })
       .catch((err) => {
         console.error('Failed to load play session:', err);
         setError('Não foi possível carregar a mesa de jogo.');
       });
-  }, [sessionId, loadScene]);
+  }, [sessionId, loadScene, loadCampaignIntroData, setLocation]);
 
   useEffect(() => {
     load();
   }, [load]);
 
+  // Refetch dedicado da campanha, usado quando a URL assinada do áudio de
+  // introdução expira (1h) e o elemento <audio> dispara erro de carregamento.
+  const refetchCampaign = useCallback(() => {
+    if (!session) return Promise.resolve();
+    return campaignApi
+      .getDetail(session.campaign_id)
+      .then(setCampaign)
+      .catch((err) => {
+        console.error('Failed to refetch campaign for audio URL renewal:', err);
+      });
+  }, [session]);
+
+  // Avança de 'campaign-intro' para 'storytelling' — clique no CTA da tela de
+  // introdução. Grava o evento de progresso 'campaign' do jogador atual antes
+  // de avançar. Sem navegação de rota (já estamos em /play).
+  const enterStorytelling = useCallback(() => {
+    if (!sessionId || !session) return;
+    sessionApi
+      .createPlayerEvent(sessionId, {
+        event_type: 'campaign',
+        event_id: session.campaign_id,
+      })
+      .catch((err) => {
+        console.error('Failed to log campaign player event:', err);
+      });
+    setPhase('storytelling');
+    sessionApi.getAdventure(sessionId).then(setAdventure).catch((err) => {
+      console.error('Failed to load adventure for storytelling:', err);
+    });
+  }, [sessionId, session]);
+
   const enterTable = useCallback(() => {
     if (!session) return Promise.resolve();
     return sessionApi
-      .createEvent(sessionId, {
-        type: 'adventure_started',
-        payload: { adventure_id: session.current_adventure_id },
+      .createPlayerEvent(sessionId, {
+        event_type: 'adventure',
+        event_id: session.current_adventure_id ?? '',
       })
       .catch((err) => {
-        console.error('Failed to log adventure_started event:', err);
+        console.error('Failed to log adventure player event:', err);
       })
       .finally(() => {
         setPhase('table');
@@ -96,5 +167,17 @@ export function usePlaySession(sessionId: string) {
     return Promise.resolve();
   }, [session, loadScene]);
 
-  return { session, adventure, scene, phase, error, enterTable, refreshScene };
+  return {
+    session,
+    campaign,
+    players,
+    adventure,
+    scene,
+    phase,
+    error,
+    refetchCampaign,
+    enterStorytelling,
+    enterTable,
+    refreshScene,
+  };
 }

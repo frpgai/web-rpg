@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useLocation } from 'wouter';
 import { lobbyApi } from './lobbyApi';
-import { useSessionSocket } from '../../../hooks/useSessionSocket';
-import { useUserStore } from '../../../stores/userStore';
-import type { SessionDetail, SessionPlayer } from '../../../types';
+import { useSessionSocket } from '../../../../hooks/useSessionSocket';
+import { useUserStore } from '../../../../stores/userStore';
+import type { SessionDetail, SessionPlayer } from '../../../../types';
 
 export function useLobby(sessionId: string) {
   const [, setLocation] = useLocation();
@@ -37,7 +37,7 @@ export function useLobby(sessionId: string) {
       .then((sessionData) => {
         setSession(sessionData);
         if (sessionData.status === 'active') {
-          setLocation(`/app/sessions/${sessionId}`);
+          setLocation(`/app/sessions/${sessionId}/play`);
         }
       })
       .catch((err) => {
@@ -73,7 +73,7 @@ export function useLobby(sessionId: string) {
     useCallback(
       (event) => {
         if (event.type === 'session_started') {
-          setLocation(`/app/sessions/${sessionId}`);
+          setLocation(`/app/sessions/${sessionId}/play`);
           return;
         }
         refreshPlayers();
@@ -110,7 +110,7 @@ export function useLobby(sessionId: string) {
     setStarting(true);
     try {
       await lobbyApi.start(sessionId);
-      setLocation(`/app/sessions/${sessionId}`);
+      setLocation(`/app/sessions/${sessionId}/play`);
     } catch (err: any) {
       console.error('Failed to start session:', err);
       const status: number | undefined = err?.response?.status;

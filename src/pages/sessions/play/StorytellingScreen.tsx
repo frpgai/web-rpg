@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { getAssetUrl } from '../../../utils/url';
 import { useAmbientVolume } from '../../../utils/useAmbientVolume';
 import { SessionHeader } from '../../../components/navigation/SessionHeader';
-import { TypewriterText } from '../timeline/TypewriterText';
+import { TypewriterText } from './TypewriterText';
 import type { Adventure } from '../../../types';
 import './StorytellingScreen.css';
 
