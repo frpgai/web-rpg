@@ -3,6 +3,7 @@ import { sessionApi } from '../../../api/services/session';
 import { useSessionSocket } from '../../../hooks/useSessionSocket';
 import { useAuthStore } from '../../../stores/authStore';
 import { useInvestigatePoi } from './useInvestigatePoi';
+import { SessionHeader } from '../../../components/navigation/SessionHeader';
 import { MapViewer } from './MapViewer';
 import { TimelineFeed } from './TimelineFeed';
 import { ActionDock } from './ActionDock';
@@ -95,9 +96,7 @@ export function ActiveTable({ sessionId, sessionName, scene, onSceneRefresh }: P
 
   return (
     <div className="activetable-root">
-      <header className="activetable-header">
-        <h1 className="activetable-header-title">{sessionName}</h1>
-      </header>
+      <SessionHeader title={sessionName} />
 
       <MapViewer
         scene={scene}

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useParams, useLocation } from 'wouter';
 import { Spinner } from '../../../components/ui/Spinner';
+import { SessionHeader } from '../../../components/navigation/SessionHeader';
 import { getAssetUrl } from '../../../utils/url';
 import { useTimeline } from './useTimeline';
 import { TypewriterText } from './TypewriterText';
@@ -218,9 +219,7 @@ export default function TimelinePage() {
 
   return (
     <div className="timeline-root">
-      <header className="timeline-header">
-        <h1 className="timeline-header-title">{campaign?.title ?? session?.name ?? '...'}</h1>
-      </header>
+      <SessionHeader title={campaign?.title ?? session?.name ?? '...'} />
 
       <main className="timeline-main">
         <section className="timeline-intro-card">

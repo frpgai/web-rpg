@@ -1,0 +1,60 @@
+/* =============================================================================
+   SessionBottomNav — bottom nav das telas de sessão ativa
+   Stitch project 15326270198202696484, screens 5a5d72af972449828dca5c2df0e8ab62
+   e fa77bf96766d4bbcafa4ea2ff29c6d43 ("fixed bottom-0 ... rounded-t-full")
+   ============================================================================= */
+
+.sessionbottomnav-root {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 60;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  width: 100%;
+  max-width: 480px;
+  padding: var(--space-sm) var(--space-md);
+  background-color: color-mix(in srgb, var(--color-surface-lowest) 90%, transparent);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  border-top-left-radius: var(--radius-full);
+  border-top-right-radius: var(--radius-full);
+  box-shadow: 0 -4px 20px color-mix(in srgb, var(--color-primary) 10%, transparent);
+  box-sizing: border-box;
+}
+
+.sessionbottomnav-tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  background: none;
+  border: none;
+  padding: var(--space-xs);
+  color: color-mix(in srgb, var(--color-text-muted) 60%, transparent);
+  cursor: pointer;
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.sessionbottomnav-tab:hover {
+  color: color-mix(in srgb, var(--color-primary) 80%, transparent);
+}
+
+.sessionbottomnav-tab:active {
+  transform: scale(0.9);
+}
+
+.sessionbottomnav-tab-active {
+  color: var(--color-primary);
+  filter: drop-shadow(0 0 8px color-mix(in srgb, var(--color-primary) 60%, transparent));
+}
+
+.sessionbottomnav-tab-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+}

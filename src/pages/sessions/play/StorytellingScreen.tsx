@@ -1,18 +1,21 @@
 import { useEffect, useRef, useState } from 'react';
 import { getAssetUrl } from '../../../utils/url';
 import { useAmbientVolume } from '../../../utils/useAmbientVolume';
+import { SessionHeader } from '../../../components/navigation/SessionHeader';
 import { TypewriterText } from '../timeline/TypewriterText';
 import type { Adventure } from '../../../types';
 import './StorytellingScreen.css';
 
 type Props = {
   adventure: Adventure | null;
+  sessionName: string;
   onEnter: () => Promise<unknown>;
 };
 
 const TYPEWRITER_SPEED_MS = 18;
 const PARAGRAPH_GAP_MS = 400;
 const FADE_TO_BLACK_MS = 1200;
+const VOICE_WAVE_BARS = 8;
 
 function splitParagraphs(text?: string | null): string[] {
   if (!text) return [];
@@ -22,7 +25,7 @@ function splitParagraphs(text?: string | null): string[] {
     .filter(Boolean);
 }
 
-export function StorytellingScreen({ adventure, onEnter }: Props) {
+export function StorytellingScreen({ adventure, sessionName, onEnter }: Props) {
   const paragraphs = splitParagraphs(adventure?.intro_narration);
   const transitionSrc = adventure?.audio_transition_file || adventure?.transition_sfx;
   const narrationSrc = adventure?.intro_narration_audio_file;
@@ -76,6 +79,8 @@ export function StorytellingScreen({ adventure, onEnter }: Props) {
 
   return (
     <div className="storytelling-root">
+      <SessionHeader title={sessionName} />
+
       <div className="storytelling-media">
         {adventure?.media_type === 'video' && adventure.media_url ? (
           <video
@@ -109,24 +114,36 @@ export function StorytellingScreen({ adventure, onEnter }: Props) {
         />
       )}
 
-      <div className="storytelling-content">
-        <h1 className="storytelling-title">{adventure?.title ?? '...'}</h1>
-        <div className="storytelling-narration">
-          {paragraphs.map((paragraph, index) => (
-            <p key={index} className="storytelling-paragraph">
-              <TypewriterText text={paragraph} speedMs={TYPEWRITER_SPEED_MS} />
-            </p>
-          ))}
-        </div>
-      </div>
+      <section className="storytelling-overlay">
+        <div className="storytelling-card">
+          <span className="storytelling-eyebrow">A Jornada Começa</span>
+          <h1 className="storytelling-title">{adventure?.title ?? '...'}</h1>
+          <div className="storytelling-divider" />
 
-      <button
-        className={`storytelling-cta ${narrationEnded ? 'storytelling-cta-visible' : ''}`}
-        onClick={handleEnter}
-        disabled={!narrationEnded}
-      >
-        Entrar no Capítulo
-      </button>
+          <div className="storytelling-narration">
+            {paragraphs.map((paragraph, index) => (
+              <p key={index} className="storytelling-paragraph">
+                <TypewriterText text={paragraph} speedMs={TYPEWRITER_SPEED_MS} />
+              </p>
+            ))}
+          </div>
+
+          <div className="storytelling-voice-wave" aria-label="Narração Ativa">
+            {Array.from({ length: VOICE_WAVE_BARS }).map((_, index) => (
+              <div key={index} className="storytelling-wave-bar" />
+            ))}
+          </div>
+
+          <button
+            className={`storytelling-cta ${narrationEnded ? 'storytelling-cta-visible' : ''}`}
+            onClick={handleEnter}
+            disabled={!narrationEnded}
+          >
+            <span className="material-symbols-outlined storytelling-cta-icon">play_arrow</span>
+            Entrar no Capítulo
+          </button>
+        </div>
+      </section>
 
       <div className={`storytelling-fade ${fading ? 'storytelling-fade-active' : ''}`} />
     </div>

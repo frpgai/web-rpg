@@ -1,17 +1,25 @@
+/* =============================================================================
+   StorytellingScreen — réplica pixel-perfect do Stitch
+   Projeto 15326270198202696484 / screen 5a5d72af972449828dca5c2df0e8ab62
+   "Capítulo 1: As Noites que Devoram (Imersivo)"
+   ============================================================================= */
+
 .storytelling-root {
-  position: relative;
+  position: fixed;
+  inset: 0;
+  z-index: 100;
   display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  min-height: 100svh;
+  align-items: center;
+  justify-content: center;
   width: 100%;
-  max-width: 480px;
-  margin: 0 auto;
+  height: 100dvh;
   overflow: hidden;
-  background-color: var(--color-surface-lowest);
+  background-color: var(--color-bg);
   color: var(--color-text);
   box-sizing: border-box;
 }
+
+/* ── Background ambient layer ──────────────────────────────────────────── */
 
 .storytelling-media {
   position: absolute;
@@ -28,46 +36,112 @@
 .storytelling-media-fallback {
   width: 100%;
   height: 100%;
-  background: linear-gradient(180deg, var(--color-surface-lowest) 0%, var(--color-surface-container) 60%, var(--color-gold-aged-dark) 100%);
+  background: linear-gradient(
+    180deg,
+    var(--color-surface-lowest) 0%,
+    var(--color-surface-container) 60%,
+    var(--color-surface-lowest) 100%
+  );
 }
 
+/* Overlay escuro para legibilidade (bg-black/60 no Stitch) */
 .storytelling-media-gradient {
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, rgba(14, 14, 19, 0.35) 0%, rgba(14, 14, 19, 0.55) 55%, rgba(14, 14, 19, 0.95) 100%);
+  background: color-mix(in srgb, var(--color-surface-lowest) 60%, transparent);
 }
 
-.storytelling-content {
+/* ── Cinematic overlay section (p-6 md:p-12) ───────────────────────────── */
+
+.storytelling-overlay {
   position: relative;
-  z-index: 1;
-  padding: var(--space-xl) var(--space-lg) var(--space-lg);
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  padding: var(--space-lg);
+  /* Espaço para o SessionHeader (64px) e SessionBottomNav (~80px) fixos */
+  padding-top: calc(64px + var(--space-lg));
+  padding-bottom: calc(80px + var(--space-lg));
+  box-sizing: border-box;
+}
+
+/* ── Content card (glass-panel, rounded-xl, max-w-2xl) ─────────────────── */
+
+.storytelling-card {
+  position: relative;
+  z-index: 10;
   display: flex;
   flex-direction: column;
-  gap: var(--space-md);
+  align-items: center;
+  width: 100%;
+  max-width: 480px;
+  padding: var(--space-xl) var(--space-lg);
+  border-radius: var(--radius-lg);
+  border-top: 1px solid color-mix(in srgb, var(--color-primary) 20%, transparent);
+  background: color-mix(in srgb, var(--color-bg) 70%, transparent);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  text-align: center;
 }
 
+/* Eyebrow — "A JORNADA COMEÇA" (font-label-mono, tracking-[0.3em]) */
+.storytelling-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 500;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--color-primary) 60%, transparent);
+  margin: 0 0 var(--space-md);
+}
+
+/* Título — headline-lg (Playfair Display, gold-text, italic) */
 .storytelling-title {
   font-family: var(--font-display);
-  font-size: 28px;
-  line-height: 1.2;
-  color: var(--color-secondary);
-  margin: 0;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+  font-size: 32px;
+  line-height: 40px;
+  font-weight: 600;
+  font-style: italic;
+  color: var(--color-gold);
+  text-shadow: 0 0 15px color-mix(in srgb, var(--color-gold) 30%, transparent);
+  margin: 0 0 var(--space-xl);
 }
 
+/* Divisor — h-px w-full max-w-md gradient */
+.storytelling-divider {
+  width: 100%;
+  max-width: 448px;
+  height: 1px;
+  margin: 0 0 var(--space-xl);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--color-primary) 30%, transparent),
+    transparent
+  );
+}
+
+/* Narração — font-body-rtf (Geist), text-on-surface-variant/90, italic */
 .storytelling-narration {
   display: flex;
   flex-direction: column;
-  gap: var(--space-sm);
-  max-height: 40svh;
+  gap: var(--space-md);
+  margin: 0 0 40px;
+  max-height: 40dvh;
   overflow-y: auto;
 }
 
 .storytelling-paragraph {
   font-family: var(--font-sans);
-  font-size: 15px;
-  line-height: 1.6;
-  color: var(--color-text);
+  font-size: 16px;
+  line-height: 28px;
+  font-style: italic;
+  color: color-mix(in srgb, var(--color-text-muted) 90%, transparent);
   margin: 0;
   animation: storytelling-fade-in 1.2s ease-out;
 }
@@ -83,40 +157,122 @@
   }
 }
 
+/* Voice visualizer — 8 barras animadas (h-8, gap-1.5) */
+.storytelling-voice-wave {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 6px;
+  height: 32px;
+  margin: 0 0 var(--space-xl);
+}
+
+.storytelling-wave-bar {
+  width: 4px;
+  height: 4px;
+  border-radius: var(--radius-full);
+  background-color: var(--color-primary);
+  animation: storytelling-wave 1.2s ease-in-out infinite;
+}
+
+.storytelling-wave-bar:nth-child(1) { animation-delay: 0.1s; }
+.storytelling-wave-bar:nth-child(2) { animation-delay: 0.3s; }
+.storytelling-wave-bar:nth-child(3) { animation-delay: 0.2s; }
+.storytelling-wave-bar:nth-child(4) { animation-delay: 0.5s; }
+.storytelling-wave-bar:nth-child(5) { animation-delay: 0.4s; }
+.storytelling-wave-bar:nth-child(6) { animation-delay: 0.7s; }
+.storytelling-wave-bar:nth-child(7) { animation-delay: 0.2s; }
+.storytelling-wave-bar:nth-child(8) { animation-delay: 0.1s; }
+
+@keyframes storytelling-wave {
+  0%, 100% {
+    height: 4px;
+    opacity: 0.5;
+  }
+  50% {
+    height: 24px;
+    opacity: 1;
+  }
+}
+
+/* ── CTA — shimmer-btn, bg-primary, text-on-primary-container ─────────── */
+
 .storytelling-cta {
   position: relative;
   z-index: 1;
-  margin: var(--space-lg);
-  padding: var(--space-md);
-  border: none;
-  border-radius: var(--radius-lg);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  padding: var(--space-md) 48px;
+  border: 1px solid color-mix(in srgb, var(--color-primary) 50%, transparent);
+  border-radius: var(--radius-md);
   background-color: var(--color-primary);
-  color: var(--color-on-primary);
+  color: var(--color-on-primary-container);
   font-family: var(--font-sans);
   font-weight: 700;
   font-size: 16px;
   cursor: pointer;
+  box-shadow: 0 0 20px color-mix(in srgb, var(--color-primary) 30%, transparent);
   opacity: 0;
-  transform: translateY(12px);
+  transform: translateY(12px) scale(1);
   pointer-events: none;
-  transition: opacity 0.6s ease, transform 0.6s ease;
+  transition: opacity 0.6s ease, transform 0.2s ease, box-shadow 0.3s ease;
+}
+
+.storytelling-cta::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    45deg,
+    transparent,
+    color-mix(in srgb, var(--color-gold) 10%, transparent),
+    transparent
+  );
+  transform: rotate(45deg);
+  animation: storytelling-shimmer 3s infinite linear;
+}
+
+@keyframes storytelling-shimmer {
+  0% {
+    transform: translateX(-100%) rotate(45deg);
+  }
+  100% {
+    transform: translateX(100%) rotate(45deg);
+  }
+}
+
+.storytelling-cta-icon {
+  font-size: 20px;
+  line-height: 1;
 }
 
 .storytelling-cta-visible {
   opacity: 1;
-  transform: translateY(0);
+  transform: translateY(0) scale(1);
   pointer-events: auto;
+}
+
+.storytelling-cta-visible:active {
+  transform: scale(0.95);
 }
 
 .storytelling-cta:disabled {
   cursor: default;
 }
 
+/* ── Fade to black transition ───────────────────────────────────────────── */
+
 .storytelling-fade {
   position: fixed;
   inset: 0;
-  z-index: 10;
-  background-color: var(--color-bg);
+  z-index: 200;
+  background-color: var(--color-surface-lowest);
   opacity: 0;
   pointer-events: none;
   transition: opacity 1.2s ease;
