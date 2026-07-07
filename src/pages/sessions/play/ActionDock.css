@@ -1,26 +1,29 @@
+/* Grade de ações rápidas — Stitch project 15326270198202696484, screen
+   a0e6aede33c94152a028fb8294ea4ae8 (.stitch/designs/layout-reorg.html):
+   <section class="grid grid-cols-3 gap-3"> com botões
+   "surface_glass py-4 rounded-xl ... border border-white/5". Não é mais o
+   dock fixo do rodapé — passa a viver no fluxo normal da página, entre o
+   card do mapa e o card de narração (ver ActiveTable.tsx). */
 .actiondock-root {
-  position: sticky;
-  bottom: 0;
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
   gap: var(--space-sm);
-  padding: var(--space-sm) var(--space-md);
-  background-color: var(--color-surface-lowest);
-  border-top: 1px solid var(--color-outline-variant);
 }
 
 .actiondock-button {
-  flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2px;
-  padding: var(--space-sm);
-  border: none;
+  justify-content: center;
+  gap: var(--space-sm);
+  padding: var(--space-md) 0;
+  border: 1px solid color-mix(in srgb, var(--color-text) 5%, transparent);
   border-radius: var(--radius-md);
-  background-color: var(--color-surface-container);
+  background-color: color-mix(in srgb, var(--color-surface-container) 70%, transparent);
+  backdrop-filter: blur(12px);
   color: var(--color-text);
   font-family: var(--font-sans);
-  font-size: 11px;
+  font-size: 12px;
   cursor: pointer;
 }
 
@@ -34,10 +37,24 @@
   color: var(--color-primary);
 }
 
-.actiondock-button-combat {
-  background-color: var(--color-surface-high);
+.actiondock-button span:last-child {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-primary);
 }
 
-.actiondock-button-combat .material-symbols-outlined {
+.actiondock-button-full {
+  grid-column: 1 / -1;
+}
+
+.actiondock-button-combat {
+  background-color: color-mix(in srgb, var(--color-surface-high) 70%, transparent);
+}
+
+.actiondock-button-combat .material-symbols-outlined,
+.actiondock-button-combat span:last-child {
   color: var(--color-error);
 }

@@ -502,6 +502,53 @@ export type InvestigatePoiResponse = {
   failure_text?: string | null;
 };
 
+// "Vasculhar o local" (be-rpg PR #71, branch feature/poi-investigation-system,
+// POST /api/v1/scenes/{scene_id}/investigate-general) — um único d20 + skill
+// escolhida pelo jogador, verificado contra todos os POIs ainda ocultos da
+// cena que tenham skill_check configurado (em vez de mirar um POI
+// específico, como InvestigatePoiRequest/POST .../pois/{poi_id}/investigate).
+export type InvestigateGeneralRequest = {
+  session_id: string;
+  hero_id: string;
+  skill: string;
+  roll: number;
+};
+
+export type DiscoveredPoi = {
+  id: string;
+  display_name: string;
+  x_coordinate?: number | null;
+  y_coordinate?: number | null;
+  success_text?: string | null;
+};
+
+export type InvestigateGeneralResponse = {
+  total_result: number;
+  discovered_pois: DiscoveredPoi[];
+};
+
+// Payload do evento `session.poi_discovered`, transmitido via WebSocket da
+// sessão (be-rpg internal/scene/model.go POIDiscoveredEvent) sempre que uma
+// investigação (direcionada ou geral) revela POI(s) para a sessão — inclusive
+// para os demais jogadores que não realizaram a investigação.
+export type PoiDiscoveredEventPoi = {
+  id: string;
+  display_name: string;
+  x_coordinate?: number | null;
+  y_coordinate?: number | null;
+  description?: string | null;
+  success_text?: string | null;
+  visible_initially: boolean;
+  discovered: boolean;
+};
+
+export type PoiDiscoveredEventPayload = {
+  session_id: string;
+  scene_id: string;
+  discovered_by_hero: string;
+  pois: PoiDiscoveredEventPoi[];
+};
+
 // ── Mesa de Jogo (Storytelling, Mapa, Diálogos de NPC) — spec A00153 ────────
 
 export type Adventure = {
@@ -548,6 +595,10 @@ export type ScenePointOfInterest = {
   // Nome a ser exibido tanto no pin do mapa quanto na modal de detalhes —
   // já resolvido pelo backend conforme o estado de descoberta da sessão.
   display_name: string;
+  // Só vem preenchido quando o POI já foi descoberto nesta sessão
+  // (be-rpg SessionScenePOIView.Description) — narrativa detalhada,
+  // sensível a spoiler. Ausente para POIs ainda não descobertos.
+  description?: string | null;
   x_coordinate?: number | null;
   y_coordinate?: number | null;
   // true quando o POI tem skill_check configurado e ainda não foi
@@ -618,7 +669,10 @@ export type SessionSocketEventType =
   | 'session_joined'
   | 'session_left'
   | 'player_ready_changed'
-  | 'session_started';
+  | 'session_started'
+  // be-rpg internal/scene/model.go EventPOIDiscovered — broadcast pelo mesmo
+  // Hub de sessão (session.Broadcaster passthrough), não uma infra paralela.
+  | 'session.poi_discovered';
 
 export type SessionSocketEvent = {
   type: SessionSocketEventType;
