@@ -1,62 +1,48 @@
-import { useCallback, useEffect, useState } from 'react';
-import { sceneApi } from '../../../api/services/scene';
+import { useEffect, useState } from 'react';
 import { sessionApi } from '../../../api/services/session';
 import { heroApi } from '../../../api/services/hero';
 import { useAuthStore } from '../../../stores/authStore';
-import type {
-  DiscoveredPoi,
-  InvestigateGeneralResponse,
-  InvestigatePoiResponse,
-  SceneDetail,
-  ScenePointOfInterest,
-} from '../../../types';
-
-type RollState = {
-  poi: ScenePointOfInterest;
-  roll: number;
-  result?: InvestigatePoiResponse;
-} | null;
-
-type GeneralRollState = {
-  skill: string;
-  roll: number;
-  result?: InvestigateGeneralResponse;
-} | null;
+import { useDiceRollStore } from '../../../stores/diceRollStore';
+import type { SceneDetail, ScenePointOfInterest } from '../../../types';
 
 export type HeroSkillOption = { slug: string; name: string };
 
 /**
- * Fluxo de Investigação (spec A00153 seção 4.3, spec 00153-mesa-jogo/
- * investigacao.md): descobre POIs ocultos que tenham `skill_check`/`dc`
- * configurados, rola um d20 bruto no client (sem modificador — a Regra de
- * Ouro do projeto proíbe cálculo de regras no frontend) e envia para o
- * backend, que calcula modificador e sucesso/falha.
+ * Fluxo de Investigação (spec 00153-mesa-jogo/investigacao.md, seções 2.3 e
+ * 4.1): não há mais rolagem fake no cliente nem endpoints dedicados
+ * (`/investigate`, `/investigate-general` foram removidos em be-rpg
+ * commits e123710/f0eafa5). Toda investigação — direcionada ou geral — passa
+ * pelo fluxo genérico de `roll-requests` (spec 00134-rolagem-dados), o mesmo
+ * usado por combate/diálogo: este hook apenas dispara
+ * `useDiceRollStore.triggerRollRequest` com o `context_type` correto e deixa
+ * o dado 3D (`DiceRollOverlay`, já montado em `ActiveTable.tsx`) animar o
+ * resultado real que chega via WebSocket `roll_resolved`.
  *
- * Dois fluxos, dois endpoints (be-rpg branch feature/poi-investigation-system,
- * internal/scene/handler.go):
- * - "Investigar algo específico" (`investigate`): mira um POI já elegível
- *   (`investigable === true`) — POST .../pois/{poi_id}/investigate. O POI
- *   tem um único `skill_check` resolvido no backend, então o jogador não
- *   escolhe perícia aqui.
- * - "Vasculhar o local" (`investigateGeneral`): não mira um POI específico —
- *   POST .../investigate-general. Como o roll é conferido contra todo POI
- *   ainda oculto configurado na cena, o jogador escolhe a perícia
- *   (`heroSkills`, carregadas de `heroApi.get`) antes de rolar.
+ * A descoberta em si (`session.poi_discovered` — revelar pins ocultos,
+ * atualizar nome/descrição, pulso dourado, timeline) é tratada de forma
+ * genérica no `useSessionSocket` de `ActiveTable.tsx`, que já recarrega a
+ * cena e a timeline para qualquer POI descoberto — não duplicado aqui.
  *
- * Elegibilidade (be-rpg PR #70, SessionScenePOIView.Investigable): o payload
- * de `GET /sessions/{session_id}/scenes/{scene_id}` expõe um booleano
- * `investigable` por POI, já calculado no backend a partir de
- * `skill_check != nil && !discovered`. O frontend não recalcula essa regra —
- * apenas filtra por `poi.investigable === true`.
+ * Dois fluxos, mesmo endpoint (`POST /sessions/{id}/roll-requests`):
+ * - "Investigar algo específico" (`investigate`): `context_type:
+ *   'poi_investigation_directed'`, `context_id` = `poi.id`. A perícia
+ *   correta é resolvida a partir de `scene_points_of_interest.skill_check`
+ *   no backend, mas esse campo é estado interno de mestre e não é exposto no
+ *   payload slim de `SessionScenePOIView` (ver nota em `POIDetailSheet.tsx`).
+ *   Sem essa informação no cliente, envia-se `investigation` como perícia
+ *   padrão (mesmo valor do exemplo da spec, seção 4.1-A) — o servidor é quem
+ *   valida/resolve o teste de qualquer forma.
+ * - "Vasculhar o local" (`investigateGeneral`): `context_type:
+ *   'poi_investigation_general'`, `context_id` = `scene.id`. Como o roll é
+ *   conferido contra todo POI ainda oculto da cena, o jogador escolhe a
+ *   perícia (`heroSkills`, carregadas de `heroApi.get`) antes de rolar.
  */
-export function useInvestigate(sessionId: string, scene: SceneDetail, onDiscovered: (poiId: string) => void) {
+export function useInvestigate(sessionId: string, scene: SceneDetail) {
   const authUserId = useAuthStore((s) => s.user?.id);
   const [heroId, setHeroId] = useState<string | null>(null);
   const [heroSkills, setHeroSkills] = useState<HeroSkillOption[]>([]);
-  const [rolling, setRolling] = useState(false);
-  const [roll, setRoll] = useState<RollState>(null);
-  const [generalRoll, setGeneralRoll] = useState<GeneralRollState>(null);
   const [error, setError] = useState<string | null>(null);
+  const triggerRollRequest = useDiceRollStore((s) => s.triggerRollRequest);
 
   // Herói ativo do jogador atual: não há noção de "herói selecionado" na
   // tela de jogo hoje (ver limitação documentada em ActiveTable.tsx). Segue
@@ -76,7 +62,7 @@ export function useInvestigate(sessionId: string, scene: SceneDetail, onDiscover
 
   // Lista de perícias do herói, usada apenas pelo fluxo "Vasculhar o local"
   // (a escolha de perícia da spec 00153-mesa-jogo/investigacao.md seção
-  // 4.3.1) — o herói de detalhe já vem com `skills[].slug/name` resolvidos
+  // 2.3) — o herói de detalhe já vem com `skills[].slug/name` resolvidos
   // pelo backend (ver HeroSkills.tsx), sem dicionário hardcoded no frontend.
   useEffect(() => {
     if (!heroId) return;
@@ -88,78 +74,38 @@ export function useInvestigate(sessionId: string, scene: SceneDetail, onDiscover
 
   const eligiblePois: ScenePointOfInterest[] = scene.points_of_interest.filter((poi) => poi.investigable);
 
-  const investigate = useCallback(
-    (poi: ScenePointOfInterest) => {
-      if (!heroId) {
-        setError('Nenhum herói disponível para investigar.');
-        return;
-      }
-      setError(null);
-      setRolling(true);
-      const d20 = Math.floor(Math.random() * 20) + 1;
-      setRoll({ poi, roll: d20 });
-
-      sceneApi
-        .investigatePoi(scene.id, poi.id, { session_id: sessionId, hero_id: heroId, roll: d20 })
-        .then((result) => {
-          setRoll({ poi, roll: d20, result });
-          if (result.success && result.enabled) {
-            onDiscovered(result.poi_id);
-          }
-        })
-        .catch((err) => {
-          console.error('Failed to investigate POI:', err);
-          setError('Não foi possível investigar este local. Tente novamente.');
-          setRoll(null);
-        })
-        .finally(() => setRolling(false));
-    },
-    [scene.id, sessionId, heroId, onDiscovered]
-  );
-
-  const investigateGeneral = useCallback(
-    (skill: string) => {
-      if (!heroId) {
-        setError('Nenhum herói disponível para investigar.');
-        return;
-      }
-      setError(null);
-      setRolling(true);
-      const d20 = Math.floor(Math.random() * 20) + 1;
-      setGeneralRoll({ skill, roll: d20 });
-
-      sceneApi
-        .investigateGeneral(scene.id, { session_id: sessionId, hero_id: heroId, skill, roll: d20 })
-        .then((result) => {
-          setGeneralRoll({ skill, roll: d20, result });
-          result.discovered_pois.forEach((poi: DiscoveredPoi) => onDiscovered(poi.id));
-        })
-        .catch((err) => {
-          console.error('Failed to investigate scene (general):', err);
-          setError('Não foi possível vasculhar o local. Tente novamente.');
-          setGeneralRoll(null);
-        })
-        .finally(() => setRolling(false));
-    },
-    [scene.id, sessionId, heroId, onDiscovered]
-  );
-
-  const reset = useCallback(() => {
-    setRoll(null);
-    setGeneralRoll(null);
+  function investigate(poi: ScenePointOfInterest, skill = 'investigation') {
+    if (!heroId) {
+      setError('Nenhum herói disponível para investigar.');
+      return;
+    }
     setError(null);
-  }, []);
+    triggerRollRequest(
+      sessionId,
+      { context_type: 'poi_investigation_directed', context_id: poi.id, hero_id: heroId, skill },
+      `Investigar: ${poi.display_name}`
+    );
+  }
+
+  function investigateGeneral(skill: string) {
+    if (!heroId) {
+      setError('Nenhum herói disponível para investigar.');
+      return;
+    }
+    setError(null);
+    triggerRollRequest(
+      sessionId,
+      { context_type: 'poi_investigation_general', context_id: scene.id, hero_id: heroId, skill },
+      'Vasculhar o Local'
+    );
+  }
 
   return {
     eligiblePois,
     heroId,
     heroSkills,
-    rolling,
-    roll,
-    generalRoll,
     error,
     investigate,
     investigateGeneral,
-    reset,
   };
 }

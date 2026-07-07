@@ -12,68 +12,60 @@ type Props = {
   // para a rolagem daquele POI específico.
   presetPoi?: ScenePointOfInterest | null;
   onClose: () => void;
-  onEventLogged: () => void;
-  onDiscovered: (poiId: string) => void;
 };
 
 // Bottom sheet de "Investigar" com dois fluxos (spec 00153-mesa-jogo/
 // investigacao.md seção 2.1, Stitch project 15326270198202696484, screen
 // ab8e6e68879a4b5f992013368f26911c "Investigação: Escolha de Ação"):
-// 'choice'        — "Vasculhar o local" vs "Investigar algo específico".
-// 'poi-pick'      — lista de POIs elegíveis (fluxo "específico").
-// 'skill-pick'    — escolha de perícia do herói (fluxo "vasculhar", já que o
-//                    roll é conferido contra POIs de skill_check variado).
-// 'rolling'       — animação de d20 + resultado (ambos os fluxos).
-type Step = 'choice' | 'poi-pick' | 'skill-pick' | 'rolling';
+// 'choice'   — "Vasculhar o local" vs "Investigar algo específico".
+// 'poi-pick' — lista de POIs elegíveis (fluxo "específico").
+// 'skill-pick' — escolha de perícia do herói (fluxo "vasculhar", já que o
+//                roll é conferido contra POIs de skill_check variado).
+//
+// A rolagem em si não é mais renderizada aqui: assim que o jogador escolhe o
+// alvo (POI ou perícia), a modal dispara `triggerRollRequest` (via
+// `useInvestigate`) e se fecha — o dado 3D global (`DiceRollOverlay`, já
+// montado em `ActiveTable.tsx`) assume a animação e o resultado real vindo
+// do WebSocket `roll_resolved`/`session.poi_discovered`, igual ao fluxo de
+// combate/diálogo.
+type Step = 'choice' | 'poi-pick' | 'skill-pick';
 
-export function InvestigateModal({ sessionId, scene, presetPoi, onClose, onEventLogged, onDiscovered }: Props) {
-  const {
-    eligiblePois,
-    heroSkills,
-    rolling,
-    roll,
-    generalRoll,
-    error,
-    investigate,
-    investigateGeneral,
-  } = useInvestigate(sessionId, scene, (poiId) => {
-    onDiscovered(poiId);
-    onEventLogged();
-  });
-
-  const [step, setStep] = useState<Step>(presetPoi ? 'rolling' : 'choice');
+export function InvestigateModal({ sessionId, scene, presetPoi, onClose }: Props) {
+  const { eligiblePois, heroSkills, error, investigate, investigateGeneral } = useInvestigate(sessionId, scene);
+  const [step, setStep] = useState<Step>('choice');
 
   useEffect(() => {
-    if (presetPoi) investigate(presetPoi);
+    if (presetPoi) {
+      investigate(presetPoi);
+      onClose();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  if (presetPoi) return null;
+
+  function pickPoi(poi: ScenePointOfInterest) {
+    investigate(poi);
+    onClose();
+  }
+
+  function pickSkill(skill: string) {
+    investigateGeneral(skill);
+    onClose();
+  }
+
   // "Investigar algo específico": com exatamente 1 POI elegível, investiga
-  // direto nele em vez de pedir para escolher em uma lista de um item só —
-  // decidido no próprio clique do botão (goToPoiPick), não via efeito
-  // reagindo à mudança de `step`.
+  // direto nele em vez de pedir para escolher em uma lista de um item só.
   function goToPoiPick() {
     if (eligiblePois.length === 1) {
-      setStep('rolling');
-      investigate(eligiblePois[0]);
+      pickPoi(eligiblePois[0]);
       return;
     }
     setStep('poi-pick');
   }
 
-  const directedResolved = roll?.result !== undefined;
-  const generalResolved = generalRoll?.result !== undefined;
-  const activeRoll = roll ?? (generalRoll ? { roll: generalRoll.roll } : null);
-  const resolved = directedResolved || generalResolved;
-
   const title =
-    step === 'choice'
-      ? 'Investigar'
-      : step === 'poi-pick'
-        ? 'O que investigar?'
-        : step === 'skill-pick'
-          ? 'Escolha a perícia'
-          : 'Investigar';
+    step === 'choice' ? 'Investigar' : step === 'poi-pick' ? 'O que investigar?' : 'Escolha a perícia';
 
   return (
     <div className="investigatemodal-overlay" role="dialog" aria-modal="true">
@@ -92,7 +84,7 @@ export function InvestigateModal({ sessionId, scene, presetPoi, onClose, onEvent
               <button
                 type="button"
                 className="investigatemodal-choice"
-                onClick={() => setStep(heroSkills.length > 0 ? 'skill-pick' : 'rolling')}
+                onClick={() => setStep('skill-pick')}
               >
                 <span className="investigatemodal-choice-icon investigatemodal-choice-icon-primary">
                   <span className="material-symbols-outlined">search</span>
@@ -137,14 +129,7 @@ export function InvestigateModal({ sessionId, scene, presetPoi, onClose, onEvent
               <ul className="investigatemodal-list">
                 {eligiblePois.map((poi) => (
                   <li key={poi.id}>
-                    <button
-                      type="button"
-                      className="investigatemodal-option"
-                      onClick={() => {
-                        setStep('rolling');
-                        investigate(poi);
-                      }}
-                    >
+                    <button type="button" className="investigatemodal-option" onClick={() => pickPoi(poi)}>
                       Investigar: {poi.display_name}
                     </button>
                   </li>
@@ -159,63 +144,13 @@ export function InvestigateModal({ sessionId, scene, presetPoi, onClose, onEvent
               <ul className="investigatemodal-list">
                 {heroSkills.map((skill) => (
                   <li key={skill.slug}>
-                    <button
-                      type="button"
-                      className="investigatemodal-option"
-                      onClick={() => {
-                        setStep('rolling');
-                        investigateGeneral(skill.slug);
-                      }}
-                    >
+                    <button type="button" className="investigatemodal-option" onClick={() => pickSkill(skill.slug)}>
                       {skill.name}
                     </button>
                   </li>
                 ))}
               </ul>
             ))}
-
-          {step === 'rolling' && activeRoll && (
-            <div className="investigatemodal-roll">
-              <span className="investigatemodal-roll-badge">d20</span>
-              {roll && <p className="investigatemodal-roll-target">Vasculhando: {roll.poi.display_name}</p>}
-              {generalRoll && <p className="investigatemodal-roll-target">Vasculhando o local...</p>}
-              <p className="investigatemodal-roll-value">{activeRoll.roll}</p>
-              {rolling && <p className="investigatemodal-roll-status">Rolando...</p>}
-
-              {directedResolved && roll?.result && (
-                <p
-                  className={`investigatemodal-roll-result ${
-                    roll.result.success
-                      ? 'investigatemodal-roll-result-success'
-                      : 'investigatemodal-roll-result-failure'
-                  }`}
-                >
-                  Total {roll.result.total} — {roll.result.success ? 'Sucesso' : 'Falha'}
-                </p>
-              )}
-
-              {generalResolved && generalRoll?.result && (
-                <p
-                  className={`investigatemodal-roll-result ${
-                    generalRoll.result.discovered_pois.length > 0
-                      ? 'investigatemodal-roll-result-success'
-                      : 'investigatemodal-roll-result-failure'
-                  }`}
-                >
-                  Total {generalRoll.result.total_result} —{' '}
-                  {generalRoll.result.discovered_pois.length > 0
-                    ? `${generalRoll.result.discovered_pois.length} descoberta(s)`
-                    : 'Nada encontrado'}
-                </p>
-              )}
-
-              {resolved && (
-                <button type="button" className="investigatemodal-done" onClick={onClose}>
-                  Fechar
-                </button>
-              )}
-            </div>
-          )}
 
           {error && <p className="investigatemodal-error">{error}</p>}
         </div>

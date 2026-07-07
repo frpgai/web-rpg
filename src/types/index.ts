@@ -487,20 +487,11 @@ export type CreatePlayerEventRequest = {
   event_id: string;
 };
 
-export type InvestigatePoiRequest = {
-  session_id: string;
-  hero_id: string;
-  roll: number;
-};
-
-export type InvestigatePoiResponse = {
-  poi_id: string;
-  success: boolean;
-  enabled: boolean;
-  total: number;
-  success_text?: string | null;
-  failure_text?: string | null;
-};
+// Nota: `InvestigatePoiRequest`/`InvestigatePoiResponse` foram removidos —
+// os endpoints dedicados que eles tipavam (`.../pois/{poi_id}/investigate`,
+// `.../investigate-general`) não existem mais (be-rpg commits e123710/
+// f0eafa5). Investigação agora usa `CreateRollRequestInput`/`DiceRollResult`
+// (`types/diceRoll.ts`), como qualquer outro `context_type` de roll-request.
 
 // ── Mesa de Jogo (Storytelling, Mapa, Diálogos de NPC) — spec A00153 ────────
 
