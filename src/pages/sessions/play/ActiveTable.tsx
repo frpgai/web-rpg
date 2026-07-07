@@ -9,6 +9,8 @@ import { NPCDialogueModal } from './NPCDialogueModal';
 import { InvestigateModal } from './InvestigateModal';
 import { POIDetailSheet } from './POIDetailSheet';
 import type { SceneDetail, SceneNPC, ScenePointOfInterest, SessionEvent } from '../../../types';
+import { DiceRollOverlay } from '../../../components/dice/DiceRollOverlay';
+import { useDiceRollStore } from '../../../stores/diceRollStore';
 import './ActiveTable.css';
 
 type Props = {
@@ -53,7 +55,18 @@ export function ActiveTable({ sessionId, sessionName, scene, onRefreshScene }: P
 
   useSessionSocket(
     sessionId,
-    useCallback(() => fetchEvents(), [fetchEvents])
+    useCallback((event: any) => {
+      if (event.type === 'roll_resolved' && event.payload) {
+        useDiceRollStore.getState().handleRollResolved(event.payload);
+      } else if (event.type === 'session.poi_discovered' || event.event === 'session.poi_discovered') {
+        onRefreshScene();
+        const pois = event.payload?.pois || event.pois;
+        if (pois && pois.length > 0) {
+          setJustDiscoveredPoiId(pois[0].id);
+        }
+      }
+      fetchEvents();
+    }, [fetchEvents, onRefreshScene])
   );
 
   return (
@@ -125,6 +138,8 @@ export function ActiveTable({ sessionId, sessionName, scene, onRefreshScene }: P
           </button>
         </div>
       )}
+
+      <DiceRollOverlay />
     </div>
   );
 }
