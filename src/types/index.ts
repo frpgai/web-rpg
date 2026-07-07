@@ -618,11 +618,18 @@ export type SessionSocketEventType =
   | 'session_joined'
   | 'session_left'
   | 'player_ready_changed'
-  | 'session_started';
+  | 'session_started'
+  | 'roll_resolved'
+  | 'session.poi_discovered';
 
 export type SessionSocketEvent = {
   type: SessionSocketEventType;
-  payload?: unknown;
+  payload?: any;
+  event?: string;
+  session_id?: string;
+  scene_id?: string;
+  discovered_by_hero?: string;
+  pois?: any[];
 };
 
 export interface System {
