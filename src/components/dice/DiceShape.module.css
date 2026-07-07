@@ -1,0 +1,101 @@
+.wrapper {
+  perspective: 600px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  user-select: none;
+}
+
+.die {
+  transform-style: preserve-3d;
+  will-change: transform;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.rolling {
+  animation: tumble 600ms linear infinite;
+}
+
+.settling {
+  transition: transform 900ms cubic-bezier(0.22, 1, 0.36, 1);
+  transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg);
+}
+
+.discarded {
+  opacity: 0.4;
+}
+
+/* Risco diagonal sobre o dado descartado */
+.discarded::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 141%; /* sqrt(2) * 100% */
+  height: 2px;
+  background-color: var(--color-error);
+  transform: rotate(45deg);
+  transform-origin: top left;
+  pointer-events: none;
+  z-index: 20;
+  box-shadow: 0 0 4px var(--color-error);
+}
+
+.svgIcon {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.numberOverlay {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display), serif;
+  font-weight: 700;
+  color: var(--color-text);
+  z-index: 10;
+  pointer-events: none;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8), 0 0 10px rgba(0, 0, 0, 0.5);
+}
+
+/* Centralização do número baseada no tipo de dado */
+.number_d4 {
+  transform: translateY(12%);
+}
+
+.number_d6 {
+  transform: translateY(0);
+}
+
+.number_d8 {
+  transform: translateY(0);
+}
+
+.number_d10 {
+  transform: translateY(0);
+}
+
+.number_d12 {
+  transform: translateY(0);
+}
+
+.number_d20 {
+  transform: translateY(4%);
+}
+
+@keyframes tumble {
+  0% {
+    transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg);
+  }
+  100% {
+    transform: rotateX(720deg) rotateY(540deg) rotateZ(360deg);
+  }
+}

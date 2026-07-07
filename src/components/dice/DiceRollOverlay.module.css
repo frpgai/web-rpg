@@ -1,0 +1,87 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 10, 12, 0.85);
+  backdrop-filter: blur(12px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  animation: fadeInOverlay 300ms ease-out forwards;
+  padding: var(--space-md);
+  gap: var(--space-md);
+}
+
+.fallbackContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-sm);
+  animation: slideUpFallback 300ms ease-out forwards;
+}
+
+.fallbackText {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--color-text-muted);
+  text-align: center;
+}
+
+.fallbackButton {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--color-bg);
+  background: var(--color-gold);
+  border: none;
+  border-radius: var(--radius-full);
+  padding: 8px 16px;
+  cursor: pointer;
+  font-weight: 700;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 10px rgba(212, 175, 55, 0.2);
+  text-transform: uppercase;
+}
+
+.fallbackButton:hover {
+  background: #e6c24c;
+  box-shadow: 0 6px 15px rgba(212, 175, 55, 0.3);
+}
+
+.closeHint {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  color: var(--color-text-muted);
+  opacity: 0.7;
+  margin-top: var(--space-xs);
+  animation: pulseHint 2s infinite ease-in-out;
+}
+
+@keyframes fadeInOverlay {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUpFallback {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulseHint {
+  0%, 100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
