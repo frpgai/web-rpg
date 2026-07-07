@@ -537,7 +537,7 @@ export type SceneNPC = {
 // SessionScenePOIView). O backend deliberadamente expõe só o necessário para
 // renderizar um pin e abrir sua modal de detalhes — todos os demais campos
 // que existiam antes (name, short_name, type, skill_check, dc, success_text,
-// failure_text, description, enabled, discovered, sort_order) são estado de
+// failure_text, description, enabled, sort_order) são estado de
 // domínio interno usado por InvestigatePOI e outras regras de negócio, e não
 // vazam mais para este payload. `enabled`/`discovered` já são aplicados
 // server-side (a query só retorna POIs habilitados); não há mais como listar
@@ -550,6 +550,11 @@ export type ScenePointOfInterest = {
   display_name: string;
   x_coordinate?: number | null;
   y_coordinate?: number | null;
+  // true quando o POI tem skill_check configurado e ainda não foi
+  // descoberto nesta sessão — habilita a ação "Investigar". false para POIs
+  // já descobertos ou públicos (sem skill_check). Ver be-rpg PR #70,
+  // SessionScenePOIView.Investigable.
+  investigable: boolean;
 };
 
 // SceneDetail — resposta de GET /api/v1/sessions/{session_id}/scenes/{scene_id}

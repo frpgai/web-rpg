@@ -20,18 +20,18 @@ vi.mock('../../../api/services/session', () => ({
 const mockedSceneApi = vi.mocked(sceneApi);
 const mockedSessionApi = vi.mocked(sessionApi);
 
-// Fixtures refletem o payload reduzido de SessionScenePOIView (be-rpg PR
-// #70): apenas id/display_name/x_coordinate/y_coordinate. Ver GAP CONHECIDO
-// em useInvestigate.ts — sem enabled/skill_check/dc, eligiblePois é sempre
-// vazio; os testes abaixo passam o POI diretamente para `investigate`.
+// Fixtures refletem o payload de SessionScenePOIView (be-rpg PR #70):
+// id/display_name/x_coordinate/y_coordinate/investigable. `investigable` já
+// vem calculado pelo backend (skill_check configurado e ainda não
+// descoberto) — o frontend só filtra por esse booleano.
 function baseScene(overrides: Partial<SceneDetail> = {}): SceneDetail {
   return {
     id: 'scene-1',
     npcs: [],
     points_of_interest: [
-      { id: 'poi-hidden-1', display_name: 'O Poço' },
-      { id: 'poi-visible', display_name: 'Praça' },
-      { id: 'poi-hidden-no-check', display_name: 'Baú sem teste' },
+      { id: 'poi-hidden-1', display_name: 'O Poço', investigable: true },
+      { id: 'poi-visible', display_name: 'Praça', investigable: false },
+      { id: 'poi-hidden-no-check', display_name: 'Baú sem teste', investigable: false },
     ],
     ...overrides,
   } as SceneDetail;
@@ -46,12 +46,12 @@ beforeEach(() => {
 });
 
 describe('useInvestigate', () => {
-  it('exposes eligiblePois as empty — payload não traz mais enabled/skill_check/dc (be-rpg PR #70)', async () => {
+  it('exposes only POIs with investigable=true in eligiblePois (be-rpg PR #70)', async () => {
     const scene = baseScene();
     const { result } = renderHook(() => useInvestigate('session-1', scene, vi.fn()));
 
     await waitFor(() => expect(result.current.heroId).toBe('hero-1'));
-    expect(result.current.eligiblePois).toEqual([]);
+    expect(result.current.eligiblePois).toEqual([{ id: 'poi-hidden-1', display_name: 'O Poço', investigable: true }]);
   });
 
   it('rolls a d20 and calls the investigate endpoint with the raw roll, no modifier', async () => {
