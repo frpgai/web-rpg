@@ -27,7 +27,7 @@ export function POIDetailSheet({ poi, onClose, onMove, onInvestigate }: Props) {
       <div className="poidetailsheet-modal">
         <header className="poidetailsheet-header">
           <span className="material-symbols-outlined">place</span>
-          <h2 className="poidetailsheet-title">{poi.name}</h2>
+          <h2 className="poidetailsheet-title">{poi.display_name}</h2>
           <button type="button" className="poidetailsheet-close" onClick={onClose} aria-label="Fechar">
             <span className="material-symbols-outlined">close</span>
           </button>

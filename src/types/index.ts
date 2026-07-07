@@ -539,6 +539,11 @@ export type ScenePointOfInterest = {
   // POI não está vinculado ao catálogo (be-rpg PR #70). Usado no rótulo do
   // pin do mapa — `name` completo fica reservado à modal de detalhes.
   short_name: string;
+  // Nome a ser exibido na modal de detalhes do POI (POIDetailSheet) —
+  // igual a `name` quando `discovered=true`, e igual a `short_name` quando
+  // `discovered=false` (be-rpg PR #70). Evita vazar o nome completo/spoiler
+  // antes da descoberta; `name` não deve mais ser usado diretamente na modal.
+  display_name: string;
   type: string;
   skill_check?: string | null;
   dc?: number | null;
