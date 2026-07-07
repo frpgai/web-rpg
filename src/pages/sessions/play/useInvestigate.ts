@@ -12,11 +12,16 @@ type RollState = {
 
 /**
  * Fluxo de Investigação (spec A00153 seção 4.3): descobre POIs ocultos
- * (`enabled === false`) que tenham `skill_check`/`dc` configurados, rola um
- * d20 bruto no client (sem modificador — a Regra de Ouro do projeto proíbe
- * cálculo de regras no frontend) e envia para
- * `POST /scenes/{scene_id}/pois/{poi_id}/investigate`, que calcula
- * modificador e sucesso/falha no backend.
+ * que tenham `skill_check`/`dc` configurados, rola um d20 bruto no client
+ * (sem modificador — a Regra de Ouro do projeto proíbe cálculo de regras no
+ * frontend) e envia para `POST /scenes/{scene_id}/pois/{poi_id}/investigate`,
+ * que calcula modificador e sucesso/falha no backend.
+ *
+ * Elegibilidade (be-rpg PR #70, SessionScenePOIView.Investigable): o payload
+ * de `GET /sessions/{session_id}/scenes/{scene_id}` expõe um booleano
+ * `investigable` por POI, já calculado no backend a partir de
+ * `skill_check != nil && !discovered`. O frontend não recalcula essa regra —
+ * apenas filtra por `poi.investigable === true`.
  */
 export function useInvestigate(sessionId: string, scene: SceneDetail, onDiscovered: (poiId: string) => void) {
   const authUserId = useAuthStore((s) => s.user?.id);
@@ -41,7 +46,7 @@ export function useInvestigate(sessionId: string, scene: SceneDetail, onDiscover
       .catch((err) => console.error('Failed to load session players for investigate flow:', err));
   }, [sessionId, authUserId]);
 
-  const eligiblePois = scene.points_of_interest.filter((poi) => !poi.enabled && poi.skill_check && poi.dc != null);
+  const eligiblePois: ScenePointOfInterest[] = scene.points_of_interest.filter((poi) => poi.investigable);
 
   const investigate = useCallback(
     (poi: ScenePointOfInterest) => {

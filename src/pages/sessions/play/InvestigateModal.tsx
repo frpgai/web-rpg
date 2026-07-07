@@ -44,7 +44,7 @@ export function InvestigateModal({ sessionId, scene, onClose, onEventLogged, onD
           {roll ? (
             <div className="investigatemodal-roll">
               <span className="investigatemodal-roll-badge">d20</span>
-              <p className="investigatemodal-roll-target">Vasculhando: {roll.poi.name}</p>
+              <p className="investigatemodal-roll-target">Vasculhando: {roll.poi.display_name}</p>
               <p className="investigatemodal-roll-value">{roll.roll}</p>
               {rolling && <p className="investigatemodal-roll-status">Rolando...</p>}
               {resolved && roll.result && (
@@ -75,7 +75,7 @@ export function InvestigateModal({ sessionId, scene, onClose, onEventLogged, onD
                     className="investigatemodal-option"
                     onClick={() => investigate(poi)}
                   >
-                    Investigar: {poi.name}
+                    Investigar: {poi.display_name}
                   </button>
                 </li>
               ))}

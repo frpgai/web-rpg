@@ -100,12 +100,14 @@ export function TimelineFeed({ scene, events, loading }: Props) {
   const transitionAudioRef = useRef<HTMLAudioElement>(null);
   useAmbientVolume(ambientAudioRef);
 
-  const transitionSrc = scene.audio_transition_file || scene.transition_sfx;
-  const ambientSrc = scene.ambient_soundtrack_file || scene.ambient_soundtrack;
-  const narrationAudioSrc = scene.intro_narration_audio_file;
+  const transitionSrc = scene.audio_transition_url;
+  const ambientSrc = scene.ambient_soundtrack_url;
+  const narrationAudioSrc = scene.intro_narration_audio_url;
 
-  // Ao carregar/trocar de cena, toca o áudio de transição e (re)inicia a
-  // trilha ambiente da cena — spec A00153 seção 4.2.
+  // Efeitos sonoros da cena, em ordem (spec 00153/scene.md seção 1): toca o
+  // som de transição imediatamente, inicia a trilha ambiente em loop, e só
+  // então (se houver) a narração de introdução — feita via autoPlay no
+  // elemento <audio> abaixo.
   useEffect(() => {
     transitionAudioRef.current?.play().catch(() => {});
     ambientAudioRef.current?.play().catch(() => {});

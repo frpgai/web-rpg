@@ -28,11 +28,6 @@
   color: var(--color-secondary);
 }
 
-.mapviewer-pin-dev {
-  cursor: grab;
-  pointer-events: auto;
-}
-
 .mapviewer-dev-panel {
   display: flex;
   flex-direction: column;
@@ -142,6 +137,14 @@
   border: 2px solid var(--color-primary);
   color: var(--color-primary);
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+  /* permite hover/tap revelar o nome (mapviewer-pin-label-hover-only) mesmo
+     fora do modo dev — o pin em si continua sem ação de clique. */
+  pointer-events: auto;
+}
+
+.mapviewer-pin-dev {
+  cursor: grab;
+  pointer-events: auto;
 }
 
 .mapviewer-pin-poi .material-symbols-outlined {
@@ -160,6 +163,22 @@
   padding: 1px 6px;
   border-radius: var(--radius-sm);
   white-space: nowrap;
+}
+
+/* Toggle "Nomes" OFF: etiqueta fica oculta e só aparece em hover (desktop)
+   ou toque (mobile, via :active) no marcador, para reduzir poluição visual
+   com pins próximos. */
+.mapviewer-pin-label-hover-only {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.15s ease;
+}
+
+.mapviewer-pin:hover .mapviewer-pin-label-hover-only,
+.mapviewer-pin:active .mapviewer-pin-label-hover-only,
+.mapviewer-pin:focus-within .mapviewer-pin-label-hover-only {
+  opacity: 1;
+  visibility: visible;
 }
 
 /* Pulso luminoso dourado ao descobrir um POI oculto via investigação
