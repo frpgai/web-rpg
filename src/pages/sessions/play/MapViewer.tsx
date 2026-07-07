@@ -213,7 +213,8 @@ export function MapViewer({ scene, justDiscoveredPoiId, onPoiClick }: Props) {
           })}
 
           {scene.points_of_interest
-            .filter((poi) => poi.enabled)
+            // `enabled` não vem mais neste payload (be-rpg PR #70) — o
+            // backend já filtra apenas POIs habilitados na query.
             .map((poi, index) => {
               const override = overrides[poi.id];
               const position = override
@@ -229,13 +230,13 @@ export function MapViewer({ scene, justDiscoveredPoiId, onPoiClick }: Props) {
                   style={{ left: `${position.left}%`, top: `${position.top}%` }}
                   onPointerDown={(event) => handlePinPointerDown(poi.id, event)}
                   onClick={() => !devMode && onPoiClick?.(poi.id)}
-                  aria-label={poi.name}
+                  aria-label={poi.display_name}
                 >
                   <span className="material-symbols-outlined">place</span>
                   <span
                     className={`mapviewer-pin-label${!showNames && !devMode ? ' mapviewer-pin-label-hover-only' : ''}`}
                   >
-                    {poi.short_name || poi.name}
+                    {poi.display_name}
                     {devMode && ` — X: ${position.left.toFixed(1)} | Y: ${position.top.toFixed(1)}`}
                   </span>
                 </div>

@@ -20,34 +20,18 @@ vi.mock('../../../api/services/session', () => ({
 const mockedSceneApi = vi.mocked(sceneApi);
 const mockedSessionApi = vi.mocked(sessionApi);
 
+// Fixtures refletem o payload reduzido de SessionScenePOIView (be-rpg PR
+// #70): apenas id/display_name/x_coordinate/y_coordinate. Ver GAP CONHECIDO
+// em useInvestigate.ts — sem enabled/skill_check/dc, eligiblePois é sempre
+// vazio; os testes abaixo passam o POI diretamente para `investigate`.
 function baseScene(overrides: Partial<SceneDetail> = {}): SceneDetail {
   return {
     id: 'scene-1',
     npcs: [],
     points_of_interest: [
-      {
-        id: 'poi-hidden-1',
-        name: 'O Poço',
-        type: 'landmark',
-        skill_check: 'perception',
-        dc: 15,
-        enabled: false,
-        sort_order: 0,
-      },
-      {
-        id: 'poi-visible',
-        name: 'Praça',
-        type: 'landmark',
-        enabled: true,
-        sort_order: 1,
-      },
-      {
-        id: 'poi-hidden-no-check',
-        name: 'Baú sem teste',
-        type: 'landmark',
-        enabled: false,
-        sort_order: 2,
-      },
+      { id: 'poi-hidden-1', display_name: 'O Poço' },
+      { id: 'poi-visible', display_name: 'Praça' },
+      { id: 'poi-hidden-no-check', display_name: 'Baú sem teste' },
     ],
     ...overrides,
   } as SceneDetail;
@@ -62,12 +46,12 @@ beforeEach(() => {
 });
 
 describe('useInvestigate', () => {
-  it('exposes only enabled=false POIs with skill_check+dc as eligible', async () => {
+  it('exposes eligiblePois as empty — payload não traz mais enabled/skill_check/dc (be-rpg PR #70)', async () => {
     const scene = baseScene();
     const { result } = renderHook(() => useInvestigate('session-1', scene, vi.fn()));
 
     await waitFor(() => expect(result.current.heroId).toBe('hero-1'));
-    expect(result.current.eligiblePois.map((p) => p.id)).toEqual(['poi-hidden-1']);
+    expect(result.current.eligiblePois).toEqual([]);
   });
 
   it('rolls a d20 and calls the investigate endpoint with the raw roll, no modifier', async () => {

@@ -34,14 +34,9 @@ export function POIDetailSheet({ poi, onClose, onMove, onInvestigate }: Props) {
         </header>
 
         <div className="poidetailsheet-body">
-          {poi.description ? (
-            <p className="poidetailsheet-description">{poi.description}</p>
-          ) : (
-            <p className="poidetailsheet-description poidetailsheet-description-empty">
-              Nenhuma descrição disponível para este local ainda.
-            </p>
-          )}
-
+          {/* A narrativa contextual (`description`) não vem mais no payload
+              deste endpoint (be-rpg PR #70, SessionScenePOIView) — a modal
+              mostra apenas o nome e as ações de Mover/Investigar. */}
           <div className="poidetailsheet-actions">
             <button type="button" className="poidetailsheet-action" onClick={onMove}>
               <span className="material-symbols-outlined">directions_walk</span>

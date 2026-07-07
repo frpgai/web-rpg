@@ -52,19 +52,6 @@
   gap: var(--space-md);
 }
 
-.poidetailsheet-description {
-  margin: 0;
-  font-family: var(--font-sans);
-  font-size: 14px;
-  line-height: 1.5;
-  color: var(--color-text);
-}
-
-.poidetailsheet-description-empty {
-  color: var(--color-text-muted);
-  font-style: italic;
-}
-
 .poidetailsheet-actions {
   display: flex;
   gap: var(--space-sm);

@@ -119,7 +119,7 @@ export function ActiveTable({ sessionId, sessionName, scene, onRefreshScene }: P
 
       {poiNotice && (
         <div className="activetable-poi-toast" role="status">
-          <span>Deslocando-se para {poiNotice.poi.name}...</span>
+          <span>Deslocando-se para {poiNotice.poi.display_name}...</span>
           <button type="button" onClick={() => setPoiNotice(null)} aria-label="Fechar aviso">
             <span className="material-symbols-outlined">close</span>
           </button>

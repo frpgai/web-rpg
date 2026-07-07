@@ -532,28 +532,22 @@ export type SceneNPC = {
   y_coordinate?: number | null;
 };
 
+// ScenePointOfInterest — shape slim reduzido de GET
+// /api/v1/sessions/{session_id}/scenes/{scene_id} (be-rpg PR #70,
+// SessionScenePOIView). O backend deliberadamente expõe só o necessário para
+// renderizar um pin e abrir sua modal de detalhes — todos os demais campos
+// que existiam antes (name, short_name, type, skill_check, dc, success_text,
+// failure_text, description, enabled, discovered, sort_order) são estado de
+// domínio interno usado por InvestigatePOI e outras regras de negócio, e não
+// vazam mais para este payload. `enabled`/`discovered` já são aplicados
+// server-side (a query só retorna POIs habilitados); não há mais como listar
+// POIs ocultos via este endpoint — reposicionamento de pins ocultos no Modo
+// Edição passa a ser feito via banco direto, não mais via API.
 export type ScenePointOfInterest = {
   id: string;
-  name: string;
-  // Nome curto do catálogo (`pois.name`), com fallback para `name` quando o
-  // POI não está vinculado ao catálogo (be-rpg PR #70). Usado no rótulo do
-  // pin do mapa — `name` completo fica reservado à modal de detalhes.
-  short_name: string;
-  // Nome a ser exibido na modal de detalhes do POI (POIDetailSheet) —
-  // igual a `name` quando `discovered=true`, e igual a `short_name` quando
-  // `discovered=false` (be-rpg PR #70). Evita vazar o nome completo/spoiler
-  // antes da descoberta; `name` não deve mais ser usado diretamente na modal.
+  // Nome a ser exibido tanto no pin do mapa quanto na modal de detalhes —
+  // já resolvido pelo backend conforme o estado de descoberta da sessão.
   display_name: string;
-  type: string;
-  skill_check?: string | null;
-  dc?: number | null;
-  success_text?: string | null;
-  failure_text?: string | null;
-  // Narrativa contextual exibida antes de qualquer rolagem de dados —
-  // distinta de success_text/failure_text (pós-teste de perícia).
-  description?: string | null;
-  enabled: boolean;
-  sort_order: number;
   x_coordinate?: number | null;
   y_coordinate?: number | null;
 };
