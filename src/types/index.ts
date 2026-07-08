@@ -424,6 +424,7 @@ export type SessionDetail = {
   current_adventure_id?: string | null;
   current_scene_id?: string | null;
   current_turn_player_id?: string | null;
+  phase: 'campaign' | 'adventure' | 'scene';
 };
 
 export type StartSessionResponse = {
@@ -466,24 +467,17 @@ export type SessionEventsPage = {
   next_cursor: string | null;
 };
 
-// ── Progresso do jogador na sessão (be-rpg PR #69, spec A00153/A00190) ──────
-// Substitui a checagem de fase de `usePlaySession` que antes lia
-// `session_events`/`narrative_entered` (não permitia checar por jogador).
+// ── Fase da sessão (be-rpg — substitui o antigo SessionPlayerTarget) ────────
+// O backend agora expõe `phase` diretamente em SessionDetail
+// (GET /api/v1/sessions/{id}), eliminando o endpoint por-jogador
+// `/sessions/{id}/players-target`.
 
-export type SessionPlayerTargetType = 'campaign' | 'adventure' | 'scene' | 'play_active';
-
-export type SessionPlayerTarget = {
+export type SessionTarget = {
   id: string;
-  session_id: string;
-  session_player_id: string;
-  target_type: SessionPlayerTargetType;
-  target_id: string;
-  created_at: string;
-};
-
-export type CreatePlayerTargetRequest = {
-  target_type: SessionPlayerTargetType;
-  target_id: string;
+  sessionId: string;
+  targetType: 'campaign' | 'adventure' | 'scene';
+  targetId: string;
+  createdAt: string;
 };
 
 // Nota: `InvestigatePoiRequest`/`InvestigatePoiResponse` foram removidos —
