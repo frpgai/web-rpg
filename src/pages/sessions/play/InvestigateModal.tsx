@@ -26,12 +26,10 @@ type Props = {
 // alvo (POI ou perícia), a modal dispara `triggerRollRequest` (via
 // `useInvestigate`) e se fecha — o dado 3D global (`DiceRollOverlay`, já
 // montado em `ActiveTable.tsx`) assume a animação e o resultado real vindo
-// do WebSocket `roll_resolved`/`session.poi_discovered`, igual ao fluxo de
-// combate/diálogo.
-type Step = 'choice' | 'poi-pick' | 'skill-pick';
+// do WebSocket `roll_resolved`/`session.poi_discovered`, igualtype Step = 'choice' | 'poi-pick';
 
 export function InvestigateModal({ sessionId, scene, presetPoi, onClose }: Props) {
-  const { eligiblePois, heroSkills, error, investigate, investigateGeneral } = useInvestigate(sessionId, scene);
+  const { eligiblePois, error, investigate, investigateGeneral } = useInvestigate(sessionId, scene);
   const [step, setStep] = useState<Step>('choice');
 
   useEffect(() => {
@@ -49,11 +47,6 @@ export function InvestigateModal({ sessionId, scene, presetPoi, onClose }: Props
     onClose();
   }
 
-  function pickSkill(skill: string) {
-    investigateGeneral(skill);
-    onClose();
-  }
-
   // "Investigar algo específico": com exatamente 1 POI elegível, investiga
   // direto nele em vez de pedir para escolher em uma lista de um item só.
   function goToPoiPick() {
@@ -65,7 +58,7 @@ export function InvestigateModal({ sessionId, scene, presetPoi, onClose }: Props
   }
 
   const title =
-    step === 'choice' ? 'Investigar' : step === 'poi-pick' ? 'O que investigar?' : 'Escolha a perícia';
+    step === 'choice' ? 'Investigar' : 'O que investigar?';
 
   return (
     <div className="investigatemodal-overlay" role="dialog" aria-modal="true">
@@ -84,7 +77,10 @@ export function InvestigateModal({ sessionId, scene, presetPoi, onClose }: Props
               <button
                 type="button"
                 className="investigatemodal-choice"
-                onClick={() => setStep('skill-pick')}
+                onClick={() => {
+                  investigateGeneral();
+                  onClose();
+                }}
               >
                 <span className="investigatemodal-choice-icon investigatemodal-choice-icon-primary">
                   <span className="material-symbols-outlined">search</span>
@@ -114,7 +110,7 @@ export function InvestigateModal({ sessionId, scene, presetPoi, onClose }: Props
                     Investigar Algo Específico
                   </span>
                   <span className="investigatemodal-choice-desc">
-                    Focar a atenção em um ponto de interesse visível no mapa
+                    Focalizar a atenção em um ponto de interesse visível no mapa
                   </span>
                 </span>
                 <span className="material-symbols-outlined investigatemodal-choice-chevron">chevron_right</span>
@@ -137,24 +133,10 @@ export function InvestigateModal({ sessionId, scene, presetPoi, onClose }: Props
               </ul>
             ))}
 
-          {step === 'skill-pick' &&
-            (heroSkills.length === 0 ? (
-              <p className="investigatemodal-empty">Nenhuma perícia disponível para este herói.</p>
-            ) : (
-              <ul className="investigatemodal-list">
-                {heroSkills.map((skill) => (
-                  <li key={skill.slug}>
-                    <button type="button" className="investigatemodal-option" onClick={() => pickSkill(skill.slug)}>
-                      {skill.name}
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            ))}
-
           {error && <p className="investigatemodal-error">{error}</p>}
         </div>
       </div>
     </div>
   );
 }
+

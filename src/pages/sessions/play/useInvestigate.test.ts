@@ -3,6 +3,7 @@ import { useInvestigate } from './useInvestigate';
 import { sessionApi } from '../../../api/services/session';
 import { useAuthStore } from '../../../stores/authStore';
 import { useDiceRollStore } from '../../../stores/diceRollStore';
+import { interactionApi } from '../../../api/services/interaction';
 import type { SceneDetail } from '../../../types';
 
 vi.mock('../../../api/services/session', () => ({
@@ -11,12 +12,16 @@ vi.mock('../../../api/services/session', () => ({
   },
 }));
 
-const mockedSessionApi = vi.mocked(sessionApi);
+vi.mock('../../../api/services/interaction', () => ({
+  interactionApi: {
+    interact: vi.fn(),
+    getActions: vi.fn(),
+  },
+}));
 
-// Fixtures refletem o payload de SessionScenePOIView (be-rpg PR #70):
-// id/display_name/x_coordinate/y_coordinate/investigable. `investigable` já
-// vem calculado pelo backend (skill_check configurado e ainda não
-// descoberto) — o frontend só filtra por esse booleano.
+const mockedSessionApi = vi.mocked(sessionApi);
+const mockedInteractionApi = vi.mocked(interactionApi);
+
 function baseScene(overrides: Partial<SceneDetail> = {}): SceneDetail {
   return {
     id: 'scene-1',
@@ -37,6 +42,8 @@ beforeEach(() => {
   mockedSessionApi.getPlayers.mockResolvedValue([
     { user_id: 'user-1', username: 'Fulano', is_owner: true, is_ready: true, hero: { id: 'hero-1', name: 'H', class: 'x', level: 1, avatar_url: null } },
   ] as any);
+  mockedInteractionApi.interact.mockResolvedValue({ interaction_id: 'interaction-123' });
+  mockedInteractionApi.getActions.mockResolvedValue([]);
 });
 
 describe('useInvestigate', () => {
@@ -48,7 +55,7 @@ describe('useInvestigate', () => {
     expect(result.current.eligiblePois).toEqual([{ id: 'poi-hidden-1', display_name: 'O Poço', investigable: true }]);
   });
 
-  it('investigate() triggers a generic roll-request with context_type=poi_investigation_directed, no dice value computed on the client', async () => {
+  it('investigate() triggers a generic roll-request with target_type=poi, action=investigate, and roll_type=normal', async () => {
     const scene = baseScene();
     const { result } = renderHook(() => useInvestigate('session-1', scene));
 
@@ -62,31 +69,31 @@ describe('useInvestigate', () => {
     expect(rollState).toBe('pending_roll');
     expect(sessionId).toBe('session-1');
     expect(rollInput).toEqual({
-      context_type: 'poi_investigation_directed',
-      context_id: 'poi-hidden-1',
-      hero_id: 'hero-1',
-      skill: 'investigation',
+      target_type: 'poi',
+      target_id: 'poi-hidden-1',
+      action: 'investigate',
+      roll_type: 'normal',
     });
   });
 
-  it('investigateGeneral() triggers a roll-request with context_type=poi_investigation_general and context_id=scene.id', async () => {
+  it('investigateGeneral() triggers a roll-request with target_type=scene, action=search, and roll_type=normal', async () => {
     const scene = baseScene();
     const { result } = renderHook(() => useInvestigate('session-1', scene));
 
     await waitFor(() => expect(result.current.heroId).toBe('hero-1'));
 
     act(() => {
-      result.current.investigateGeneral('perception');
+      result.current.investigateGeneral();
     });
 
     const { rollInput, sessionId, rollState } = useDiceRollStore.getState();
     expect(rollState).toBe('pending_roll');
     expect(sessionId).toBe('session-1');
     expect(rollInput).toEqual({
-      context_type: 'poi_investigation_general',
-      context_id: 'scene-1',
-      hero_id: 'hero-1',
-      skill: 'perception',
+      target_type: 'scene',
+      target_id: 'scene-1',
+      action: 'search',
+      roll_type: 'normal',
     });
   });
 
