@@ -1,8 +1,8 @@
 import { useRef, useState } from 'react';
 import type { SyntheticEvent } from 'react';
 import type { PointerEvent, WheelEvent } from 'react';
-import { getAssetUrl } from '../../../utils/url';
-import type { SceneDetail } from '../../../types';
+import { getAssetUrl } from '../../../../../utils/url';
+import type { SceneDetail } from '../../../../../types';
 import './MapViewer.css';
 
 type Props = {

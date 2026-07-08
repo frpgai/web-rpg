@@ -1,4 +1,4 @@
-import type { ScenePointOfInterest } from '../../../types';
+import type { ScenePointOfInterest } from '../../../../../types';
 import './POIDetailSheet.css';
 
 type Props = {
@@ -44,7 +44,9 @@ export function POIDetailSheet({ poi, onClose, onMove, onInvestigate }: Props) {
         <h2 className="poidetailsheet-title">{poi.display_name}</h2>
         <div className="poidetailsheet-divider" />
 
-        {discovered && poi.description && <p className="poidetailsheet-description">{poi.description}</p>}
+        {/* SessionScenePOIView (be-rpg PR #70) não expõe mais `description` —
+            ver nota de contrato acima. Sem esse dado, a seção de descrição
+            completa foi omitida em vez de inventada. */}
 
         <div className="poidetailsheet-actions">
           {poi.investigable && (

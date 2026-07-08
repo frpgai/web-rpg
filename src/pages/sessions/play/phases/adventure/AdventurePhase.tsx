@@ -1,15 +1,17 @@
 import { useEffect, useRef, useState } from 'react';
-import { getAssetUrl } from '../../../utils/url';
-import { useAmbientVolume } from '../../../utils/useAmbientVolume';
-import { SessionHeader } from '../../../components/navigation/SessionHeader';
+import { sessionApi } from '../../../../../api/services/session';
+import { getAssetUrl } from '../../../../../utils/url';
+import { useAmbientVolume } from '../../../../../utils/useAmbientVolume';
+import { SessionHeader } from '../../../../../components/navigation/SessionHeader';
+import { Spinner } from '../../../../../components/ui/Spinner';
 import { TypewriterText } from './TypewriterText';
-import type { Adventure } from '../../../types';
-import './StorytellingScreen.css';
+import type { Adventure, SessionDetail } from '../../../../../types';
+import './AdventurePhase.css';
 
 type Props = {
-  adventure: Adventure | null;
-  sessionName: string;
-  onEnter: () => Promise<unknown>;
+  sessionId: string;
+  session: SessionDetail;
+  onAdvance: () => void;
 };
 
 const TYPEWRITER_SPEED_MS = 18;
@@ -25,7 +27,26 @@ function splitParagraphs(text?: string | null): string[] {
     .filter(Boolean);
 }
 
-export function StorytellingScreen({ adventure, sessionName, onEnter }: Props) {
+/**
+ * Fase "adventure" (spec 00190) — introdução cinemática do capítulo:
+ * mídia de fundo, narração em typewriter e CTA para avançar para a fase
+ * "scene". Adaptado de `play_old/StorytellingScreen.tsx`, agora buscando a
+ * própria aventura (`GET /sessions/:id/adventure`) em vez de recebê-la de um
+ * hook de máquina de estados do PlayPage.
+ */
+export function AdventurePhase({ sessionId, session, onAdvance }: Props) {
+  const [adventure, setAdventure] = useState<Adventure | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    setLoading(true);
+    sessionApi
+      .getAdventure(sessionId)
+      .then(setAdventure)
+      .catch((err) => console.error('Failed to load adventure for storytelling:', err))
+      .finally(() => setLoading(false));
+  }, [sessionId]);
+
   const paragraphs = splitParagraphs(adventure?.intro_narration);
   const transitionSrc = adventure?.audio_transition_file || adventure?.transition_sfx;
   const narrationSrc = adventure?.intro_narration_audio_file;
@@ -69,22 +90,42 @@ export function StorytellingScreen({ adventure, sessionName, onEnter }: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [narrationSrc, adventure?.id]);
 
+  // Avança para a fase "scene": grava o evento `narrative_entered` com
+  // entity_type "adventure" (be-rpg internal/session/service.go, EventType-
+  // NarrativeEntered) — o backend recalcula `session.phase` a partir dos
+  // eventos gravados, então o avanço real acontece no refetch feito por
+  // `onAdvance` no PlayPage, não localmente aqui.
   function handleEnter() {
     if (fading) return;
     setFading(true);
     setTimeout(() => {
-      onEnter();
+      sessionApi
+        .createEvent(sessionId, {
+          type: 'narrative_entered',
+          entity_type: 'adventure',
+          entity_id: session.current_adventure_id ?? '',
+        })
+        .catch((err) => console.error('Failed to log adventure narrative_entered event:', err))
+        .finally(onAdvance);
     }, FADE_TO_BLACK_MS);
   }
 
-  return (
-    <div className="storytelling-root">
-      <SessionHeader title={sessionName} />
+  if (loading) {
+    return (
+      <div className="adventurephase-root adventurephase-loading">
+        <Spinner color="var(--color-primary)" size="large" />
+      </div>
+    );
+  }
 
-      <div className="storytelling-media">
+  return (
+    <div className="adventurephase-root">
+      <SessionHeader title={session.name} />
+
+      <div className="adventurephase-media">
         {adventure?.media_type === 'video' && adventure.media_url ? (
           <video
-            className="storytelling-media-el"
+            className="adventurephase-media-el"
             src={getAssetUrl(adventure.media_url)}
             autoPlay
             muted
@@ -93,14 +134,14 @@ export function StorytellingScreen({ adventure, sessionName, onEnter }: Props) {
           />
         ) : adventure?.media_url ? (
           <img
-            className="storytelling-media-el"
+            className="adventurephase-media-el"
             src={getAssetUrl(adventure.media_url)}
             alt={adventure.title}
           />
         ) : (
-          <div className="storytelling-media-fallback" />
+          <div className="adventurephase-media-fallback" />
         )}
-        <div className="storytelling-media-gradient" />
+        <div className="adventurephase-media-gradient" />
       </div>
 
       {transitionSrc && <audio ref={transitionAudioRef} src={getAssetUrl(transitionSrc)} />}
@@ -114,38 +155,38 @@ export function StorytellingScreen({ adventure, sessionName, onEnter }: Props) {
         />
       )}
 
-      <section className="storytelling-overlay">
-        <div className="storytelling-card">
-          <span className="storytelling-eyebrow">A Jornada Começa</span>
-          <h1 className="storytelling-title">{adventure?.title ?? '...'}</h1>
-          <div className="storytelling-divider" />
+      <section className="adventurephase-overlay">
+        <div className="adventurephase-card">
+          <span className="adventurephase-eyebrow">A Jornada Começa</span>
+          <h1 className="adventurephase-title">{adventure?.title ?? '...'}</h1>
+          <div className="adventurephase-divider" />
 
-          <div className="storytelling-narration">
+          <div className="adventurephase-narration">
             {paragraphs.map((paragraph, index) => (
-              <p key={index} className="storytelling-paragraph">
+              <p key={index} className="adventurephase-paragraph">
                 <TypewriterText text={paragraph} speedMs={TYPEWRITER_SPEED_MS} />
               </p>
             ))}
           </div>
 
-          <div className="storytelling-voice-wave" aria-label="Narração Ativa">
+          <div className="adventurephase-voice-wave" aria-label="Narração Ativa">
             {Array.from({ length: VOICE_WAVE_BARS }).map((_, index) => (
-              <div key={index} className="storytelling-wave-bar" />
+              <div key={index} className="adventurephase-wave-bar" />
             ))}
           </div>
 
           <button
-            className={`storytelling-cta ${narrationEnded ? 'storytelling-cta-visible' : ''}`}
+            className={`adventurephase-cta ${narrationEnded ? 'adventurephase-cta-visible' : ''}`}
             onClick={handleEnter}
             disabled={!narrationEnded}
           >
-            <span className="material-symbols-outlined storytelling-cta-icon">play_arrow</span>
+            <span className="material-symbols-outlined adventurephase-cta-icon">play_arrow</span>
             Entrar no Capítulo
           </button>
         </div>
       </section>
 
-      <div className={`storytelling-fade ${fading ? 'storytelling-fade-active' : ''}`} />
+      <div className={`adventurephase-fade ${fading ? 'adventurephase-fade-active' : ''}`} />
     </div>
   );
 }

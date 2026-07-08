@@ -1,4 +1,4 @@
-import type { SceneDetail } from '../../../types';
+import type { SceneDetail } from '../../../../../types';
 import './ActionDock.css';
 
 type Props = {

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useInvestigate } from './useInvestigate';
-import type { ScenePointOfInterest, SceneDetail } from '../../../types';
+import type { ScenePointOfInterest, SceneDetail } from '../../../../../types';
 import './InvestigateModal.css';
 
 type Props = {
@@ -26,7 +26,9 @@ type Props = {
 // alvo (POI ou perícia), a modal dispara `triggerRollRequest` (via
 // `useInvestigate`) e se fecha — o dado 3D global (`DiceRollOverlay`, já
 // montado em `ActiveTable.tsx`) assume a animação e o resultado real vindo
-// do WebSocket `roll_resolved`/`session.poi_discovered`, igualtype Step = 'choice' | 'poi-pick';
+// do WebSocket `roll_resolved`/`session.poi_discovered`, igual ao fluxo de
+// combate.
+type Step = 'choice' | 'poi-pick';
 
 export function InvestigateModal({ sessionId, scene, presetPoi, onClose }: Props) {
   const { eligiblePois, error, investigate, investigateGeneral } = useInvestigate(sessionId, scene);

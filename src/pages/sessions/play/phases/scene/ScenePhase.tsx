@@ -1,26 +1,35 @@
 import { useCallback, useEffect, useState } from 'react';
-import { sessionApi } from '../../../api/services/session';
-import { useSessionSocket } from '../../../hooks/useSessionSocket';
-import { SessionHeader } from '../../../components/navigation/SessionHeader';
+import { sessionApi } from '../../../../../api/services/session';
+import { sceneApi } from '../../../../../api/services/scene';
+import { useSessionSocket } from '../../../../../hooks/useSessionSocket';
+import { Spinner } from '../../../../../components/ui/Spinner';
+import { SessionHeader } from '../../../../../components/navigation/SessionHeader';
 import { MapViewer } from './MapViewer';
 import { TimelineFeed } from './TimelineFeed';
 import { ActionDock } from './ActionDock';
 import { NPCDialogueModal } from './NPCDialogueModal';
 import { InvestigateModal } from './InvestigateModal';
 import { POIDetailSheet } from './POIDetailSheet';
-import type { SceneDetail, SceneNPC, ScenePointOfInterest, SessionEvent } from '../../../types';
-import { DiceRollOverlay } from '../../../components/dice/DiceRollOverlay';
-import { useDiceRollStore } from '../../../stores/diceRollStore';
-import './ActiveTable.css';
+import type { SceneDetail, SceneNPC, ScenePointOfInterest, SessionDetail, SessionEvent } from '../../../../../types';
+import { DiceRollOverlay } from '../../../../../components/dice/DiceRollOverlay';
+import { useDiceRollStore } from '../../../../../stores/diceRollStore';
+import './ScenePhase.css';
 
 type Props = {
   sessionId: string;
-  sessionName: string;
-  scene: SceneDetail;
-  onRefreshScene: () => Promise<void> | void;
+  session: SessionDetail;
 };
 
-export function ActiveTable({ sessionId, sessionName, scene, onRefreshScene }: Props) {
+/**
+ * Fase "scene" (spec 00190) — mesa de jogo ativa: mapa, feed de narração/log
+ * e dock de ações do herói. Adaptado de `play_old/ActiveTable.tsx`, agora
+ * responsável por buscar a própria cena atual (`session.current_scene_id`)
+ * em vez de recebê-la de um hook de máquina de estados do PlayPage.
+ */
+export function ScenePhase({ sessionId, session }: Props) {
+  const [scene, setScene] = useState<SceneDetail | null>(null);
+  const [sceneLoading, setSceneLoading] = useState(true);
+  const [sceneError, setSceneError] = useState<string | null>(null);
   const [events, setEvents] = useState<SessionEvent[]>([]);
   const [eventsLoading, setEventsLoading] = useState(true);
   const [activeNpc, setActiveNpc] = useState<SceneNPC | null>(null);
@@ -40,6 +49,26 @@ export function ActiveTable({ sessionId, sessionName, scene, onRefreshScene }: P
   // bottom sheet de detalhes (spec 00153-mesa-jogo/scene.md seção 3.1).
   const [selectedPoi, setSelectedPoi] = useState<ScenePointOfInterest | null>(null);
 
+  const loadScene = useCallback(() => {
+    if (!session.current_scene_id) {
+      setSceneLoading(false);
+      return Promise.resolve();
+    }
+    setSceneLoading(true);
+    return sceneApi
+      .getForSession(sessionId, session.current_scene_id)
+      .then(setScene)
+      .catch((err) => {
+        console.error('Failed to load current scene:', err);
+        setSceneError('Não foi possível carregar a cena atual.');
+      })
+      .finally(() => setSceneLoading(false));
+  }, [sessionId, session.current_scene_id]);
+
+  useEffect(() => {
+    loadScene();
+  }, [loadScene]);
+
   const fetchEvents = useCallback(() => {
     setEventsLoading(true);
     sessionApi
@@ -51,7 +80,7 @@ export function ActiveTable({ sessionId, sessionName, scene, onRefreshScene }: P
 
   useEffect(() => {
     fetchEvents();
-  }, [fetchEvents, scene.id]);
+  }, [fetchEvents, scene?.id]);
 
   useSessionSocket(
     sessionId,
@@ -59,19 +88,35 @@ export function ActiveTable({ sessionId, sessionName, scene, onRefreshScene }: P
       if (event.type === 'roll_resolved' && event.payload) {
         useDiceRollStore.getState().handleRollResolved(event.payload);
       } else if (event.type === 'session.poi_discovered' || event.event === 'session.poi_discovered') {
-        onRefreshScene();
+        loadScene();
         const pois = event.payload?.pois || event.pois;
         if (pois && pois.length > 0) {
           setJustDiscoveredPoiId(pois[0].id);
         }
       }
       fetchEvents();
-    }, [fetchEvents, onRefreshScene])
+    }, [fetchEvents, loadScene])
   );
 
+  if (sceneLoading) {
+    return (
+      <div className="sceneplay-root sceneplay-loading">
+        <Spinner color="var(--color-primary)" size="large" />
+      </div>
+    );
+  }
+
+  if (sceneError || !scene) {
+    return (
+      <div className="sceneplay-root sceneplay-loading">
+        <p className="sceneplay-error">{sceneError ?? 'Nenhuma cena ativa nesta sessão.'}</p>
+      </div>
+    );
+  }
+
   return (
-    <div className="activetable-root">
-      <SessionHeader title={sessionName} />
+    <div className="sceneplay-root">
+      <SessionHeader title={session.name} />
 
       <MapViewer
         scene={scene}
@@ -122,7 +167,7 @@ export function ActiveTable({ sessionId, sessionName, scene, onRefreshScene }: P
       )}
 
       {poiNotice && (
-        <div className="activetable-poi-toast" role="status">
+        <div className="sceneplay-poi-toast" role="status">
           <span>Deslocando-se para {poiNotice.poi.display_name}...</span>
           <button type="button" onClick={() => setPoiNotice(null)} aria-label="Fechar aviso">
             <span className="material-symbols-outlined">close</span>

@@ -1,18 +1,18 @@
 import { renderHook, waitFor, act } from '@testing-library/react';
 import { useInvestigate } from './useInvestigate';
-import { sessionApi } from '../../../api/services/session';
-import { useAuthStore } from '../../../stores/authStore';
-import { useDiceRollStore } from '../../../stores/diceRollStore';
-import { interactionApi } from '../../../api/services/interaction';
-import type { SceneDetail } from '../../../types';
+import { sessionApi } from '../../../../../api/services/session';
+import { useAuthStore } from '../../../../../stores/authStore';
+import { useDiceRollStore } from '../../../../../stores/diceRollStore';
+import { interactionApi } from '../../../../../api/services/interaction';
+import type { SceneDetail } from '../../../../../types';
 
-vi.mock('../../../api/services/session', () => ({
+vi.mock('../../../../../api/services/session', () => ({
   sessionApi: {
     getPlayers: vi.fn(),
   },
 }));
 
-vi.mock('../../../api/services/interaction', () => ({
+vi.mock('../../../../../api/services/interaction', () => ({
   interactionApi: {
     interact: vi.fn(),
     getActions: vi.fn(),

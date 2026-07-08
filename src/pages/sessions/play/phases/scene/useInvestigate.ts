@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
-import { sessionApi } from '../../../api/services/session';
-import { useAuthStore } from '../../../stores/authStore';
-import { useDiceRollStore } from '../../../stores/diceRollStore';
-import { interactionApi } from '../../../api/services/interaction';
-import type { SceneDetail, ScenePointOfInterest } from '../../../types';
+import { sessionApi } from '../../../../../api/services/session';
+import { useAuthStore } from '../../../../../stores/authStore';
+import { useDiceRollStore } from '../../../../../stores/diceRollStore';
+import { interactionApi } from '../../../../../api/services/interaction';
+import type { SceneDetail, ScenePointOfInterest } from '../../../../../types';
 
 /**
  * Fluxo de Investigação (spec 00153-mesa-jogo/investigacao.md, seções 2.3 e
