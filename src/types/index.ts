@@ -436,10 +436,9 @@ export type StartSessionResponse = {
 };
 
 export type SessionEvent = {
-  seq: number;
+  id: string;
   session_id: string;
   scene_id: string;
-  session_player_id?: string | null;
   type: string;
   // Colunas tipadas (be-rpg PR #69) — substituem o antigo `payload` JSONB
   // para os 4 tipos de evento client-submissíveis. Cada tipo só preenche o
@@ -471,20 +470,20 @@ export type SessionEventsPage = {
 // Substitui a checagem de fase de `usePlaySession` que antes lia
 // `session_events`/`narrative_entered` (não permitia checar por jogador).
 
-export type SessionPlayerEventType = 'campaign' | 'adventure' | 'scene' | 'play_active';
+export type SessionPlayerTargetType = 'campaign' | 'adventure' | 'scene' | 'play_active';
 
-export type SessionPlayerEvent = {
+export type SessionPlayerTarget = {
   id: string;
   session_id: string;
   session_player_id: string;
-  event_type: SessionPlayerEventType;
-  event_id: string;
+  target_type: SessionPlayerTargetType;
+  target_id: string;
   created_at: string;
 };
 
-export type CreatePlayerEventRequest = {
-  event_type: SessionPlayerEventType;
-  event_id: string;
+export type CreatePlayerTargetRequest = {
+  target_type: SessionPlayerTargetType;
+  target_id: string;
 };
 
 // Nota: `InvestigatePoiRequest`/`InvestigatePoiResponse` foram removidos —
