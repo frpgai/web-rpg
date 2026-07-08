@@ -103,16 +103,7 @@ export function ActiveTable({ sessionId, sessionName, scene, onRefreshScene }: P
       )}
 
       {investigateOpen && (
-        <InvestigateModal
-          sessionId={sessionId}
-          scene={scene}
-          onClose={() => setInvestigateOpen(false)}
-          onEventLogged={() => {
-            fetchEvents();
-            onRefreshScene();
-          }}
-          onDiscovered={(poiId) => setJustDiscoveredPoiId(poiId)}
-        />
+        <InvestigateModal sessionId={sessionId} scene={scene} onClose={() => setInvestigateOpen(false)} />
       )}
 
       {selectedPoi && (

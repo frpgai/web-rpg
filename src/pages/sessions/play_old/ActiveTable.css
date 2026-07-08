@@ -14,6 +14,16 @@
   padding-bottom: 80px;
 }
 
+/* Reorganização de layout (Stitch screen a0e6aede...): card do mapa, grade
+   de ações do herói (ActionDock) e card de narração/timeline empilhados em
+   sequência única, com o mesmo espaçamento do Stitch (gap-6 = 24px). */
+.activetable-main {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+  padding: var(--space-lg) var(--space-md) 0;
+}
+
 .activetable-poi-toast {
   position: fixed;
   bottom: calc(72px + var(--space-md));

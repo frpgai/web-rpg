@@ -19,14 +19,14 @@ type Phase = 'loading' | 'campaign-intro' | 'storytelling' | 'table';
  * 'table' — Mesa de Jogo Ativa (`ActiveTable`), inalterada.
  *
  * Fonte de verdade da fase (spec A00153/A00190, be-rpg PR #69):
- * GET /sessions/:id/players-events retorna os eventos de progresso do
+ * GET /sessions/:id/players-target retorna os alvos de progresso do
  * JOGADOR AUTENTICADO ATUAL nesta sessão (`session_player_id` já resolvido
  * pelo backend a partir do JWT — substitui a checagem antiga por
  * `session_events`/`narrative_entered`, que não permitia checar por jogador
  * específico):
- * - Sem evento `event_type === 'campaign'` → 'campaign-intro'.
- * - Com `campaign` mas sem `event_type === 'adventure'` com
- *   `event_id === session.current_adventure_id` → 'storytelling'.
+ * - Sem alvo `target_type === 'campaign'` → 'campaign-intro'.
+ * - Com `campaign` mas sem `target_type === 'adventure'` com
+ *   `target_id === session.current_adventure_id` → 'storytelling'.
  * - Com ambos → 'table'.
  */
 export function usePlaySession(sessionId: string) {
@@ -67,8 +67,8 @@ export function usePlaySession(sessionId: string) {
     if (!sessionId) return;
     setError(null);
 
-    Promise.all([sessionApi.get(sessionId), sessionApi.getPlayerEvents(sessionId)])
-      .then(([sessionData, playerEvents]) => {
+    Promise.all([sessionApi.get(sessionId), sessionApi.getPlayerTargets(sessionId)])
+      .then(([sessionData, playerTargets]) => {
         setSession(sessionData);
 
         if (sessionData.status === 'lobby') {
@@ -76,10 +76,10 @@ export function usePlaySession(sessionId: string) {
           return;
         }
 
-        const hasEnteredCampaign = playerEvents.some((event) => event.event_type === 'campaign');
-        const hasEnteredAdventure = playerEvents.some(
-          (event) =>
-            event.event_type === 'adventure' && event.event_id === sessionData.current_adventure_id
+        const hasEnteredCampaign = playerTargets.some((target) => target.target_type === 'campaign');
+        const hasEnteredAdventure = playerTargets.some(
+          (target) =>
+            target.target_type === 'adventure' && target.target_id === sessionData.current_adventure_id
         );
 
         if (hasEnteredCampaign && hasEnteredAdventure) {
@@ -129,12 +129,12 @@ export function usePlaySession(sessionId: string) {
   const enterStorytelling = useCallback(() => {
     if (!sessionId || !session) return;
     sessionApi
-      .createPlayerEvent(sessionId, {
-        event_type: 'campaign',
-        event_id: session.campaign_id,
+      .createPlayerTarget(sessionId, {
+        target_type: 'campaign',
+        target_id: session.campaign_id,
       })
       .catch((err) => {
-        console.error('Failed to log campaign player event:', err);
+        console.error('Failed to log campaign player target:', err);
       });
     setPhase('storytelling');
     sessionApi.getAdventure(sessionId).then(setAdventure).catch((err) => {
@@ -145,12 +145,12 @@ export function usePlaySession(sessionId: string) {
   const enterTable = useCallback(() => {
     if (!session) return Promise.resolve();
     return sessionApi
-      .createPlayerEvent(sessionId, {
-        event_type: 'adventure',
-        event_id: session.current_adventure_id ?? '',
+      .createPlayerTarget(sessionId, {
+        target_type: 'adventure',
+        target_id: session.current_adventure_id ?? '',
       })
       .catch((err) => {
-        console.error('Failed to log adventure player event:', err);
+        console.error('Failed to log adventure player target:', err);
       })
       .finally(() => {
         setPhase('table');

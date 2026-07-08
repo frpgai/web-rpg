@@ -136,15 +136,15 @@ export function TimelineFeed({ scene, events, loading }: Props) {
           <li className="timelinefeed-empty">Nenhum evento registrado ainda nesta cena.</li>
         ) : (
           events.map((event) => {
-            if (event.type === 'dice_roll') return <DiceRollRow key={event.seq} event={event} />;
+            if (event.type === 'dice_roll') return <DiceRollRow key={event.id} event={event} />;
             if (event.type === 'npc_dialogue_choice') {
-              return <NpcSpeechRow key={event.seq} event={event} scene={scene} />;
+              return <NpcSpeechRow key={event.id} event={event} scene={scene} />;
             }
             if (event.type === 'poi_investigation') {
-              return <PoiInvestigationRow key={event.seq} event={event} scene={scene} />;
+              return <PoiInvestigationRow key={event.id} event={event} scene={scene} />;
             }
             return (
-              <li key={event.seq} className="timelinefeed-row timelinefeed-row-generic">
+              <li key={event.id} className="timelinefeed-row timelinefeed-row-generic">
                 <p className="timelinefeed-generic-text">{extractText(event)}</p>
               </li>
             );

@@ -12,8 +12,8 @@ vi.mock('wouter', () => ({
 vi.mock('../../../api/services/session', () => ({
   sessionApi: {
     get: vi.fn(),
-    getPlayerEvents: vi.fn(),
-    createPlayerEvent: vi.fn(),
+    getPlayerTargets: vi.fn(),
+    createPlayerTarget: vi.fn(),
     getPlayers: vi.fn(),
     getAdventure: vi.fn(),
   },
@@ -56,7 +56,7 @@ describe('usePlaySession — máquina de estados (campaign-intro / storytelling 
 
   it('starts at campaign-intro when there is no campaign player event yet', async () => {
     mockedSessionApi.get.mockResolvedValue(baseSession());
-    mockedSessionApi.getPlayerEvents.mockResolvedValue([]);
+    mockedSessionApi.getPlayerTargets.mockResolvedValue([]);
 
     const { result } = renderHook(() => usePlaySession('s1'));
 
@@ -66,8 +66,8 @@ describe('usePlaySession — máquina de estados (campaign-intro / storytelling 
 
   it('advances from campaign-intro to storytelling via enterStorytelling, logging the campaign player event, without route navigation', async () => {
     mockedSessionApi.get.mockResolvedValue(baseSession());
-    mockedSessionApi.getPlayerEvents.mockResolvedValue([]);
-    mockedSessionApi.createPlayerEvent.mockResolvedValue({} as any);
+    mockedSessionApi.getPlayerTargets.mockResolvedValue([]);
+    mockedSessionApi.createPlayerTarget.mockResolvedValue({} as any);
     mockedSessionApi.getAdventure.mockResolvedValue({ id: 'a1', title: 'Aventura' } as any);
 
     const { result } = renderHook(() => usePlaySession('s1'));
@@ -80,16 +80,16 @@ describe('usePlaySession — máquina de estados (campaign-intro / storytelling 
     await waitFor(() => expect(result.current.phase).toBe('storytelling'));
     expect(result.current.adventure?.id).toBe('a1');
     expect(mockSetLocation).not.toHaveBeenCalled();
-    expect(mockedSessionApi.createPlayerEvent).toHaveBeenCalledWith('s1', {
-      event_type: 'campaign',
-      event_id: 'c1',
+    expect(mockedSessionApi.createPlayerTarget).toHaveBeenCalledWith('s1', {
+      target_type: 'campaign',
+      target_id: 'c1',
     });
   });
 
   it('resumes directly at storytelling when campaign event exists but adventure event does not', async () => {
     mockedSessionApi.get.mockResolvedValue(baseSession());
-    mockedSessionApi.getPlayerEvents.mockResolvedValue([
-      { id: 'e1', session_id: 's1', session_player_id: 'sp1', event_type: 'campaign', event_id: 'c1', created_at: '' },
+    mockedSessionApi.getPlayerTargets.mockResolvedValue([
+      { id: 'e1', session_id: 's1', session_player_id: 'sp1', target_type: 'campaign', target_id: 'c1', created_at: '' },
     ]);
     mockedSessionApi.getAdventure.mockResolvedValue({ id: 'a1', title: 'Aventura' } as any);
 
@@ -102,9 +102,9 @@ describe('usePlaySession — máquina de estados (campaign-intro / storytelling 
 
   it('skips directly to table when campaign and adventure player events already exist for current adventure', async () => {
     mockedSessionApi.get.mockResolvedValue(baseSession({ current_scene_id: 'scene1' }));
-    mockedSessionApi.getPlayerEvents.mockResolvedValue([
-      { id: 'e1', session_id: 's1', session_player_id: 'sp1', event_type: 'campaign', event_id: 'c1', created_at: '' },
-      { id: 'e2', session_id: 's1', session_player_id: 'sp1', event_type: 'adventure', event_id: 'a1', created_at: '' },
+    mockedSessionApi.getPlayerTargets.mockResolvedValue([
+      { id: 'e1', session_id: 's1', session_player_id: 'sp1', target_type: 'campaign', target_id: 'c1', created_at: '' },
+      { id: 'e2', session_id: 's1', session_player_id: 'sp1', target_type: 'adventure', target_id: 'a1', created_at: '' },
     ]);
     mockedSceneApi.getForSession.mockResolvedValue({ id: 'scene1' } as any);
 
@@ -117,7 +117,7 @@ describe('usePlaySession — máquina de estados (campaign-intro / storytelling 
 
   it('redirects to lobby when session status is lobby', async () => {
     mockedSessionApi.get.mockResolvedValue(baseSession({ status: 'lobby' }));
-    mockedSessionApi.getPlayerEvents.mockResolvedValue([]);
+    mockedSessionApi.getPlayerTargets.mockResolvedValue([]);
 
     renderHook(() => usePlaySession('s1'));
 
@@ -126,8 +126,8 @@ describe('usePlaySession — máquina de estados (campaign-intro / storytelling 
 
   it('enterTable logs the adventure player event and loads the current scene', async () => {
     mockedSessionApi.get.mockResolvedValue(baseSession({ current_scene_id: 'scene1' }));
-    mockedSessionApi.getPlayerEvents.mockResolvedValue([]);
-    mockedSessionApi.createPlayerEvent.mockResolvedValue({} as any);
+    mockedSessionApi.getPlayerTargets.mockResolvedValue([]);
+    mockedSessionApi.createPlayerTarget.mockResolvedValue({} as any);
     mockedSceneApi.getForSession.mockResolvedValue({ id: 'scene1' } as any);
 
     const { result } = renderHook(() => usePlaySession('s1'));
@@ -137,9 +137,9 @@ describe('usePlaySession — máquina de estados (campaign-intro / storytelling 
       await result.current.enterTable();
     });
 
-    expect(mockedSessionApi.createPlayerEvent).toHaveBeenCalledWith('s1', {
-      event_type: 'adventure',
-      event_id: 'a1',
+    expect(mockedSessionApi.createPlayerTarget).toHaveBeenCalledWith('s1', {
+      target_type: 'adventure',
+      target_id: 'a1',
     });
     await waitFor(() => expect(result.current.phase).toBe('table'));
     expect(result.current.scene?.id).toBe('scene1');
