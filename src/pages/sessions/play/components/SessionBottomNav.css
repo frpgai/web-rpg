@@ -51,6 +51,7 @@
 .sessionbottomnav-tab-active {
   color: var(--color-primary);
   filter: drop-shadow(0 0 8px color-mix(in srgb, var(--color-primary) 60%, transparent));
+  transform: scale(1.1);
 }
 
 .sessionbottomnav-tab-label {

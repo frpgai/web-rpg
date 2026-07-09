@@ -3,13 +3,13 @@ import { useSessionEventsNotify } from '../../../../hooks/useSessionEventsNotify
 import { SessionEventsSheet } from './SessionEventsSheet';
 import './SessionBottomNav.css';
 
-type SessionNavTab = 'session' | 'chat' | 'map' | 'options';
+type SessionNavTab = 'missions' | 'log' | 'team' | 'grimoire';
 
 const TABS: { id: SessionNavTab; icon: string; label: string }[] = [
-  { id: 'session', icon: 'swords', label: 'Sessão' },
-  { id: 'chat', icon: 'chat_bubble', label: 'Chat' },
-  { id: 'map', icon: 'explore', label: 'World Map' },
-  { id: 'options', icon: 'settings', label: 'Options' },
+  { id: 'missions', icon: 'swords', label: 'Missões' },
+  { id: 'log', icon: 'history', label: 'Log' },
+  { id: 'team', icon: 'group', label: 'Equipe' },
+  { id: 'grimoire', icon: 'auto_stories', label: 'Grimório' },
 ];
 
 type Props = {
@@ -39,7 +39,7 @@ export function SessionBottomNav({ sessionId, sceneId }: Props) {
   const { hasUnread, refresh } = useSessionEventsNotify(sessionId, sceneId ?? undefined);
 
   function handlePress(tab: SessionNavTab) {
-    if (tab === 'session') {
+    if (tab === 'log') {
       setSheetOpen(true);
       return;
     }
@@ -51,7 +51,7 @@ export function SessionBottomNav({ sessionId, sceneId }: Props) {
     <>
       <nav className="sessionbottomnav-root">
         {TABS.map((tab) => {
-          const isActive = tab.id === 'session';
+          const isActive = tab.id === 'log';
           return (
             <button
               key={tab.id}
@@ -60,8 +60,13 @@ export function SessionBottomNav({ sessionId, sceneId }: Props) {
               onClick={() => handlePress(tab.id)}
             >
               <span className="sessionbottomnav-icon-wrapper">
-                <span className="material-symbols-outlined">{tab.icon}</span>
-                {tab.id === 'session' && hasUnread && (
+                <span
+                  className="material-symbols-outlined"
+                  style={isActive ? { fontVariationSettings: "'FILL' 1" } : undefined}
+                >
+                  {tab.icon}
+                </span>
+                {tab.id === 'log' && hasUnread && (
                   <span className="sessionbottomnav-badge" aria-label="Notificações não lidas" />
                 )}
               </span>

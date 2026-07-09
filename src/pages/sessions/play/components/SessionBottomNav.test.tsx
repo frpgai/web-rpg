@@ -2,15 +2,15 @@ import { render, screen } from '@testing-library/react';
 import { SessionBottomNav } from './SessionBottomNav';
 
 describe('SessionBottomNav', () => {
-  it('renderiza as 4 abas Sessão/Chat/World Map/Options com a aba Sessão ativa', () => {
+  it('renderiza as 4 abas Missões/Log/Equipe/Grimório com a aba Log ativa', () => {
     render(<SessionBottomNav sessionId="test-session" sceneId="test-scene" />);
 
-    const sessionTab = screen.getByRole('button', { name: /sessão/i });
-    expect(sessionTab).toBeInTheDocument();
-    expect(sessionTab.className).toContain('sessionbottomnav-tab-active');
+    const logTab = screen.getByRole('button', { name: /log/i });
+    expect(logTab).toBeInTheDocument();
+    expect(logTab.className).toContain('sessionbottomnav-tab-active');
 
-    expect(screen.getByRole('button', { name: /chat/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /world map/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /options/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /missões/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /equipe/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /grimório/i })).toBeInTheDocument();
   });
 });
