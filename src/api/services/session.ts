@@ -23,12 +23,25 @@ export const sessionApi = {
   // buscar eventos anteriores a um ponto arbitrário ("before"), então não é
   // possível carregar eventos mais antigos ancorados a partir do topo da lista
   // já carregada. Ver relatório final do agente frontend para detalhes.
-  getEvents: (sessionId: string, cursor?: string, limit = 50) => {
+  //
+  // `scene_id` é obrigatório (be-rpg PR #75, Handler.ListEvents retorna 400
+  // sem ele) — todo consumo de eventos é escopado a uma cena específica.
+  getEvents: (sessionId: string, sceneId: string, cursor?: string, limit = 50) => {
     const searchParams = new URLSearchParams();
+    searchParams.set('scene_id', sceneId);
     if (cursor) searchParams.set('cursor', cursor);
     searchParams.set('limit', String(limit));
     return apiClient
       .get(`api/v1/sessions/${sessionId}/events`, { searchParams })
       .json<SessionEventsPage>();
+  },
+  // GET .../events/notify — indica se há evento não revelado na cena atual
+  // (be-rpg PR #75), sem side-effect (não marca nada como lido).
+  getEventsNotify: (sessionId: string, sceneId: string) => {
+    const searchParams = new URLSearchParams();
+    searchParams.set('scene_id', sceneId);
+    return apiClient
+      .get(`api/v1/sessions/${sessionId}/events/notify`, { searchParams })
+      .json<{ has_unread: boolean }>();
   },
 };

@@ -76,13 +76,14 @@ export function ScenePhase({ sessionId, session }: Props) {
   }, [loadScene]);
 
   const fetchEvents = useCallback(() => {
+    if (!scene?.id) return;
     setEventsLoading(true);
     sessionApi
-      .getEvents(sessionId)
+      .getEvents(sessionId, scene.id)
       .then((page) => setEvents(page.items))
       .catch((err) => console.error('Failed to load scene events:', err))
       .finally(() => setEventsLoading(false));
-  }, [sessionId]);
+  }, [sessionId, scene?.id]);
 
   useEffect(() => {
     fetchEvents();
@@ -154,6 +155,7 @@ export function ScenePhase({ sessionId, session }: Props) {
       {activeNpc && (
         <NPCDialogueModal
           sessionId={sessionId}
+          sceneId={scene.id}
           npc={activeNpc}
           onClose={() => setActiveNpc(null)}
           onEventLogged={fetchEvents}

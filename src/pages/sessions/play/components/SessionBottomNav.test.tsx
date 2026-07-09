@@ -3,7 +3,7 @@ import { SessionBottomNav } from './SessionBottomNav';
 
 describe('SessionBottomNav', () => {
   it('renderiza as 4 abas Sessão/Chat/World Map/Options com a aba Sessão ativa', () => {
-    render(<SessionBottomNav />);
+    render(<SessionBottomNav sessionId="test-session" sceneId="test-scene" />);
 
     const sessionTab = screen.getByRole('button', { name: /sessão/i });
     expect(sessionTab).toBeInTheDocument();

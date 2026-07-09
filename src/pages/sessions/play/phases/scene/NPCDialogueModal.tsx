@@ -9,6 +9,7 @@ import './NPCDialogueModal.css';
 
 type Props = {
   sessionId: string;
+  sceneId: string;
   npc: SceneNPC;
   onClose: () => void;
   onEventLogged: () => void;
@@ -22,11 +23,12 @@ function formatDateTime(iso: string): string {
   return date.toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
 }
 
-export function NPCDialogueModal({ sessionId, npc, onClose, onEventLogged }: Props) {
+export function NPCDialogueModal({ sessionId, sceneId, npc, onClose, onEventLogged }: Props) {
   const [tab, setTab] = useState<Tab>('conversar');
   const { currentNode, loading, error, choose } = useNpcDialogue(sessionId, npc, onEventLogged);
   const { entries: groupEntries, loading: groupLoading, error: groupError } = useNpcGroupConversations(
     sessionId,
+    sceneId,
     tab === 'grupo' ? npc : null
   );
   const duckAmbient = useAudioStore((s) => s.duckAmbient);

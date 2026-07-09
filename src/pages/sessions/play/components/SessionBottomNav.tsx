@@ -1,3 +1,6 @@
+import { useState } from 'react';
+import { useSessionEventsNotify } from '../../../../hooks/useSessionEventsNotify';
+import { SessionEventsSheet } from './SessionEventsSheet';
 import './SessionBottomNav.css';
 
 type SessionNavTab = 'session' | 'chat' | 'map' | 'options';
@@ -9,6 +12,11 @@ const TABS: { id: SessionNavTab; icon: string; label: string }[] = [
   { id: 'options', icon: 'settings', label: 'Options' },
 ];
 
+type Props = {
+  sessionId: string;
+  sceneId: string | null;
+};
+
 /**
  * Bottom nav das telas de sessão ativa (Storytelling, Timeline, Mesa de
  * Jogo Ativa) — réplica pixel-perfect do Stitch (project
@@ -17,36 +25,60 @@ const TABS: { id: SessionNavTab; icon: string; label: string }[] = [
  * com ícone + rótulo, aba "Sessão" sempre ativa (glow roxo) enquanto o
  * usuário está em uma sessão em andamento.
  *
- * Distinta do `BottomNav` global (home/heroes/social/settings) porque o
- * Stitch usa um conjunto de abas completamente diferente para o contexto de
- * "dentro de uma sessão" — ver decisão documentada em `AppLayout.tsx`.
+ * A aba "Sessão" é também o ícone de notificação/timeline: exibe um badge
+ * (bolinha vermelha) quando `GET .../events/notify` (be-rpg PR #75) indica
+ * `has_unread === true`, e abre o BottomSheet do Log de Aventura ao ser
+ * pressionada (screens Stitch 1837156ba8ef434b94393f8f0e73cbc4 / empty state
+ * e c49921ed1df342a3bf33ecdb11daa8ef / lista ativa).
  *
  * "Chat" e "World Map" ainda não têm telas implementadas — pressioná-los é
  * no-op documentado até existir uma spec para essas rotas.
  */
-export function SessionBottomNav() {
+export function SessionBottomNav({ sessionId, sceneId }: Props) {
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const { hasUnread, refresh } = useSessionEventsNotify(sessionId, sceneId ?? undefined);
+
   function handlePress(tab: SessionNavTab) {
-    if (tab === 'session') return;
+    if (tab === 'session') {
+      setSheetOpen(true);
+      return;
+    }
     // eslint-disable-next-line no-console
     console.info(`SessionBottomNav: aba "${tab}" ainda não tem tela implementada.`);
   }
 
   return (
-    <nav className="sessionbottomnav-root">
-      {TABS.map((tab) => {
-        const isActive = tab.id === 'session';
-        return (
-          <button
-            key={tab.id}
-            type="button"
-            className={`sessionbottomnav-tab ${isActive ? 'sessionbottomnav-tab-active' : ''}`}
-            onClick={() => handlePress(tab.id)}
-          >
-            <span className="material-symbols-outlined">{tab.icon}</span>
-            <span className="sessionbottomnav-tab-label">{tab.label}</span>
-          </button>
-        );
-      })}
-    </nav>
+    <>
+      <nav className="sessionbottomnav-root">
+        {TABS.map((tab) => {
+          const isActive = tab.id === 'session';
+          return (
+            <button
+              key={tab.id}
+              type="button"
+              className={`sessionbottomnav-tab ${isActive ? 'sessionbottomnav-tab-active' : ''}`}
+              onClick={() => handlePress(tab.id)}
+            >
+              <span className="sessionbottomnav-icon-wrapper">
+                <span className="material-symbols-outlined">{tab.icon}</span>
+                {tab.id === 'session' && hasUnread && (
+                  <span className="sessionbottomnav-badge" aria-label="Notificações não lidas" />
+                )}
+              </span>
+              <span className="sessionbottomnav-tab-label">{tab.label}</span>
+            </button>
+          );
+        })}
+      </nav>
+
+      {sheetOpen && sceneId && (
+        <SessionEventsSheet
+          sessionId={sessionId}
+          sceneId={sceneId}
+          onClose={() => setSheetOpen(false)}
+          onQueueCleared={refresh}
+        />
+      )}
+    </>
   );
 }

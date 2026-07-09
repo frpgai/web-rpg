@@ -1,0 +1,32 @@
+/* =============================================================================
+   PlayLayout — container de imersão da Mesa de Jogo Ativa
+   Fundo escuro fixo (sem os paddings/max-width do painel de AppLayout),
+   dedicado às telas de sessão em andamento.
+   ============================================================================= */
+
+.playlayout-root {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  min-height: 100dvh;
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  width: 100%;
+}
+
+.playlayout-content {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.playlayout-nav-container {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 480px;
+  z-index: 100;
+}
