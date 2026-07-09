@@ -40,12 +40,25 @@
 }
 
 .timelinefeed-row {
+  position: relative;
   display: flex;
   gap: var(--space-sm);
   align-items: flex-start;
   padding: var(--space-sm) var(--space-md);
   border-radius: var(--radius-md);
   background-color: var(--color-surface-low);
+}
+
+/* Marcador de evento novo desde a última visita (be-rpg PR #74). */
+.timelinefeed-badge-new {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+  background-color: var(--color-secondary);
+  box-shadow: 0 0 6px rgba(255, 184, 108, 0.6);
 }
 
 .timelinefeed-row-generic .timelinefeed-generic-text {
