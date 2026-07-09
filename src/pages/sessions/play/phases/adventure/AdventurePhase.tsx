@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { sessionApi } from '../../../../../api/services/session';
+import { useNextPhase } from '../../../../../hooks/useNextPhase';
 import { getAssetUrl } from '../../../../../utils/url';
 import { useAmbientVolume } from '../../../../../utils/useAmbientVolume';
 import { SessionHeader } from '../../../../../components/navigation/SessionHeader';
@@ -12,6 +13,7 @@ type Props = {
   sessionId: string;
   session: SessionDetail;
   onAdvance: () => void;
+  onWaitingForHost: () => void;
 };
 
 const TYPEWRITER_SPEED_MS = 18;
@@ -34,7 +36,7 @@ function splitParagraphs(text?: string | null): string[] {
  * própria aventura (`GET /sessions/:id/adventure`) em vez de recebê-la de um
  * hook de máquina de estados do PlayPage.
  */
-export function AdventurePhase({ sessionId, session, onAdvance }: Props) {
+export function AdventurePhase({ sessionId, session, onAdvance, onWaitingForHost }: Props) {
   const [adventure, setAdventure] = useState<Adventure | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -90,24 +92,17 @@ export function AdventurePhase({ sessionId, session, onAdvance }: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [narrationSrc, adventure?.id]);
 
-  // Avança para a fase "scene": grava o evento `narrative_entered` com
-  // entity_type "adventure" (be-rpg internal/session/service.go, EventType-
-  // NarrativeEntered) — o backend recalcula `session.phase` a partir dos
-  // eventos gravados, então o avanço real acontece no refetch feito por
-  // `onAdvance` no PlayPage, não localmente aqui.
+  // Avança para a próxima fase destrancada pelo Host (be-rpg PR #73):
+  // `POST /sessions/:id/next-phase` marca a fase "adventure" como revelada
+  // para este jogador. Em caso de sucesso, `onAdvance` refaz o fetch da
+  // sessão no PlayPage para renderizar a próxima fase. Em caso de 422
+  // `NO_NEXT_PHASE`, `onWaitingForHost` troca para o estado de espera.
+  const { advance } = useNextPhase(sessionId, { onAdvance, onWaitingForHost });
+
   function handleEnter() {
     if (fading) return;
     setFading(true);
-    setTimeout(() => {
-      sessionApi
-        .createEvent(sessionId, {
-          type: 'narrative_entered',
-          entity_type: 'adventure',
-          entity_id: session.current_adventure_id ?? '',
-        })
-        .catch((err) => console.error('Failed to log adventure narrative_entered event:', err))
-        .finally(onAdvance);
-    }, FADE_TO_BLACK_MS);
+    setTimeout(advance, FADE_TO_BLACK_MS);
   }
 
   if (loading) {

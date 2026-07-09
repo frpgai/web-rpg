@@ -480,6 +480,18 @@ export type SessionTarget = {
   createdAt: string;
 };
 
+// Resposta de `POST /api/v1/sessions/{id}/next-phase` (be-rpg PR #73 —
+// fluxo híbrido de fases). Marca a fase atual do jogador como revelada e
+// retorna a próxima fase já destrancada globalmente pelo Host que o
+// jogador ainda não revelou. Se não houver próxima fase destrancada, o
+// endpoint responde 422 com código `NO_NEXT_PHASE` em vez de retornar este
+// tipo com campos nulos — ver `NextPhaseNoPhaseErrorCode` em
+// `api/services/session.ts`.
+export type PlayerPhase = {
+  target_type: 'campaign' | 'adventure' | 'scene';
+  target_id: string;
+};
+
 // Nota: `InvestigatePoiRequest`/`InvestigatePoiResponse` foram removidos —
 // os endpoints dedicados que eles tipavam (`.../pois/{poi_id}/investigate`,
 // `.../investigate-general`) não existem mais (be-rpg commits e123710/
