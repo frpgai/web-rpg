@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
-import { npcApi } from '../../../api/services/npc';
-import { sessionApi } from '../../../api/services/session';
-import type { DialogueOptionView, NPCDialogueTree, SceneNPC } from '../../../types';
+import { npcApi } from '../../../../../api/services/npc';
+import { sessionApi } from '../../../../../api/services/session';
+import type { DialogueOptionView, NPCDialogueTree, SceneNPC } from '../../../../../types';
 
 /**
  * Carrega e navega a árvore de diálogo (grafo plano) de um NPC — spec A00153

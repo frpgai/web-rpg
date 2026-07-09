@@ -1,10 +1,10 @@
 import { useRef, useState } from 'react';
-import { getAssetUrl } from '../../../utils/url';
-import { useAudioStore } from '../../../stores/audioStore';
-import { Spinner } from '../../../components/ui/Spinner';
+import { getAssetUrl } from '../../../../../utils/url';
+import { useAudioStore } from '../../../../../stores/audioStore';
+import { Spinner } from '../../../../../components/ui/Spinner';
 import { useNpcDialogue } from './useNpcDialogue';
 import { useNpcGroupConversations } from './useNpcGroupConversations';
-import type { SceneNPC } from '../../../types';
+import type { SceneNPC } from '../../../../../types';
 import './NPCDialogueModal.css';
 
 type Props = {

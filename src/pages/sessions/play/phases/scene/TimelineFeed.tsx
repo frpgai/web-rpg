@@ -1,9 +1,9 @@
 import { useEffect, useRef } from 'react';
-import { getAssetUrl } from '../../../utils/url';
-import { useAmbientVolume } from '../../../utils/useAmbientVolume';
-import { Spinner } from '../../../components/ui/Spinner';
+import { getAssetUrl } from '../../../../../utils/url';
+import { useAmbientVolume } from '../../../../../utils/useAmbientVolume';
+import { Spinner } from '../../../../../components/ui/Spinner';
 import { TypewriterText } from './TypewriterText';
-import type { SceneDetail, SessionEvent } from '../../../types';
+import type { SceneDetail, SessionEvent } from '../../../../../types';
 import './TimelineFeed.css';
 
 type Props = {
@@ -49,15 +49,18 @@ function DiceRollRow({ event }: { event: SessionEvent }) {
 }
 
 function PoiInvestigationRow({ event, scene }: { event: SessionEvent; scene: SceneDetail }) {
+  // SessionScenePOIView (be-rpg PR #70) não expõe mais `success_text`/
+  // `failure_text` (estado interno de domínio) — a narração do resultado da
+  // investigação não é mais renderizada aqui; sem esse dado, a linha mostra
+  // apenas o resultado numérico da rolagem em vez de inventar um texto.
   const poi = scene.points_of_interest.find((p) => p.id === event.poi_id);
-  const narration = event.success ? poi?.success_text : poi?.failure_text;
 
   return (
     <li className="timelinefeed-row timelinefeed-row-dice">
       <span className="timelinefeed-dice-badge">d20</span>
       <div className="timelinefeed-dice-body">
         <span className="timelinefeed-dice-total">
-          {poi?.name ?? 'Local'}: {event.roll ?? '?'} {(event.modifier ?? 0) >= 0 ? '+' : ''}
+          {poi?.display_name ?? 'Local'}: {event.roll ?? '?'} {(event.modifier ?? 0) >= 0 ? '+' : ''}
           {event.modifier ?? 0} = {event.total ?? '?'} (CD {event.dc ?? '?'})
         </span>
         <span
@@ -67,7 +70,6 @@ function PoiInvestigationRow({ event, scene }: { event: SessionEvent; scene: Sce
         >
           {event.success ? 'Sucesso' : 'Falha'}
         </span>
-        {narration && <p className="timelinefeed-npc-text">{narration}</p>}
       </div>
     </li>
   );

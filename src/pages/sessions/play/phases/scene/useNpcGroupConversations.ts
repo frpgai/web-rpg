@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
-import { sessionApi } from '../../../api/services/session';
-import { npcApi } from '../../../api/services/npc';
-import type { DialogueNodeView, NPCDialogueTree, SceneNPC, SessionEvent, SessionPlayer } from '../../../types';
+import { sessionApi } from '../../../../../api/services/session';
+import { npcApi } from '../../../../../api/services/npc';
+import type { DialogueNodeView, SceneNPC, SessionEvent, SessionPlayer } from '../../../../../types';
 
 export type GroupConversationEntry = {
   key: string;
