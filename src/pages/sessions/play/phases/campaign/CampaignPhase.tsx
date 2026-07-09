@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { sessionApi } from '../../../../../api/services/session';
 import { campaignApi } from '../../../../../api/services/campaign';
+import { useNextPhase } from '../../../../../hooks/useNextPhase';
 import { getAssetUrl } from '../../../../../utils/url';
 import { Spinner } from '../../../../../components/ui/Spinner';
 import type { CampaignDetail, SessionDetail, SessionPlayer } from '../../../../../types';
@@ -10,6 +11,7 @@ type Props = {
   sessionId: string;
   session: SessionDetail;
   onAdvance: () => void;
+  onWaitingForHost: () => void;
 };
 
 // Limite de tentativas de refetch da campanha ao falhar o carregamento do
@@ -58,7 +60,7 @@ function HeroAvatar({ player, index }: { player: SessionPlayer; index: number })
  * `session.campaign_id` em vez de recebê-los de um hook de máquina de
  * estados do PlayPage.
  */
-export function CampaignPhase({ sessionId, session, onAdvance }: Props) {
+export function CampaignPhase({ sessionId, session, onAdvance, onWaitingForHost }: Props) {
   const [campaign, setCampaign] = useState<CampaignDetail | null>(null);
   const [players, setPlayers] = useState<SessionPlayer[]>([]);
   const [loading, setLoading] = useState(true);
@@ -143,21 +145,12 @@ export function CampaignPhase({ sessionId, session, onAdvance }: Props) {
     setIntroCurrentTime(value);
   }
 
-  // Avança para a fase "adventure": grava o evento `narrative_entered` com
-  // entity_type "campaign" (be-rpg internal/session/service.go, EventType-
-  // NarrativeEntered) — o backend recalcula `session.phase` a partir dos
-  // eventos gravados, então o avanço real acontece no refetch feito por
-  // `onAdvance` no PlayPage, não localmente aqui.
-  function handleEnter() {
-    sessionApi
-      .createEvent(sessionId, {
-        type: 'narrative_entered',
-        entity_type: 'campaign',
-        entity_id: session.campaign_id,
-      })
-      .catch((err) => console.error('Failed to log campaign narrative_entered event:', err))
-      .finally(onAdvance);
-  }
+  // Avança para a próxima fase destrancada pelo Host (be-rpg PR #73):
+  // `POST /sessions/:id/next-phase` marca a fase "campaign" como revelada
+  // para este jogador. Em caso de sucesso, `onAdvance` refaz o fetch da
+  // sessão no PlayPage para renderizar a próxima fase. Em caso de 422
+  // `NO_NEXT_PHASE`, `onWaitingForHost` troca para o estado de espera.
+  const { advancing, advance: handleEnter } = useNextPhase(sessionId, { onAdvance, onWaitingForHost });
 
   if (loading) {
     return (
@@ -246,7 +239,7 @@ export function CampaignPhase({ sessionId, session, onAdvance }: Props) {
         </section>
 
         <section className="campaignphase-cta-section">
-          <button className="campaignphase-cta-button" onClick={handleEnter}>
+          <button className="campaignphase-cta-button" onClick={handleEnter} disabled={advancing}>
             <span>{campaign?.start_cta_label || 'Iniciar Aventura'}</span>
           </button>
           {campaign?.start_cta_subtext && (

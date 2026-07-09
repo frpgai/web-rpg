@@ -5,6 +5,7 @@ import { Spinner } from '../../../components/ui/Spinner';
 import { CampaignPhase } from './phases/campaign/CampaignPhase';
 import { AdventurePhase } from './phases/adventure/AdventurePhase';
 import { ScenePhase } from './phases/scene/ScenePhase';
+import { WaitingForHostPhase } from './phases/waiting/WaitingForHostPhase';
 import type { SessionDetail } from '../../../types';
 import './PlayPage.css';
 
@@ -13,11 +14,16 @@ import './PlayPage.css';
  *
  * Fonte de verdade da fase é o campo `phase` retornado por
  * `GET /api/v1/sessions/:id` (be-rpg `internal/session/service.go`,
- * `Service.Get`), calculado a partir do último `session_target` gravado
- * pelos eventos `narrative_entered`. O client não computa a fase
+ * `Service.Get`), calculado por jogador: a fase mais antiga que este
+ * jogador ainda não revelou, entre as que o Host já destrancou globalmente
+ * (be-rpg PR #73 — fluxo híbrido de fases). O client não computa a fase
  * localmente — apenas lê `session.phase` e refaz o fetch (`refetch`) depois
- * de cada avanço (`onAdvance`, disparado pelas próprias fases ao gravar o
- * evento `narrative_entered` correspondente).
+ * de cada avanço (`onAdvance`, disparado pelas próprias fases após
+ * `POST /sessions/:id/next-phase` ter sucesso).
+ *
+ * Quando o jogador já revelou tudo que o Host destrancou até agora,
+ * `next-phase` responde 422 `NO_NEXT_PHASE` — tratado aqui como estado de
+ * espera (`WaitingForHostPhase`), não como erro genérico.
  */
 export default function PlayPage() {
   const params = useParams<{ id: string }>();
@@ -27,6 +33,7 @@ export default function PlayPage() {
   const [session, setSession] = useState<SessionDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [waitingForHost, setWaitingForHost] = useState(false);
 
   const load = useCallback(() => {
     if (!sessionId) return;
@@ -39,6 +46,7 @@ export default function PlayPage() {
           setLocation(`/app/sessions/${sessionId}/lobby`);
           return;
         }
+        setWaitingForHost(false);
         setSession(data);
       })
       .catch((err) => {
@@ -69,11 +77,32 @@ export default function PlayPage() {
     );
   }
 
+  // Estado de espera (422 NO_NEXT_PHASE) tem prioridade sobre a fase
+  // atualmente revelada: o jogador já viu tudo que existe até o Host
+  // destrancar mais.
+  if (waitingForHost) {
+    return <WaitingForHostPhase sessionId={sessionId} onAdvance={load} />;
+  }
+
   switch (session.phase) {
     case 'campaign':
-      return <CampaignPhase sessionId={sessionId} session={session} onAdvance={load} />;
+      return (
+        <CampaignPhase
+          sessionId={sessionId}
+          session={session}
+          onAdvance={load}
+          onWaitingForHost={() => setWaitingForHost(true)}
+        />
+      );
     case 'adventure':
-      return <AdventurePhase sessionId={sessionId} session={session} onAdvance={load} />;
+      return (
+        <AdventurePhase
+          sessionId={sessionId}
+          session={session}
+          onAdvance={load}
+          onWaitingForHost={() => setWaitingForHost(true)}
+        />
+      );
     case 'scene':
       return <ScenePhase sessionId={sessionId} session={session} />;
     default:
