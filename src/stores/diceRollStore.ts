@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { diceRollApi } from '../api/services/diceRoll';
+import { interactionApi } from '../api/services/interaction';
 import type { CreateRollRequestInput, DiceRollResult } from '../types/diceRoll';
 
 export type RollState =
@@ -166,10 +167,10 @@ export const useDiceRollStore = create<DiceRollStore>((set, get) => ({
     }, 5000);
 
     try {
-      const res = await diceRollApi.createRollRequest(sessionId, rollInput);
-      set({ rollRequestId: res.roll_request_id });
+      const res = await interactionApi.interact(sessionId, rollInput as any);
+      set({ rollRequestId: res.interaction_id });
     } catch (err) {
-      console.error('Failed to create roll request:', err);
+      console.error('Failed to create interaction roll request:', err);
       set({ error: 'Não foi possível iniciar a rolagem de dados.', rollState: 'idle' });
       if (fallbackTimeout) clearTimeout(fallbackTimeout);
     }

@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import type { SessionEvent } from '../../../../types';
+import type { SessionEvent } from '../../../../../../types';
 import './EventImmersiveOverlay.css';
 
 type Props = {

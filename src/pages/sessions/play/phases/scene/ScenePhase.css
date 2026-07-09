@@ -1,4 +1,4 @@
-.activetable-root {
+.sceneplay-root {
   display: flex;
   flex-direction: column;
   min-height: 100svh;
@@ -14,7 +14,28 @@
   padding-bottom: 80px;
 }
 
-.activetable-poi-toast {
+.sceneplay-loading {
+  align-items: center;
+  justify-content: center;
+}
+
+.sceneplay-error {
+  color: var(--color-error);
+  text-align: center;
+  padding: var(--space-lg);
+}
+
+/* Reorganização de layout (Stitch screen a0e6aede...): card do mapa, grade
+   de ações do herói (ActionDock) e card de narração/timeline empilhados em
+   sequência única, com o mesmo espaçamento do Stitch (gap-6 = 24px). */
+.sceneplay-main {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+  padding: var(--space-lg) var(--space-md) 0;
+}
+
+.sceneplay-poi-toast {
   position: fixed;
   bottom: calc(72px + var(--space-md));
   left: 50%;
@@ -31,7 +52,7 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
 }
 
-.activetable-poi-toast button {
+.sceneplay-poi-toast button {
   background: none;
   border: none;
   color: var(--color-text-muted);

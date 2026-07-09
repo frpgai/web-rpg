@@ -1,4 +1,4 @@
-import type { SceneDetail } from '../../../types';
+import type { SceneDetail } from '../../../../../types';
 import './ActionDock.css';
 
 type Props = {
@@ -15,9 +15,16 @@ type Props = {
   onCombat: () => void;
 };
 
+// Grade de ações rápidas do herói (Falar/Mover/Investigar) — reorganização de
+// layout confirmada via Stitch (project 15326270198202696484, screen
+// a0e6aede33c94152a028fb8294ea4ae8 "Sessão Ativa: Layout Reorganizado (Ação
+// no Topo)"): sai do dock fixo no rodapé (agora ocupado só pela navegação
+// principal — ver SessionBottomNav) e passa a ser uma grade de 3 colunas
+// posicionada entre o card do mapa e o card de narração/áudio, dentro do
+// fluxo normal da página (ActiveTable.tsx).
 export function ActionDock({ scene, hasActiveCombat, onSpeak, onMove, onInvestigate, onCombat }: Props) {
   return (
-    <footer className="actiondock-root">
+    <section className="actiondock-root">
       <button
         type="button"
         className="actiondock-button"
@@ -33,19 +40,23 @@ export function ActionDock({ scene, hasActiveCombat, onSpeak, onMove, onInvestig
         onClick={onMove}
         disabled={scene.points_of_interest.length === 0}
       >
-        <span className="material-symbols-outlined">directions_walk</span>
+        <span className="material-symbols-outlined">directions_run</span>
         <span>Mover</span>
       </button>
       <button type="button" className="actiondock-button" onClick={onInvestigate}>
-        <span className="material-symbols-outlined">search</span>
+        <span className="material-symbols-outlined">search_check</span>
         <span>Investigar</span>
       </button>
       {hasActiveCombat && (
-        <button type="button" className="actiondock-button actiondock-button-combat" onClick={onCombat}>
+        <button
+          type="button"
+          className="actiondock-button actiondock-button-combat actiondock-button-full"
+          onClick={onCombat}
+        >
           <span className="material-symbols-outlined">swords</span>
           <span>Combater</span>
         </button>
       )}
-    </footer>
+    </section>
   );
 }

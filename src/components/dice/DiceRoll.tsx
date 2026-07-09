@@ -87,11 +87,13 @@ export function DiceRoll() {
       return <div className={`${styles.badge} ${styles.critBadge}`}>Acerto Fatal</div>;
     }
 
-    if (currentRoll.success) {
+    if (currentRoll.success === true) {
       return <div className={`${styles.badge} ${styles.successBadge}`}>Sucesso</div>;
-    } else {
+    }
+    if (currentRoll.success === false) {
       return <div className={`${styles.badge} ${styles.failBadge}`}>Falha</div>;
     }
+    return null;
   };
 
   // Renderizar a matemática da rolagem

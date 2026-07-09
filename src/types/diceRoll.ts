@@ -9,9 +9,20 @@ export type RollContext =
   | 'damage_roll_melee' | 'damage_roll_ranged';
 
 export interface CreateRollRequestInput {
-  context_type: 'npc_dialogue_option' | 'scene_poi' | 'combat_attack' | 'saving_throw';
+  context_type:
+    | 'npc_dialogue_option'
+    | 'scene_poi'
+    | 'combat_attack'
+    | 'saving_throw'
+    | 'poi_investigation_directed'
+    | 'poi_investigation_general';
   context_id: string;
   hero_id: string;
+  // Perícia escolhida pelo jogador — obrigatória para
+  // `poi_investigation_directed`/`poi_investigation_general` (spec
+  // 00153-mesa-jogo/investigacao.md seção 4.1). O backend resolve
+  // dc/modificador a partir dela; nada é calculado no cliente.
+  skill?: string;
 }
 
 export interface DiceRollResult {
@@ -61,38 +72,9 @@ export interface PoiDiscoveredPayload {
   }[];
 }
 
-export interface InvestigateDirectedRequest {
-  character_id: string;
-  skill: string;
-  dice_roll: number;
-}
-
-export interface InvestigateDirectedResponse {
-  success: boolean;
-  total_result: number;
-  dice_roll: number;
-  modifier: number;
-  dc: number;
-  display_name: string;
-  description: string;
-  narrative_text: string;
-}
-
-export interface InvestigateGeneralRequest {
-  character_id: string;
-  skill: string;
-  dice_roll: number;
-}
-
-export interface DiscoveredPoiView {
-  id: string;
-  display_name: string;
-  x_coordinate: number;
-  y_coordinate: number;
-  success_text: string;
-}
-
-export interface InvestigateGeneralResponse {
-  total_result: number;
-  discovered_pois: DiscoveredPoiView[];
-}
+// Nota: não há mais tipos de request/response dedicados para investigação
+// (`InvestigateDirectedRequest/Response`, `InvestigateGeneralRequest/
+// Response`) — os endpoints `/investigate` e `/investigate-general` foram
+// removidos (be-rpg commits e123710/f0eafa5). O fluxo de investigação usa
+// `CreateRollRequestInput`/`DiceRollResult` acima e `PoiDiscoveredPayload`
+// abaixo, iguais aos demais `context_type` (combate, diálogo).

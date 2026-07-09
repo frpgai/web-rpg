@@ -424,6 +424,7 @@ export type SessionDetail = {
   current_adventure_id?: string | null;
   current_scene_id?: string | null;
   current_turn_player_id?: string | null;
+  phase: 'campaign' | 'adventure' | 'scene';
 };
 
 export type StartSessionResponse = {
@@ -436,10 +437,9 @@ export type StartSessionResponse = {
 };
 
 export type SessionEvent = {
-  seq: number;
+  id: string;
   session_id: string;
   scene_id: string;
-  session_player_id?: string | null;
   type: string;
   // Colunas tipadas (be-rpg PR #69) — substituem o antigo `payload` JSONB
   // para os 4 tipos de evento client-submissíveis. Cada tipo só preenche o
@@ -471,40 +471,24 @@ export type SessionEventsPage = {
   next_cursor: string | null;
 };
 
-// ── Progresso do jogador na sessão (be-rpg PR #69, spec A00153/A00190) ──────
-// Substitui a checagem de fase de `usePlaySession` que antes lia
-// `session_events`/`narrative_entered` (não permitia checar por jogador).
+// ── Fase da sessão (be-rpg — substitui o antigo SessionPlayerTarget) ────────
+// O backend agora expõe `phase` diretamente em SessionDetail
+// (GET /api/v1/sessions/{id}), eliminando o endpoint por-jogador
+// `/sessions/{id}/players-target`.
 
-export type SessionPlayerEventType = 'campaign' | 'adventure' | 'scene' | 'play_active';
-
-export type SessionPlayerEvent = {
+export type SessionTarget = {
   id: string;
-  session_id: string;
-  session_player_id: string;
-  event_type: SessionPlayerEventType;
-  event_id: string;
-  created_at: string;
+  sessionId: string;
+  targetType: 'campaign' | 'adventure' | 'scene';
+  targetId: string;
+  createdAt: string;
 };
 
-export type CreatePlayerEventRequest = {
-  event_type: SessionPlayerEventType;
-  event_id: string;
-};
-
-export type InvestigatePoiRequest = {
-  session_id: string;
-  hero_id: string;
-  roll: number;
-};
-
-export type InvestigatePoiResponse = {
-  poi_id: string;
-  success: boolean;
-  enabled: boolean;
-  total: number;
-  success_text?: string | null;
-  failure_text?: string | null;
-};
+// Nota: `InvestigatePoiRequest`/`InvestigatePoiResponse` foram removidos —
+// os endpoints dedicados que eles tipavam (`.../pois/{poi_id}/investigate`,
+// `.../investigate-general`) não existem mais (be-rpg commits e123710/
+// f0eafa5). Investigação agora usa `CreateRollRequestInput`/`DiceRollResult`
+// (`types/diceRoll.ts`), como qualquer outro `context_type` de roll-request.
 
 // ── Mesa de Jogo (Storytelling, Mapa, Diálogos de NPC) — spec A00153 ────────
 

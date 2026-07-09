@@ -1,4 +1,4 @@
-.campaignintro-root {
+.campaignphase-root {
   display: flex;
   flex-direction: column;
   min-height: 100svh;
@@ -14,8 +14,13 @@
   padding-bottom: 80px;
 }
 
+.campaignphase-loading {
+  align-items: center;
+  justify-content: center;
+}
+
 /* Header */
-.campaignintro-header {
+.campaignphase-header {
   position: sticky;
   top: 0;
   z-index: 100;
@@ -29,7 +34,7 @@
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.campaignintro-header-title {
+.campaignphase-header-title {
   font-family: var(--font-display);
   font-size: 22px;
   font-weight: 600;
@@ -42,7 +47,7 @@
   padding: 0 var(--space-sm);
 }
 
-.campaignintro-main {
+.campaignphase-main {
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -51,7 +56,7 @@
 }
 
 /* Intro Card */
-.campaignintro-intro-card {
+.campaignphase-intro-card {
   background: rgba(31, 31, 36, 0.6);
   backdrop-filter: blur(12px);
   border: 1px solid rgba(215, 186, 255, 0.1);
@@ -60,31 +65,31 @@
   box-shadow: 0 0 20px rgba(215, 186, 255, 0.15);
 }
 
-.campaignintro-intro-media {
+.campaignphase-intro-media {
   position: relative;
   width: 100%;
   aspect-ratio: 1 / 1;
 }
 
-.campaignintro-intro-media img {
+.campaignphase-intro-media img {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
-.campaignintro-intro-media-fallback {
+.campaignphase-intro-media-fallback {
   width: 100%;
   height: 100%;
   background: var(--color-surface-container);
 }
 
-.campaignintro-intro-media-gradient {
+.campaignphase-intro-media-gradient {
   position: absolute;
   inset: 0;
   background: linear-gradient(to top, var(--color-bg), transparent 60%);
 }
 
-.campaignintro-intro-play-button {
+.campaignphase-intro-play-button {
   position: absolute;
   bottom: var(--space-lg);
   right: var(--space-lg);
@@ -101,14 +106,14 @@
   flex-shrink: 0;
 }
 
-.campaignintro-intro-play-button:disabled {
+.campaignphase-intro-play-button:disabled {
   opacity: 0.5;
 }
 
 /* Controls row (elemento não presente no design Stitch para esta tela — fallback
    coerente com os tokens usados no botão play/pause: fill em --color-primary,
    track em --color-outline-variant). Play button ao lado da seekbar. */
-.campaignintro-intro-controls {
+.campaignphase-intro-controls {
   position: absolute;
   left: var(--space-lg);
   right: var(--space-lg);
@@ -118,18 +123,18 @@
   gap: var(--space-md);
 }
 
-.campaignintro-intro-controls .campaignintro-intro-play-button {
+.campaignphase-intro-controls .campaignphase-intro-play-button {
   position: static;
 }
 
-.campaignintro-intro-seekbar-wrapper {
+.campaignphase-intro-seekbar-wrapper {
   flex: 1;
   display: flex;
   flex-direction: column;
   gap: var(--space-xs);
 }
 
-.campaignintro-intro-seekbar {
+.campaignphase-intro-seekbar {
   -webkit-appearance: none;
   appearance: none;
   width: 100%;
@@ -139,18 +144,18 @@
   cursor: pointer;
 }
 
-.campaignintro-intro-seekbar:disabled {
+.campaignphase-intro-seekbar:disabled {
   cursor: default;
   opacity: 0.5;
 }
 
-.campaignintro-intro-seekbar::-webkit-slider-runnable-track {
+.campaignphase-intro-seekbar::-webkit-slider-runnable-track {
   height: 4px;
   border-radius: var(--radius-full);
   background: var(--color-outline-variant);
 }
 
-.campaignintro-intro-seekbar::-webkit-slider-thumb {
+.campaignphase-intro-seekbar::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
   width: 12px;
@@ -162,19 +167,19 @@
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
 }
 
-.campaignintro-intro-seekbar::-moz-range-track {
+.campaignphase-intro-seekbar::-moz-range-track {
   height: 4px;
   border-radius: var(--radius-full);
   background: var(--color-outline-variant);
 }
 
-.campaignintro-intro-seekbar::-moz-range-progress {
+.campaignphase-intro-seekbar::-moz-range-progress {
   height: 4px;
   border-radius: var(--radius-full);
   background: var(--color-primary);
 }
 
-.campaignintro-intro-seekbar::-moz-range-thumb {
+.campaignphase-intro-seekbar::-moz-range-thumb {
   width: 12px;
   height: 12px;
   border-radius: var(--radius-full);
@@ -183,34 +188,34 @@
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
 }
 
-.campaignintro-intro-time {
+.campaignphase-intro-time {
   font-family: var(--font-mono);
   font-size: 10px;
   color: var(--color-text-muted);
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
 }
 
-.campaignintro-intro-body {
+.campaignphase-intro-body {
   padding: var(--space-lg);
   display: flex;
   flex-direction: column;
   gap: var(--space-md);
 }
 
-.campaignintro-intro-description {
+.campaignphase-intro-description {
   color: var(--color-text-muted);
   line-height: 1.6;
   margin: 0;
 }
 
 /* Heroes */
-.campaignintro-heroes-section {
+.campaignphase-heroes-section {
   display: flex;
   flex-direction: column;
   gap: var(--space-sm);
 }
 
-.campaignintro-heroes-title {
+.campaignphase-heroes-title {
   font-family: var(--font-mono);
   font-size: 12px;
   letter-spacing: 0.1em;
@@ -220,7 +225,7 @@
   padding: 0 4px;
 }
 
-.campaignintro-heroes-row {
+.campaignphase-heroes-row {
   display: flex;
   align-items: center;
   gap: var(--space-md);
@@ -228,12 +233,12 @@
   padding-bottom: var(--space-sm);
 }
 
-.campaignintro-hero-avatar-wrapper {
+.campaignphase-hero-avatar-wrapper {
   position: relative;
   flex-shrink: 0;
 }
 
-.campaignintro-hero-avatar {
+.campaignphase-hero-avatar {
   width: 64px;
   height: 64px;
   border-radius: var(--radius-lg);
@@ -242,19 +247,19 @@
   overflow: hidden;
 }
 
-.campaignintro-hero-avatar-active {
+.campaignphase-hero-avatar-active {
   border-color: var(--color-primary);
   box-shadow: inset 0 0 15px rgba(215, 186, 255, 0.4), 0 0 15px rgba(215, 186, 255, 0.2);
 }
 
-.campaignintro-hero-avatar img {
+.campaignphase-hero-avatar img {
   width: 100%;
   height: 100%;
   border-radius: var(--radius-md);
   object-fit: cover;
 }
 
-.campaignintro-hero-avatar-fallback {
+.campaignphase-hero-avatar-fallback {
   width: 100%;
   height: 100%;
   border-radius: var(--radius-md);
@@ -265,7 +270,7 @@
   color: var(--color-text-muted);
 }
 
-.campaignintro-hero-status-dot {
+.campaignphase-hero-status-dot {
   position: absolute;
   bottom: -2px;
   right: -2px;
@@ -276,12 +281,12 @@
   border: 2px solid var(--color-bg);
 }
 
-.campaignintro-hero-status-dot-ready {
+.campaignphase-hero-status-dot-ready {
   background: var(--color-tertiary);
 }
 
 /* CTA */
-.campaignintro-cta-section {
+.campaignphase-cta-section {
   margin-top: var(--space-sm);
   display: flex;
   flex-direction: column;
@@ -289,7 +294,7 @@
   gap: var(--space-sm);
 }
 
-.campaignintro-cta-button {
+.campaignphase-cta-button {
   width: 100%;
   padding: 20px;
   border-radius: var(--radius-lg);
@@ -306,11 +311,11 @@
   transition: transform 0.2s ease;
 }
 
-.campaignintro-cta-button:active {
+.campaignphase-cta-button:active {
   transform: scale(0.95);
 }
 
-.campaignintro-cta-subtext {
+.campaignphase-cta-subtext {
   font-family: var(--font-mono);
   font-size: 10px;
   color: var(--color-text-muted);

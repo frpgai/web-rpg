@@ -1,3 +1,9 @@
+/* Bottom sheet "Investigar" — Stitch project 15326270198202696484, screen
+   ab8e6e68879a4b5f992013368f26911c ("Investigação: Escolha de Ação").
+   Tokens extraídos do HTML (.stitch/designs/investigate-choice.html):
+   overlay bg-black/40 backdrop-blur-sm; sheet
+   bg-surface-container-lowest/90 backdrop-blur-lg border-t border-primary/30
+   rounded-t-[2rem]; handle w-10 h-1 bg-outline-variant rounded-full. */
 .investigatemodal-overlay {
   position: fixed;
   inset: 0;
@@ -5,7 +11,8 @@
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  background-color: rgba(14, 14, 19, 0.7);
+  background-color: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(4px);
 }
 
 .investigatemodal-modal {
@@ -14,10 +21,20 @@
   max-height: 80svh;
   display: flex;
   flex-direction: column;
-  background-color: var(--color-surface-container);
+  background-color: color-mix(in srgb, var(--color-surface-lowest) 90%, transparent);
+  backdrop-filter: blur(16px);
+  border-top: 1px solid color-mix(in srgb, var(--color-primary) 30%, transparent);
   border-top-left-radius: var(--radius-lg);
   border-top-right-radius: var(--radius-lg);
   overflow: hidden;
+}
+
+.investigatemodal-handle {
+  width: 40px;
+  height: 4px;
+  border-radius: var(--radius-full);
+  background-color: var(--color-outline-variant);
+  margin: var(--space-sm) auto 0;
 }
 
 .investigatemodal-header {
@@ -25,8 +42,7 @@
   align-items: center;
   gap: var(--space-sm);
   padding: var(--space-md);
-  border-bottom: 1px solid var(--color-outline-variant);
-  color: var(--color-secondary);
+  color: var(--color-primary);
 }
 
 .investigatemodal-title {
@@ -34,11 +50,19 @@
   margin: 0;
   font-family: var(--font-display);
   font-size: 18px;
-  color: var(--color-secondary);
+  font-weight: 600;
+  color: var(--color-primary);
+  text-shadow: 0 0 12px color-mix(in srgb, var(--color-primary) 40%, transparent);
 }
 
 .investigatemodal-close {
-  background: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-full);
+  background-color: color-mix(in srgb, var(--color-surface-highest) 50%, transparent);
   border: none;
   color: var(--color-text-muted);
   cursor: pointer;
@@ -50,6 +74,82 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-md);
+}
+
+.investigatemodal-choices {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.investigatemodal-choice {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-md);
+  border: 1px solid color-mix(in srgb, var(--color-text) 5%, transparent);
+  border-radius: var(--radius-md);
+  background-color: color-mix(in srgb, var(--color-surface-container) 70%, transparent);
+  text-align: left;
+  cursor: pointer;
+}
+
+.investigatemodal-choice:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.investigatemodal-choice-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-full);
+}
+
+.investigatemodal-choice-icon-primary {
+  background-color: color-mix(in srgb, var(--color-primary) 20%, transparent);
+  color: var(--color-primary);
+}
+
+.investigatemodal-choice-icon-secondary {
+  background-color: color-mix(in srgb, var(--color-secondary) 20%, transparent);
+  color: var(--color-secondary);
+}
+
+.investigatemodal-choice-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.investigatemodal-choice-title {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.investigatemodal-choice-title-primary {
+  color: var(--color-primary);
+}
+
+.investigatemodal-choice-title-secondary {
+  color: var(--color-secondary);
+}
+
+.investigatemodal-choice-desc {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  color: color-mix(in srgb, var(--color-text-muted) 80%, transparent);
+}
+
+.investigatemodal-choice-chevron {
+  color: color-mix(in srgb, var(--color-text-muted) 40%, transparent);
 }
 
 .investigatemodal-empty {

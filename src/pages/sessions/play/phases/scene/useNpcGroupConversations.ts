@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
-import { sessionApi } from '../../../api/services/session';
-import { npcApi } from '../../../api/services/npc';
-import type { DialogueNodeView, NPCDialogueTree, SceneNPC, SessionEvent, SessionPlayer } from '../../../types';
+import { sessionApi } from '../../../../../api/services/session';
+import { npcApi } from '../../../../../api/services/npc';
+import type { DialogueNodeView, SceneNPC, SessionEvent, SessionPlayer } from '../../../../../types';
 
 export type GroupConversationEntry = {
   key: string;
@@ -63,7 +63,7 @@ export function useNpcGroupConversations(sessionId: string, npc: SceneNPC | null
             const heroName = heroByPlayerIndex[0] ?? 'Jogador da mesa';
 
             return {
-              key: `${event.session_id}-${event.created_at}-${event.dialogue_option_id ?? event.seq}`,
+              key: `${event.session_id}-${event.created_at}-${event.dialogue_option_id ?? event.id}`,
               heroName,
               createdAt: event.created_at,
               optionLabel: event.choice_text ?? chosenOption?.label ?? '...',

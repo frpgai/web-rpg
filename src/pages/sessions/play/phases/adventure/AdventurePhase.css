@@ -4,7 +4,7 @@
    "Capítulo 1: As Noites que Devoram (Imersivo)"
    ============================================================================= */
 
-.storytelling-root {
+.adventurephase-root {
   position: fixed;
   inset: 0;
   z-index: 100;
@@ -19,21 +19,26 @@
   box-sizing: border-box;
 }
 
+.adventurephase-loading {
+  justify-content: center;
+  align-items: center;
+}
+
 /* ── Background ambient layer ──────────────────────────────────────────── */
 
-.storytelling-media {
+.adventurephase-media {
   position: absolute;
   inset: 0;
   z-index: 0;
 }
 
-.storytelling-media-el {
+.adventurephase-media-el {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
-.storytelling-media-fallback {
+.adventurephase-media-fallback {
   width: 100%;
   height: 100%;
   background: linear-gradient(
@@ -45,7 +50,7 @@
 }
 
 /* Overlay escuro para legibilidade (bg-black/60 no Stitch) */
-.storytelling-media-gradient {
+.adventurephase-media-gradient {
   position: absolute;
   inset: 0;
   background: color-mix(in srgb, var(--color-surface-lowest) 60%, transparent);
@@ -53,7 +58,7 @@
 
 /* ── Cinematic overlay section (p-6 md:p-12) ───────────────────────────── */
 
-.storytelling-overlay {
+.adventurephase-overlay {
   position: relative;
   z-index: 10;
   display: flex;
@@ -70,7 +75,7 @@
 
 /* ── Content card (glass-panel, rounded-xl, max-w-2xl) ─────────────────── */
 
-.storytelling-card {
+.adventurephase-card {
   position: relative;
   z-index: 10;
   display: flex;
@@ -89,7 +94,7 @@
 }
 
 /* Eyebrow — "A JORNADA COMEÇA" (font-label-mono, tracking-[0.3em]) */
-.storytelling-eyebrow {
+.adventurephase-eyebrow {
   font-family: var(--font-mono);
   font-size: 12px;
   line-height: 16px;
@@ -101,7 +106,7 @@
 }
 
 /* Título — headline-lg (Playfair Display, gold-text, italic) */
-.storytelling-title {
+.adventurephase-title {
   font-family: var(--font-display);
   font-size: 32px;
   line-height: 40px;
@@ -113,7 +118,7 @@
 }
 
 /* Divisor — h-px w-full max-w-md gradient */
-.storytelling-divider {
+.adventurephase-divider {
   width: 100%;
   max-width: 448px;
   height: 1px;
@@ -127,7 +132,7 @@
 }
 
 /* Narração — font-body-rtf (Geist), text-on-surface-variant/90, italic */
-.storytelling-narration {
+.adventurephase-narration {
   display: flex;
   flex-direction: column;
   gap: var(--space-md);
@@ -136,17 +141,17 @@
   overflow-y: auto;
 }
 
-.storytelling-paragraph {
+.adventurephase-paragraph {
   font-family: var(--font-sans);
   font-size: 16px;
   line-height: 28px;
   font-style: italic;
   color: color-mix(in srgb, var(--color-text-muted) 90%, transparent);
   margin: 0;
-  animation: storytelling-fade-in 1.2s ease-out;
+  animation: adventurephase-fade-in 1.2s ease-out;
 }
 
-@keyframes storytelling-fade-in {
+@keyframes adventurephase-fade-in {
   from {
     opacity: 0;
     transform: translateY(6px);
@@ -158,7 +163,7 @@
 }
 
 /* Voice visualizer — 8 barras animadas (h-8, gap-1.5) */
-.storytelling-voice-wave {
+.adventurephase-voice-wave {
   display: flex;
   align-items: flex-end;
   justify-content: center;
@@ -167,24 +172,24 @@
   margin: 0 0 var(--space-xl);
 }
 
-.storytelling-wave-bar {
+.adventurephase-wave-bar {
   width: 4px;
   height: 4px;
   border-radius: var(--radius-full);
   background-color: var(--color-primary);
-  animation: storytelling-wave 1.2s ease-in-out infinite;
+  animation: adventurephase-wave 1.2s ease-in-out infinite;
 }
 
-.storytelling-wave-bar:nth-child(1) { animation-delay: 0.1s; }
-.storytelling-wave-bar:nth-child(2) { animation-delay: 0.3s; }
-.storytelling-wave-bar:nth-child(3) { animation-delay: 0.2s; }
-.storytelling-wave-bar:nth-child(4) { animation-delay: 0.5s; }
-.storytelling-wave-bar:nth-child(5) { animation-delay: 0.4s; }
-.storytelling-wave-bar:nth-child(6) { animation-delay: 0.7s; }
-.storytelling-wave-bar:nth-child(7) { animation-delay: 0.2s; }
-.storytelling-wave-bar:nth-child(8) { animation-delay: 0.1s; }
+.adventurephase-wave-bar:nth-child(1) { animation-delay: 0.1s; }
+.adventurephase-wave-bar:nth-child(2) { animation-delay: 0.3s; }
+.adventurephase-wave-bar:nth-child(3) { animation-delay: 0.2s; }
+.adventurephase-wave-bar:nth-child(4) { animation-delay: 0.5s; }
+.adventurephase-wave-bar:nth-child(5) { animation-delay: 0.4s; }
+.adventurephase-wave-bar:nth-child(6) { animation-delay: 0.7s; }
+.adventurephase-wave-bar:nth-child(7) { animation-delay: 0.2s; }
+.adventurephase-wave-bar:nth-child(8) { animation-delay: 0.1s; }
 
-@keyframes storytelling-wave {
+@keyframes adventurephase-wave {
   0%, 100% {
     height: 4px;
     opacity: 0.5;
@@ -197,7 +202,7 @@
 
 /* ── CTA — shimmer-btn, bg-primary, text-on-primary-container ─────────── */
 
-.storytelling-cta {
+.adventurephase-cta {
   position: relative;
   z-index: 1;
   overflow: hidden;
@@ -221,7 +226,7 @@
   transition: opacity 0.6s ease, transform 0.2s ease, box-shadow 0.3s ease;
 }
 
-.storytelling-cta::after {
+.adventurephase-cta::after {
   content: '';
   position: absolute;
   top: -50%;
@@ -235,10 +240,10 @@
     transparent
   );
   transform: rotate(45deg);
-  animation: storytelling-shimmer 3s infinite linear;
+  animation: adventurephase-shimmer 3s infinite linear;
 }
 
-@keyframes storytelling-shimmer {
+@keyframes adventurephase-shimmer {
   0% {
     transform: translateX(-100%) rotate(45deg);
   }
@@ -247,28 +252,28 @@
   }
 }
 
-.storytelling-cta-icon {
+.adventurephase-cta-icon {
   font-size: 20px;
   line-height: 1;
 }
 
-.storytelling-cta-visible {
+.adventurephase-cta-visible {
   opacity: 1;
   transform: translateY(0) scale(1);
   pointer-events: auto;
 }
 
-.storytelling-cta-visible:active {
+.adventurephase-cta-visible:active {
   transform: scale(0.95);
 }
 
-.storytelling-cta:disabled {
+.adventurephase-cta:disabled {
   cursor: default;
 }
 
 /* ── Fade to black transition ───────────────────────────────────────────── */
 
-.storytelling-fade {
+.adventurephase-fade {
   position: fixed;
   inset: 0;
   z-index: 200;
@@ -278,7 +283,7 @@
   transition: opacity 1.2s ease;
 }
 
-.storytelling-fade-active {
+.adventurephase-fade-active {
   opacity: 1;
   pointer-events: auto;
 }
