@@ -447,13 +447,19 @@ export type SessionEvent = {
   entity_type?: 'campaign' | 'adventure' | 'scene' | null; // narrative_entered
   entity_id?: string | null; // narrative_entered
   hero_id?: string | null; // dice_roll / poi_investigation
+  hero_avatar_url?: string | null; // dice_roll / poi_investigation / scene_investigation
+  hero_name?: string | null; // dice_roll / poi_investigation / scene_investigation
   skill_check?: string | null; // dice_roll / poi_investigation
   roll?: number | null; // dice_roll / poi_investigation
   modifier?: number | null; // dice_roll / poi_investigation
   total?: number | null; // dice_roll / poi_investigation
   dc?: number | null; // poi_investigation
-  success?: boolean | null; // dice_roll / poi_investigation
+  success?: boolean | null; // dice_roll / poi_investigation / scene_investigation
   poi_id?: string | null; // poi_investigation
+  // POIs revelados por uma ação "Vasculhar o Local" (be-rpg PR #76,
+  // scene_investigation) — distinto de `poi_id` (investigação direcionada a
+  // um POI específico já conhecido). Sempre vazio quando `total < 10`.
+  discovered_poi_ids?: string[] | null; // scene_investigation
   npc_id?: string | null; // npc_dialogue_choice
   dialogue_node_id?: string | null; // npc_dialogue_choice
   dialogue_option_id?: string | null; // npc_dialogue_choice

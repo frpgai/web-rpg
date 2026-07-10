@@ -1,16 +1,27 @@
 import { useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { getAssetUrl } from '../../../../../../utils/url';
 import { useAmbientVolume } from '../../../../../../utils/useAmbientVolume';
 import { Spinner } from '../../../../../../components/ui/Spinner';
 import { TypewriterText } from '../TypewriterText';
-import type { SceneDetail, SessionEvent } from '../../../../../../types';
+import type { SceneDetail, SessionEvent, SessionPlayer } from '../../../../../../types';
 import './TimelineFeed.css';
 
 type Props = {
   scene: SceneDetail;
   events: SessionEvent[];
   loading: boolean;
+  // Usado para resolver `hero_id` -> nome do herói (be-rpg PR #76,
+  // scene_investigation) — mesmo padrão de `useNpcGroupConversations.ts`
+  // (sessionApi.getPlayers), já que `SessionEvent` só traz o id.
+  players?: SessionPlayer[];
 };
+
+function resolveHeroName(players: SessionPlayer[] | undefined, heroId: string | null | undefined): string {
+  if (!heroId) return 'Alguém';
+  const player = players?.find((p) => p.hero?.id === heroId);
+  return player?.hero?.name ?? player?.username ?? 'Alguém';
+}
 
 function extractText(event: SessionEvent): string {
   const payload = event.payload as Record<string, unknown> | null;
@@ -83,6 +94,60 @@ function PoiInvestigationRow({ event, scene }: { event: SessionEvent; scene: Sce
   );
 }
 
+// Evento `scene_investigation` (be-rpg PR #76) — gravado UMA vez por ação
+// "Vasculhar o Local" (busca geral na cena), distinto de `poi_investigation`
+// (investigação direcionada a um POI específico já conhecido). Ao contrário
+// de `PoiInvestigationRow`, aqui a linha exibe a sentença narrativa completa
+// (herói + perícia traduzida + rolagem + resultado + POIs revelados), como
+// especificado na spec do evento.
+function SceneInvestigationRow({
+  event,
+  scene,
+  players,
+}: {
+  event: SessionEvent;
+  scene: SceneDetail;
+  players?: SessionPlayer[];
+}) {
+  const { t } = useTranslation(['skills']);
+
+  const heroName = resolveHeroName(players, event.hero_id);
+  const skillName = event.skill_check
+    ? t(`${event.skill_check}.name`, { ns: 'skills' }) || event.skill_check
+    : 'Percepção';
+  const roll = event.roll ?? 0;
+  const modifier = event.modifier ?? 0;
+  const total = event.total ?? roll + modifier;
+  const success = event.success === true;
+
+  const discoveredNames = (event.discovered_poi_ids ?? [])
+    .map((id) => scene.points_of_interest.find((p) => p.id === id)?.display_name)
+    .filter((name): name is string => Boolean(name));
+
+  let flavorText: string;
+  if (!success) {
+    flavorText = 'Você fez uma busca rápida, mas não foi muito meticuloso e não encontrou nada.';
+  } else if (discoveredNames.length === 0) {
+    flavorText = 'Você vasculhou a área com atenção, mas não parece haver nada escondido por aqui.';
+  } else {
+    flavorText = `Revelou: ${discoveredNames.join(', ')}.`;
+  }
+
+  const sentence = `${heroName} vasculhou o local e rolou ${skillName}: ${roll} ${
+    modifier >= 0 ? '+' : '-'
+  } ${Math.abs(modifier)} = ${total} (${success ? 'Sucesso' : 'Falha'}). ${flavorText}`;
+
+  return (
+    <li className="timelinefeed-row timelinefeed-row-dice">
+      {event.revealed === false && <NewEventBadge />}
+      <span className="timelinefeed-dice-badge">d20</span>
+      <div className="timelinefeed-dice-body">
+        <span className="timelinefeed-dice-total">{sentence}</span>
+      </div>
+    </li>
+  );
+}
+
 function NpcSpeechRow({ event, scene }: { event: SessionEvent; scene: SceneDetail }) {
   const payload = (event.payload ?? {}) as Record<string, unknown>;
   const npcId = typeof payload.npc_id === 'string' ? payload.npc_id : undefined;
@@ -106,7 +171,7 @@ function NpcSpeechRow({ event, scene }: { event: SessionEvent; scene: SceneDetai
   );
 }
 
-export function TimelineFeed({ scene, events, loading }: Props) {
+export function TimelineFeed({ scene, events, loading, players }: Props) {
   const ambientAudioRef = useRef<HTMLAudioElement>(null);
   const transitionAudioRef = useRef<HTMLAudioElement>(null);
   useAmbientVolume(ambientAudioRef);
@@ -153,6 +218,11 @@ export function TimelineFeed({ scene, events, loading }: Props) {
             }
             if (event.type === 'poi_investigation') {
               return <PoiInvestigationRow key={event.id} event={event} scene={scene} />;
+            }
+            if (event.type === 'scene_investigation') {
+              return (
+                <SceneInvestigationRow key={event.id} event={event} scene={scene} players={players} />
+              );
             }
             return (
               <li key={event.id} className="timelinefeed-row timelinefeed-row-generic">

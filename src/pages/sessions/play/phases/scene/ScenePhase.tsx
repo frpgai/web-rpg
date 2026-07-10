@@ -11,7 +11,14 @@ import { ActionDock } from './ActionDock';
 import { NPCDialogueModal } from './NPCDialogueModal';
 import { InvestigateModal } from './InvestigateModal';
 import { POIDetailSheet } from './POIDetailSheet';
-import type { SceneDetail, SceneNPC, ScenePointOfInterest, SessionDetail, SessionEvent } from '../../../../../types';
+import type {
+  SceneDetail,
+  SceneNPC,
+  ScenePointOfInterest,
+  SessionDetail,
+  SessionEvent,
+  SessionPlayer,
+} from '../../../../../types';
 import { DiceRollOverlay } from '../../../../../components/dice/DiceRollOverlay';
 import { useDiceRollStore } from '../../../../../stores/diceRollStore';
 import './ScenePhase.css';
@@ -54,6 +61,10 @@ export function ScenePhase({ sessionId, session }: Props) {
   // real emite este envelope em tempo real ainda (separado e independente do
   // DiceRollOverlay/useDiceRollStore/WS roll_resolved, que continua intocado).
   const [immersiveEvent, setImmersiveEvent] = useState<SessionEvent | null>(null);
+  // Jogadores da sessão — usado por `TimelineFeed` para resolver `hero_id` em
+  // nome do herói na linha de `scene_investigation` (be-rpg PR #76), mesmo
+  // padrão de `useNpcGroupConversations.ts` (sessionApi.getPlayers).
+  const [players, setPlayers] = useState<SessionPlayer[]>([]);
 
   const loadScene = useCallback(() => {
     if (!session.current_scene_id) {
@@ -88,6 +99,13 @@ export function ScenePhase({ sessionId, session }: Props) {
   useEffect(() => {
     fetchEvents();
   }, [fetchEvents, scene?.id]);
+
+  useEffect(() => {
+    sessionApi
+      .getPlayers(sessionId)
+      .then(setPlayers)
+      .catch((err) => console.error('Failed to load session players:', err));
+  }, [sessionId]);
 
   useSessionSocket(
     sessionId,
@@ -141,7 +159,7 @@ export function ScenePhase({ sessionId, session }: Props) {
         }}
       />
 
-      <TimelineFeed scene={scene} events={events} loading={eventsLoading} />
+      <TimelineFeed scene={scene} events={events} loading={eventsLoading} players={players} />
 
       <ActionDock
         scene={scene}

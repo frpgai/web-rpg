@@ -1,13 +1,13 @@
 import { useState } from 'react';
-import { useSessionEventsNotify } from '../../../../hooks/useSessionEventsNotify';
-import { SessionEventsSheet } from './SessionEventsSheet';
+import { useSessionEventsNotify } from '../../../../../hooks/useSessionEventsNotify';
+import { SessionEventsSheet } from '../events/SessionEventsSheet';
 import './SessionBottomNav.css';
 
-type SessionNavTab = 'missions' | 'log' | 'team' | 'grimoire';
+type SessionNavTab = 'missions' | 'events' | 'team' | 'grimoire';
 
 const TABS: { id: SessionNavTab; icon: string; label: string }[] = [
   { id: 'missions', icon: 'swords', label: 'Missões' },
-  { id: 'log', icon: 'history', label: 'Log' },
+  { id: 'events', icon: 'history', label: 'Eventos' },
   { id: 'team', icon: 'group', label: 'Equipe' },
   { id: 'grimoire', icon: 'auto_stories', label: 'Grimório' },
 ];
@@ -25,9 +25,9 @@ type Props = {
  * com ícone + rótulo, aba "Sessão" sempre ativa (glow roxo) enquanto o
  * usuário está em uma sessão em andamento.
  *
- * A aba "Sessão" é também o ícone de notificação/timeline: exibe um badge
+ * A aba "Eventos" é também o ícone de notificação/timeline: exibe um badge
  * (bolinha vermelha) quando `GET .../events/notify` (be-rpg PR #75) indica
- * `has_unread === true`, e abre o BottomSheet do Log de Aventura ao ser
+ * `has_unread === true`, e abre o BottomSheet de Eventos ao ser
  * pressionada (screens Stitch 1837156ba8ef434b94393f8f0e73cbc4 / empty state
  * e c49921ed1df342a3bf33ecdb11daa8ef / lista ativa).
  *
@@ -39,7 +39,7 @@ export function SessionBottomNav({ sessionId, sceneId }: Props) {
   const { hasUnread, refresh } = useSessionEventsNotify(sessionId, sceneId ?? undefined);
 
   function handlePress(tab: SessionNavTab) {
-    if (tab === 'log') {
+    if (tab === 'events') {
       setSheetOpen(true);
       return;
     }
@@ -51,7 +51,7 @@ export function SessionBottomNav({ sessionId, sceneId }: Props) {
     <>
       <nav className="sessionbottomnav-root">
         {TABS.map((tab) => {
-          const isActive = tab.id === 'log';
+          const isActive = tab.id === 'events';
           return (
             <button
               key={tab.id}
@@ -66,7 +66,7 @@ export function SessionBottomNav({ sessionId, sceneId }: Props) {
                 >
                   {tab.icon}
                 </span>
-                {tab.id === 'log' && hasUnread && (
+                {tab.id === 'events' && hasUnread && (
                   <span className="sessionbottomnav-badge" aria-label="Notificações não lidas" />
                 )}
               </span>
@@ -76,7 +76,7 @@ export function SessionBottomNav({ sessionId, sceneId }: Props) {
         })}
       </nav>
 
-      {sheetOpen && sceneId && (
+      {sheetOpen && (
         <SessionEventsSheet
           sessionId={sessionId}
           sceneId={sceneId}

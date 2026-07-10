@@ -1,0 +1,94 @@
+/* =============================================================================
+   Avatar Component Styles
+   ============================================================================= */
+
+.ui-avatar {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  overflow: hidden;
+  user-select: none;
+  border-radius: 12px;
+  background-color: color-mix(in srgb, var(--color-primary) 15%, transparent);
+  border: 2px solid color-mix(in srgb, var(--color-primary) 50%, transparent);
+  transition: border-color 0.2s ease, transform 0.2s ease;
+}
+
+/* Predefined Sizes */
+.ui-avatar--size-xs {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-sm);
+  border-width: 1px;
+}
+
+.ui-avatar--size-sm {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  border-width: 1.5px;
+}
+
+.ui-avatar--size-md {
+  width: 56px;
+  height: 56px;
+}
+
+.ui-avatar--size-lg {
+  width: 80px;
+  height: 80px;
+}
+
+.ui-avatar--size-xl {
+  width: 120px;
+  height: 120px;
+}
+
+/* Image styling */
+.ui-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top;
+  display: block;
+}
+
+/* Fallback styling */
+.ui-avatar-fallback {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: color-mix(in srgb, var(--color-primary) 15%, transparent);
+  color: var(--color-primary);
+}
+
+.ui-avatar-letter {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--color-primary);
+  line-height: 1;
+}
+
+/* Font size adjustments per size */
+.ui-avatar--size-xs .ui-avatar-letter { font-size: 11px; }
+.ui-avatar--size-sm .ui-avatar-letter { font-size: 16px; }
+.ui-avatar--size-md .ui-avatar-letter { font-size: 22px; }
+.ui-avatar--size-lg .ui-avatar-letter { font-size: 32px; }
+.ui-avatar--size-xl .ui-avatar-letter { font-size: 48px; }
+
+/* Placeholder icon styling */
+.ui-avatar-placeholder-icon {
+  color: var(--color-primary);
+  display: block;
+}
+
+.ui-avatar--size-xs .ui-avatar-placeholder-icon { font-size: 16px; }
+.ui-avatar--size-sm .ui-avatar-placeholder-icon { font-size: 22px; }
+.ui-avatar--size-md .ui-avatar-placeholder-icon { font-size: 28px; }
+.ui-avatar--size-lg .ui-avatar-placeholder-icon { font-size: 40px; }
+.ui-avatar--size-xl .ui-avatar-placeholder-icon { font-size: 64px; }

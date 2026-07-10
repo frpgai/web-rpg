@@ -1,14 +1,19 @@
 import { useCallback, useEffect, useState } from 'react';
-import { sessionApi } from '../../../../api/services/session';
-import { Spinner } from '../../../../components/ui/Spinner';
+import { sessionApi } from '../../../../../api/services/session';
+import { Spinner } from '../../../../../components/ui/Spinner';
 import { EventLogFeed } from './EventLogFeed';
 import { EventQueueOverlay } from './EventQueueOverlay';
-import type { SessionEvent } from '../../../../types';
+import type { SessionEvent } from '../../../../../types';
+import emptyEventsIllustration from '../../../../../assets/empty-events-state.png';
 import './SessionEventsSheet.css';
 
 type Props = {
   sessionId: string;
-  sceneId: string;
+  // Pode ser `null` quando a sessão ainda não tem cena corrente (fases
+  // campaign/adventure, ou fetch de `current_scene_id` em PlayLayout ainda
+  // não resolvido) — o BottomSheet abre normalmente e cai direto no empty
+  // state, já que não pode haver eventos sem cena.
+  sceneId: string | null;
   onClose: () => void;
   // Chamado quando a fila de eventos não revelados esgota (passo 5 do fluxo
   // de notificação) — o chamador usa isso para forçar um refetch do badge
@@ -29,24 +34,41 @@ type Props = {
  */
 export function SessionEventsSheet({ sessionId, sceneId, onClose, onQueueCleared }: Props) {
   const [events, setEvents] = useState<SessionEvent[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(Boolean(sceneId));
   const [queue, setQueue] = useState<SessionEvent[]>([]);
+  const [unreadOnly, setUnreadOnly] = useState(true);
 
   const load = useCallback(() => {
+    if (!sceneId) {
+      // Sem cena corrente ainda não há como existir evento nenhum — cai
+      // direto no empty state sem chamar a API.
+      setEvents([]);
+      setQueue([]);
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     sessionApi
-      .getEvents(sessionId, sceneId)
+      .getEvents(sessionId, sceneId, { unreadOnly })
       .then((page) => {
         setEvents(page.items);
         setQueue(page.items.filter((e) => e.revealed === false));
       })
       .catch((err) => console.error('SessionEventsSheet: failed to load events:', err))
       .finally(() => setLoading(false));
-  }, [sessionId, sceneId]);
+  }, [sessionId, sceneId, unreadOnly]);
 
   useEffect(() => {
     load();
   }, [load]);
+
+  useEffect(() => {
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, []);
 
   function handleBackdropClick(e: React.MouseEvent) {
     if (e.target === e.currentTarget) onClose();
@@ -75,9 +97,39 @@ export function SessionEventsSheet({ sessionId, sceneId, onClose, onQueueCleared
             <span className="sessioneventssheet-eyebrow">Feed de Eventos</span>
             <h2 className="sessioneventssheet-title">Log de Aventura</h2>
           </div>
-          {unreadCount > 0 && (
-            <span className="sessioneventssheet-unread-pill">{unreadCount} novas</span>
-          )}
+          <div className="sessioneventssheet-header-actions">
+            {unreadCount > 0 && (
+              <span className="sessioneventssheet-unread-pill">{unreadCount} novas</span>
+            )}
+            <div className="sessioneventssheet-filter-toggle" role="tablist" aria-label="Filtro de eventos">
+              <button
+                type="button"
+                role="tab"
+                aria-selected={!unreadOnly}
+                className={`sessioneventssheet-filter-btn ${!unreadOnly ? 'sessioneventssheet-filter-btn-active' : ''}`}
+                onClick={() => setUnreadOnly(false)}
+              >
+                Todas
+              </button>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={unreadOnly}
+                className={`sessioneventssheet-filter-btn ${unreadOnly ? 'sessioneventssheet-filter-btn-active' : ''}`}
+                onClick={() => setUnreadOnly(true)}
+              >
+                Novas
+              </button>
+            </div>
+            <button
+              type="button"
+              className="sessioneventssheet-close-btn"
+              onClick={onClose}
+              aria-label="Fechar"
+            >
+              <span className="material-symbols-outlined">close</span>
+            </button>
+          </div>
         </div>
 
         {loading ? (
@@ -86,8 +138,14 @@ export function SessionEventsSheet({ sessionId, sceneId, onClose, onQueueCleared
           </div>
         ) : events.length === 0 ? (
           <div className="sessioneventssheet-empty">
-            <div className="sessioneventssheet-empty-glow" />
-            <span className="material-symbols-outlined sessioneventssheet-empty-icon">menu_book</span>
+            <div className="sessioneventssheet-empty-illustration">
+              <div className="sessioneventssheet-empty-glow" />
+              <img
+                className="sessioneventssheet-empty-image"
+                src={emptyEventsIllustration}
+                alt="Grimório arcano pulsando com energia mística"
+              />
+            </div>
             <h3 className="sessioneventssheet-empty-title">Grimório de Destinos</h3>
             <p className="sessioneventssheet-empty-quote">
               "As estrelas se alinham para aqueles que buscam a verdade entre as sombras."
@@ -96,10 +154,6 @@ export function SessionEventsSheet({ sessionId, sceneId, onClose, onQueueCleared
               <span className="sessioneventssheet-empty-status-dot" />
               <p>Sua jornada está tranquila</p>
             </div>
-            <button type="button" className="sessioneventssheet-empty-cta" onClick={onClose}>
-              <span className="material-symbols-outlined">play_arrow</span>
-              Voltar ao Jogo
-            </button>
           </div>
         ) : (
           <EventLogFeed events={events} />

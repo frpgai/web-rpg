@@ -20,5 +20,9 @@
     "1.5m": "1,5 m",
     "9m": "9 m",
     "sight": "Visão"
+  },
+  "events": {
+    "scene_investigation_success_true": "Vasculhou o local usando {{skill}} e descobriu novos segredos!",
+    "scene_investigation_success_false": "Vasculhou a área usando {{skill}}, mas não encontrou nada de interesse nas proximidades."
   }
 }

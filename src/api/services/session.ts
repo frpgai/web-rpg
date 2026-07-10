@@ -32,10 +32,16 @@ export const sessionApi = {
   //
   // `scene_id` agora faz parte do path (be-rpg refactor session-events) —
   // todo consumo de eventos é escopado a uma cena específica.
-  getEvents: (sessionId: string, sceneId: string, cursor?: string, limit = 50) => {
+  getEvents: (
+    sessionId: string,
+    sceneId: string,
+    options?: { cursor?: string; limit?: number; unreadOnly?: boolean },
+  ) => {
+    const { cursor, limit = 50, unreadOnly } = options ?? {};
     const searchParams = new URLSearchParams();
     if (cursor) searchParams.set('cursor', cursor);
     searchParams.set('limit', String(limit));
+    if (unreadOnly) searchParams.set('unread_only', 'true');
     return apiClient
       .get(`api/v1/sessions/${sessionId}/scenes/${sceneId}/events`, { searchParams })
       .json<SessionEventsPage>();

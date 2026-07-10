@@ -1,5 +1,5 @@
 import type { Hero } from '../../types';
-import { getAssetUrl } from '../../utils/url';
+import { Avatar } from '../ui/Avatar';
 import './HeroCard.css';
 
 
@@ -91,19 +91,11 @@ export function HeroCard({
       {/* Avatar row */}
       <div className="dashboard-hero-card-header">
         <div className="dashboard-hero-card-avatar-wrapper">
-          {currentHero.avatar_url ? (
-            <img
-              src={getAssetUrl(currentHero.avatar_url)}
-              alt={currentHero.name}
-              className="dashboard-hero-card-avatar"
-            />
-          ) : (
-            <div className="dashboard-hero-card-avatar-fallback">
-              <span className="dashboard-hero-card-avatar-letter">
-                {currentHero.name.charAt(0).toUpperCase()}
-              </span>
-            </div>
-          )}
+          <Avatar
+            url={currentHero.avatar_url}
+            name={currentHero.name}
+            className="dashboard-hero-card-avatar"
+          />
           
           <div className="dashboard-hero-card-level-badge">
             <span className="dashboard-hero-card-level-text">LVL {currentHero.level}</span>

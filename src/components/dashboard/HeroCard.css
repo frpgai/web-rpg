@@ -132,27 +132,6 @@
 .dashboard-hero-card-avatar {
   width: 64px;
   height: 64px;
-  border-radius: 12px;
-  border: 2px solid rgba(215, 186, 255, 0.5);
-  object-fit: cover;
-  object-position: top;
-}
-
-.dashboard-hero-card-avatar-fallback {
-  width: 64px;
-  height: 64px;
-  border-radius: 12px;
-  background-color: rgba(215, 186, 255, 0.15);
-  border: 2px solid rgba(215, 186, 255, 0.6);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.dashboard-hero-card-avatar-letter {
-  font-size: 26px;
-  font-weight: 700;
-  color: var(--color-primary);
 }
 
 .dashboard-hero-card-level-badge {

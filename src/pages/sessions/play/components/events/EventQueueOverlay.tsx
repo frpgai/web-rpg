@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
-import { DiceGrid } from '../../../../components/dice/DiceGrid';
-import { TypewriterText } from '../phases/scene/TypewriterText';
-import type { SessionEvent } from '../../../../types';
+import { DiceGrid } from '../../../../../components/dice/DiceGrid';
+import { TypewriterText } from '../../phases/scene/TypewriterText';
+import type { SessionEvent } from '../../../../../types';
 import './EventQueueOverlay.css';
 
 type Props = {
@@ -27,7 +27,8 @@ const ROLL_ANIMATION_MS = 1200;
  * eventos não revelados do BottomSheet (spec fluxo passo 5): um evento por
  * vez, cobrindo o `SessionEventsSheet` com foco visual.
  *
- * - `dice_roll` (e `poi_investigation`, que reusa o mesmo shape de rolagem):
+ * - `dice_roll` (e `poi_investigation`/`scene_investigation`, que reusam o
+ *   mesmo shape de rolagem):
  *   anima os dados rolando via `DiceGrid` (reaproveitado de
  *   `components/dice/`) antes de revelar o resultado.
  * - Demais tipos (narrativa/NPC): retrato + `TypewriterText` (reaproveitado
@@ -47,7 +48,8 @@ export function EventQueueOverlay({ queue, onEventResolved, onExhausted }: Props
 
   useEffect(() => {
     if (!event) return;
-    if (event.type !== 'dice_roll' && event.type !== 'poi_investigation') return;
+    if (event.type !== 'dice_roll' && event.type !== 'poi_investigation' && event.type !== 'scene_investigation')
+      return;
     setRolling(true);
     const t = setTimeout(() => setRolling(false), ROLL_ANIMATION_MS);
     return () => clearTimeout(t);
@@ -55,7 +57,8 @@ export function EventQueueOverlay({ queue, onEventResolved, onExhausted }: Props
 
   if (!event) return null;
 
-  const isRoll = event.type === 'dice_roll' || event.type === 'poi_investigation';
+  const isRoll =
+    event.type === 'dice_roll' || event.type === 'poi_investigation' || event.type === 'scene_investigation';
 
   function handleContinue() {
     onEventResolved(event.id);

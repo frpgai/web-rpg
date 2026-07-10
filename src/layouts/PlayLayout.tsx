@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'wouter';
 import { sessionApi } from '../api/services/session';
-import { SessionBottomNav } from '../pages/sessions/play/components/SessionBottomNav';
+import { SessionBottomNav } from '../pages/sessions/play/components/nav/SessionBottomNav';
 import './PlayLayout.css';
 
 interface PlayLayoutProps {
