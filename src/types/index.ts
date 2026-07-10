@@ -452,8 +452,12 @@ export type SessionEvent = {
   modifier?: number | null; // dice_roll / poi_investigation
   total?: number | null; // dice_roll / poi_investigation
   dc?: number | null; // poi_investigation
-  success?: boolean | null; // dice_roll / poi_investigation
+  success?: boolean | null; // dice_roll / poi_investigation / scene_investigation
   poi_id?: string | null; // poi_investigation
+  // POIs revelados por uma ação "Vasculhar o Local" (be-rpg PR #76,
+  // scene_investigation) — distinto de `poi_id` (investigação direcionada a
+  // um POI específico já conhecido). Sempre vazio quando `total < 10`.
+  discovered_poi_ids?: string[] | null; // scene_investigation
   npc_id?: string | null; // npc_dialogue_choice
   dialogue_node_id?: string | null; // npc_dialogue_choice
   dialogue_option_id?: string | null; // npc_dialogue_choice

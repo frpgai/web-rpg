@@ -29,7 +29,9 @@ function extractText(event: SessionEvent): string {
 }
 
 function isRollLike(event: SessionEvent): boolean {
-  return event.type === 'dice_roll' || event.type === 'poi_investigation';
+  return (
+    event.type === 'dice_roll' || event.type === 'poi_investigation' || event.type === 'scene_investigation'
+  );
 }
 
 function RollBadge({ event }: { event: SessionEvent }) {
