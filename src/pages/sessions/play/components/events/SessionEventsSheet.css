@@ -262,32 +262,3 @@
   animation: sessioneventssheet-arcane-pulse 4s ease-in-out infinite;
 }
 
-.sessioneventssheet-empty-cta {
-  margin-top: auto;
-  padding-top: var(--space-xl);
-  width: 100%;
-  max-width: 360px;
-  height: 56px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-sm);
-  border: none;
-  border-radius: var(--radius-md);
-  background-color: var(--color-primary);
-  color: var(--color-on-primary);
-  font-family: var(--font-sans);
-  font-weight: 700;
-  font-size: 15px;
-  cursor: pointer;
-  box-shadow: 0 0 15px color-mix(in srgb, var(--color-primary) 40%, transparent);
-  transition: opacity 0.2s ease, transform 0.1s ease;
-}
-
-.sessioneventssheet-empty-cta:hover {
-  opacity: 0.9;
-}
-
-.sessioneventssheet-empty-cta:active {
-  transform: scale(0.95);
-}

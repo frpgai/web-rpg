@@ -154,10 +154,6 @@ export function SessionEventsSheet({ sessionId, sceneId, onClose, onQueueCleared
               <span className="sessioneventssheet-empty-status-dot" />
               <p>Sua jornada está tranquila</p>
             </div>
-            <button type="button" className="sessioneventssheet-empty-cta" onClick={onClose}>
-              <span className="material-symbols-outlined">play_arrow</span>
-              Voltar ao Jogo
-            </button>
           </div>
         ) : (
           <EventLogFeed events={events} />
