@@ -1,3 +1,4 @@
+import { Avatar } from '../../../../../components/ui/Avatar';
 import type { SessionEvent } from '../../../../../types';
 import './EventLogFeed.css';
 
@@ -62,7 +63,12 @@ function EventCard({ event }: { event: SessionEvent }) {
         {isNpc || isNarrative ? (
           <span className="material-symbols-outlined">psychiatry</span>
         ) : (
-          <span className="material-symbols-outlined">person</span>
+          <Avatar
+            url={event.hero_avatar_url}
+            name={heroLabel ?? undefined}
+            size={48}
+            style={{ border: 'none' }}
+          />
         )}
         {unread && <span className="eventlogfeed-avatar-dot" />}
       </div>

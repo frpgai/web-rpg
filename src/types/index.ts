@@ -447,6 +447,7 @@ export type SessionEvent = {
   entity_type?: 'campaign' | 'adventure' | 'scene' | null; // narrative_entered
   entity_id?: string | null; // narrative_entered
   hero_id?: string | null; // dice_roll / poi_investigation
+  hero_avatar_url?: string | null; // dice_roll / poi_investigation / scene_investigation
   skill_check?: string | null; // dice_roll / poi_investigation
   roll?: number | null; // dice_roll / poi_investigation
   modifier?: number | null; // dice_roll / poi_investigation
