@@ -1,17 +1,17 @@
 import { useCallback, useEffect, useState } from 'react';
 import { sessionApi } from '../api/services/session';
-import { useSessionSocket } from './useSessionSocket';
+import { useAuthStore } from '../stores/authStore';
+
+const API_BASE_URL: string = import.meta.env.VITE_API_URL ?? '';
 
 /**
  * Estado de "há evento não revelado" na cena atual (be-rpg PR #75,
  * GET .../events/notify) — alimenta o badge de notificação da
  * `SessionBottomNav`.
  *
- * Não existe infraestrutura de SSE no projeto (grep confirmou — apenas
- * `useSessionSocket`, um WebSocket nativo já usado por `ScenePhase`); esse
- * hook reutiliza o mesmo WebSocket de sessão como o canal "reativo": qualquer
- * mensagem recebida (rolagem, POI descoberto, narrativa) dispara um refetch
- * do endpoint de notify, além do fetch inicial ao montar.
+ * O canal "reativo" é uma conexão SSE (be-rpg PR #75,
+ * GET .../events/stream) que dispara um refetch do endpoint de notify
+ * a cada mensagem `notify` recebida, além do fetch inicial ao montar.
  */
 export function useSessionEventsNotify(sessionId: string | undefined, sceneId: string | undefined) {
   const [hasUnread, setHasUnread] = useState(false);
@@ -31,12 +31,22 @@ export function useSessionEventsNotify(sessionId: string | undefined, sceneId: s
     refresh();
   }, [refresh]);
 
-  useSessionSocket(
-    sessionId ?? '',
-    useCallback(() => {
+  useEffect(() => {
+    if (!sessionId || !sceneId) return;
+
+    const token = useAuthStore.getState().token;
+    const sse = new EventSource(
+      `${API_BASE_URL}/sessions/${sessionId}/scenes/${sceneId}/events/stream?token=${token}`
+    );
+
+    sse.addEventListener('notify', () => {
       refresh();
-    }, [refresh])
-  );
+    });
+
+    return () => {
+      sse.close();
+    };
+  }, [sessionId, sceneId, refresh]);
 
   return { hasUnread, refresh };
 }
