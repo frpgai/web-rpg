@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { useSessionEventsNotify } from '../../../../hooks/useSessionEventsNotify';
-import { SessionEventsSheet } from './SessionEventsSheet';
+import { useSessionEventsNotify } from '../../../../../hooks/useSessionEventsNotify';
+import { SessionEventsSheet } from '../events/SessionEventsSheet';
 import './SessionBottomNav.css';
 
 type SessionNavTab = 'missions' | 'events' | 'team' | 'grimoire';

@@ -1,4 +1,4 @@
-import type { SessionEvent } from '../../../../types';
+import type { SessionEvent } from '../../../../../types';
 import './EventLogFeed.css';
 
 type Props = {

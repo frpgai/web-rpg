@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useState } from 'react';
-import { sessionApi } from '../../../../api/services/session';
-import { Spinner } from '../../../../components/ui/Spinner';
+import { sessionApi } from '../../../../../api/services/session';
+import { Spinner } from '../../../../../components/ui/Spinner';
 import { EventLogFeed } from './EventLogFeed';
 import { EventQueueOverlay } from './EventQueueOverlay';
-import type { SessionEvent } from '../../../../types';
-import emptyEventsIllustration from '../../../../assets/empty-events-state.png';
+import type { SessionEvent } from '../../../../../types';
+import emptyEventsIllustration from '../../../../../assets/empty-events-state.png';
 import './SessionEventsSheet.css';
 
 type Props = {

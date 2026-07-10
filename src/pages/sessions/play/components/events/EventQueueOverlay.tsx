@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
-import { DiceGrid } from '../../../../components/dice/DiceGrid';
-import { TypewriterText } from '../phases/scene/TypewriterText';
-import type { SessionEvent } from '../../../../types';
+import { DiceGrid } from '../../../../../components/dice/DiceGrid';
+import { TypewriterText } from '../../phases/scene/TypewriterText';
+import type { SessionEvent } from '../../../../../types';
 import './EventQueueOverlay.css';
 
 type Props = {
