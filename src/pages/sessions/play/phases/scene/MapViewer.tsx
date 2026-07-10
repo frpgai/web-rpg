@@ -3,6 +3,7 @@ import type { SyntheticEvent } from 'react';
 import type { PointerEvent, WheelEvent } from 'react';
 import { getAssetUrl } from '../../../../../utils/url';
 import type { SceneDetail } from '../../../../../types';
+import { Avatar } from '../../../../../components/ui/Avatar';
 import './MapViewer.css';
 
 type Props = {
@@ -242,6 +243,31 @@ export function MapViewer({ scene, justDiscoveredPoiId, onPoiClick }: Props) {
                 </div>
               );
             })}
+
+          {scene.players.map((player, index) => {
+            const position = resolvePosition(
+              player.x_coordinate,
+              player.y_coordinate,
+              player.hero_name,
+              index + 5,
+              index + 29
+            );
+            return (
+              <div
+                key={player.hero_name}
+                className="mapviewer-pin mapviewer-pin-player"
+                style={{ left: `${position.left}%`, top: `${position.top}%` }}
+                aria-label={player.hero_name}
+              >
+                <Avatar size={40} url={player.hero_avatar_url} name={player.hero_name} />
+                <span
+                  className={`mapviewer-pin-label${!showNames ? ' mapviewer-pin-label-hover-only' : ''}`}
+                >
+                  {player.hero_name}
+                </span>
+              </div>
+            );
+          })}
         </div>
       </div>
 

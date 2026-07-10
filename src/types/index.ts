@@ -558,6 +558,17 @@ export type ScenePointOfInterest = {
   investigable: boolean;
 };
 
+// SessionScenePlayerView — posição atual do herói de cada jogador no mapa da
+// cena, exposta em GET /api/v1/sessions/{session_id}/scenes/{scene_id}
+// (be-rpg PR #79, SessionScenePlayerView). Shape flat — sem objeto `hero`
+// aninhado — espelhando exatamente o JSON retornado pelo backend.
+export type SessionScenePlayerView = {
+  hero_name: string;
+  hero_avatar_url?: string | null;
+  x_coordinate?: number | null;
+  y_coordinate?: number | null;
+};
+
 // SceneDetail — resposta de GET /api/v1/sessions/{session_id}/scenes/{scene_id}
 // (be-rpg PR #70, branch feature/scene-session-endpoint). Substitui o
 // endpoint antigo GET /api/v1/scenes/{id} (não escopado por sessão) — os
@@ -572,6 +583,7 @@ export type SceneDetail = {
   audio_transition_url?: string | null;
   npcs: SceneNPC[];
   points_of_interest: ScenePointOfInterest[];
+  players: SessionScenePlayerView[];
 };
 
 export type DialogueOptionView = {
