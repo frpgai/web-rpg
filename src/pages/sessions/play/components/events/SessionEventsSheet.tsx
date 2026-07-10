@@ -36,6 +36,7 @@ export function SessionEventsSheet({ sessionId, sceneId, onClose, onQueueCleared
   const [events, setEvents] = useState<SessionEvent[]>([]);
   const [loading, setLoading] = useState(Boolean(sceneId));
   const [queue, setQueue] = useState<SessionEvent[]>([]);
+  const [unreadOnly, setUnreadOnly] = useState(false);
 
   const load = useCallback(() => {
     if (!sceneId) {
@@ -48,14 +49,14 @@ export function SessionEventsSheet({ sessionId, sceneId, onClose, onQueueCleared
     }
     setLoading(true);
     sessionApi
-      .getEvents(sessionId, sceneId)
+      .getEvents(sessionId, sceneId, { unreadOnly })
       .then((page) => {
         setEvents(page.items);
         setQueue(page.items.filter((e) => e.revealed === false));
       })
       .catch((err) => console.error('SessionEventsSheet: failed to load events:', err))
       .finally(() => setLoading(false));
-  }, [sessionId, sceneId]);
+  }, [sessionId, sceneId, unreadOnly]);
 
   useEffect(() => {
     load();
@@ -100,6 +101,26 @@ export function SessionEventsSheet({ sessionId, sceneId, onClose, onQueueCleared
             {unreadCount > 0 && (
               <span className="sessioneventssheet-unread-pill">{unreadCount} novas</span>
             )}
+            <div className="sessioneventssheet-filter-toggle" role="tablist" aria-label="Filtro de eventos">
+              <button
+                type="button"
+                role="tab"
+                aria-selected={!unreadOnly}
+                className={`sessioneventssheet-filter-btn ${!unreadOnly ? 'sessioneventssheet-filter-btn-active' : ''}`}
+                onClick={() => setUnreadOnly(false)}
+              >
+                Todas
+              </button>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={unreadOnly}
+                className={`sessioneventssheet-filter-btn ${unreadOnly ? 'sessioneventssheet-filter-btn-active' : ''}`}
+                onClick={() => setUnreadOnly(true)}
+              >
+                Novas
+              </button>
+            </div>
             <button
               type="button"
               className="sessioneventssheet-close-btn"

@@ -71,6 +71,32 @@
   gap: var(--space-sm);
 }
 
+.sessioneventssheet-filter-toggle {
+  display: flex;
+  gap: 2px;
+  padding: 2px;
+  border-radius: var(--radius-full);
+  background: color-mix(in srgb, var(--color-outline-variant) 15%, transparent);
+}
+
+.sessioneventssheet-filter-btn {
+  border: none;
+  background: transparent;
+  color: color-mix(in srgb, var(--color-text) 60%, transparent);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--radius-full);
+  cursor: pointer;
+}
+
+.sessioneventssheet-filter-btn-active {
+  background: var(--color-primary);
+  color: var(--color-surface-lowest);
+}
+
 .sessioneventssheet-close-btn {
   display: flex;
   align-items: center;
