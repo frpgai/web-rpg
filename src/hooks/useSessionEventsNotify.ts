@@ -1,8 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { sessionApi } from '../api/services/session';
-import { useAuthStore } from '../stores/authStore';
-
-const API_BASE_URL: string = import.meta.env.VITE_API_URL ?? '';
+import { useSessionEventStream } from './useSessionEventStream';
 
 /**
  * Estado de "há evento não revelado" na cena atual (be-rpg PR #75,
@@ -31,22 +29,9 @@ export function useSessionEventsNotify(sessionId: string | undefined, sceneId: s
     refresh();
   }, [refresh]);
 
-  useEffect(() => {
-    if (!sessionId || !sceneId) return;
-
-    const token = useAuthStore.getState().token;
-    const sse = new EventSource(
-      `${API_BASE_URL}/api/v1/sessions/${sessionId}/scenes/${sceneId}/events/stream?token=${token}`
-    );
-
-    sse.addEventListener('notify', () => {
-      refresh();
-    });
-
-    return () => {
-      sse.close();
-    };
-  }, [sessionId, sceneId, refresh]);
+  const streamPath =
+    sessionId && sceneId ? `sessions/${sessionId}/scenes/${sceneId}/events/stream` : null;
+  useSessionEventStream(streamPath, refresh);
 
   return { hasUnread, refresh };
 }

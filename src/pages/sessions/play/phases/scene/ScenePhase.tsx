@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { sessionApi } from '../../../../../api/services/session';
 import { sceneApi } from '../../../../../api/services/scene';
 import { useSessionSocket } from '../../../../../hooks/useSessionSocket';
+import { useSessionEventStream } from '../../../../../hooks/useSessionEventStream';
 import { useAuthStore } from '../../../../../stores/authStore';
 import { Spinner } from '../../../../../components/ui/Spinner';
 import { SessionHeader } from '../../../../../components/navigation/SessionHeader';
@@ -147,15 +148,27 @@ export function ScenePhase({ sessionId, session }: Props) {
         const diceEvent = (event.payload ?? event) as SessionEvent;
         setEvents((prev) => [...prev, diceEvent]);
         setImmersiveEvent(diceEvent);
-      } else if (event.type === 'notify' || event.event === 'notify') {
-        // Notificação genérica de mudança de estado da sessão (ex: movimento
-        // de jogador) — recarrega a lista de players para refletir novas
-        // coordenadas/POI atual (plano 00008-mover-jogador-no-mapa, item C).
-        loadPlayers();
       }
       fetchEvents();
-    }, [fetchEvents, loadScene, loadPlayers])
+    }, [fetchEvents, loadScene])
   );
+
+  // Canal SSE de eventos da cena (be-rpg PR #75, GET .../scenes/{sceneId}/
+  // events/stream) — o WebSocket do useSessionSocket acima nunca emite tipo
+  // "notify" (Hub em be-rpg/internal/session/ws.go só emite session_joined/
+  // session_left/player_ready_changed/session_started/roll_resolved/
+  // roll_failed/narrative/session.poi_discovered). O evento "notify" de
+  // verdade (ex: disparado por CreateEvent) vem deste canal SSE, mesmo
+  // padrão de useSessionEventsNotify.ts.
+  useSessionEventStream(
+    scene?.id ? `sessions/${sessionId}/scenes/${scene.id}/events/stream` : null,
+    fetchEvents
+  );
+
+  // Canal SSE dedicado de players da sessão (be-rpg PR #79, GET .../sessions/
+  // {id}/players/stream) — dispara "notify" a cada join/leave/MovePlayer,
+  // independente da cena atual. Recarrega apenas a lista de players.
+  useSessionEventStream(`sessions/${sessionId}/players/stream`, loadPlayers);
 
   if (sceneLoading) {
     return (
