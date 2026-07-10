@@ -2,6 +2,7 @@ import { apiClient } from '../client';
 import type {
   Adventure,
   CreateEventRequest,
+  NextPhaseResponse,
   SessionDetail,
   SessionEvent,
   SessionEventsPage,
@@ -15,6 +16,11 @@ export const sessionApi = {
     apiClient.get(`api/v1/sessions/${sessionId}/players`).json<SessionPlayer[]>(),
   start: (sessionId: string) =>
     apiClient.post(`api/v1/sessions/${sessionId}/start`).json<StartSessionResponse>(),
+  // Avança a fase revelada do jogador (hybrid phase model) — quem realmente
+  // muda `session.phase` no backend, ao contrário de createEvent (só grava
+  // timeline, nunca mexe em sessions_targets).
+  nextPhase: (sessionId: string) =>
+    apiClient.post(`api/v1/sessions/${sessionId}/next-phase`).json<NextPhaseResponse>(),
   getAdventure: (sessionId: string) =>
     apiClient.get(`api/v1/sessions/${sessionId}/adventure`).json<Adventure>(),
   createEvent: (sessionId: string, body: CreateEventRequest) =>

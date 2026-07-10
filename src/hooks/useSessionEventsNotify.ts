@@ -36,7 +36,7 @@ export function useSessionEventsNotify(sessionId: string | undefined, sceneId: s
 
     const token = useAuthStore.getState().token;
     const sse = new EventSource(
-      `${API_BASE_URL}/sessions/${sessionId}/scenes/${sceneId}/events/stream?token=${token}`
+      `${API_BASE_URL}/api/v1/sessions/${sessionId}/scenes/${sceneId}/events/stream?token=${token}`
     );
 
     sse.addEventListener('notify', () => {

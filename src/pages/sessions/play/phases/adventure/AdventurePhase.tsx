@@ -91,10 +91,10 @@ export function AdventurePhase({ sessionId, session, onAdvance }: Props) {
   }, [narrationSrc, adventure?.id]);
 
   // Avança para a fase "scene": grava o evento `narrative_entered` com
-  // entity_type "adventure" (be-rpg internal/session/service.go, EventType-
-  // NarrativeEntered) — o backend recalcula `session.phase` a partir dos
-  // eventos gravados, então o avanço real acontece no refetch feito por
-  // `onAdvance` no PlayPage, não localmente aqui.
+  // entity_type "adventure" (só timeline, não muda a fase) e chama
+  // `next-phase`, que é quem de fato revela a próxima fase do jogador
+  // (be-rpg internal/session/service.go, Service.NextPhase / sessions_targets)
+  // — só então o refetch feito por `onAdvance` no PlayPage reflete a mudança.
   function handleEnter() {
     if (fading) return;
     setFading(true);
@@ -106,6 +106,8 @@ export function AdventurePhase({ sessionId, session, onAdvance }: Props) {
           entity_id: session.current_adventure_id ?? '',
         })
         .catch((err) => console.error('Failed to log adventure narrative_entered event:', err))
+        .then(() => sessionApi.nextPhase(sessionId))
+        .catch((err) => console.error('Failed to advance to next phase:', err))
         .finally(onAdvance);
     }, FADE_TO_BLACK_MS);
   }
