@@ -9,7 +9,11 @@ import './SessionEventsSheet.css';
 
 type Props = {
   sessionId: string;
-  sceneId: string;
+  // Pode ser `null` quando a sessão ainda não tem cena corrente (fases
+  // campaign/adventure, ou fetch de `current_scene_id` em PlayLayout ainda
+  // não resolvido) — o BottomSheet abre normalmente e cai direto no empty
+  // state, já que não pode haver eventos sem cena.
+  sceneId: string | null;
   onClose: () => void;
   // Chamado quando a fila de eventos não revelados esgota (passo 5 do fluxo
   // de notificação) — o chamador usa isso para forçar um refetch do badge
@@ -30,10 +34,18 @@ type Props = {
  */
 export function SessionEventsSheet({ sessionId, sceneId, onClose, onQueueCleared }: Props) {
   const [events, setEvents] = useState<SessionEvent[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(Boolean(sceneId));
   const [queue, setQueue] = useState<SessionEvent[]>([]);
 
   const load = useCallback(() => {
+    if (!sceneId) {
+      // Sem cena corrente ainda não há como existir evento nenhum — cai
+      // direto no empty state sem chamar a API.
+      setEvents([]);
+      setQueue([]);
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     sessionApi
       .getEvents(sessionId, sceneId)

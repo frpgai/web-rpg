@@ -76,7 +76,7 @@ export function SessionBottomNav({ sessionId, sceneId }: Props) {
         })}
       </nav>
 
-      {sheetOpen && sceneId && (
+      {sheetOpen && (
         <SessionEventsSheet
           sessionId={sessionId}
           sceneId={sceneId}
