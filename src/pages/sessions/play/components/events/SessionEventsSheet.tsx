@@ -88,9 +88,19 @@ export function SessionEventsSheet({ sessionId, sceneId, onClose, onQueueCleared
             <span className="sessioneventssheet-eyebrow">Feed de Eventos</span>
             <h2 className="sessioneventssheet-title">Log de Aventura</h2>
           </div>
-          {unreadCount > 0 && (
-            <span className="sessioneventssheet-unread-pill">{unreadCount} novas</span>
-          )}
+          <div className="sessioneventssheet-header-actions">
+            {unreadCount > 0 && (
+              <span className="sessioneventssheet-unread-pill">{unreadCount} novas</span>
+            )}
+            <button
+              type="button"
+              className="sessioneventssheet-close-btn"
+              onClick={onClose}
+              aria-label="Fechar"
+            >
+              <span className="material-symbols-outlined">close</span>
+            </button>
+          </div>
         </div>
 
         {loading ? (
