@@ -484,6 +484,13 @@ export type SessionTarget = {
   createdAt: string;
 };
 
+// Resposta de POST /sessions/{id}/next-phase: a nova fase (ainda não revelada)
+// que o jogador acaba de destrancar para si mesmo.
+export type NextPhaseResponse = {
+  target_type: 'campaign' | 'adventure' | 'scene';
+  target_id: string;
+};
+
 // Nota: `InvestigatePoiRequest`/`InvestigatePoiResponse` foram removidos —
 // os endpoints dedicados que eles tipavam (`.../pois/{poi_id}/investigate`,
 // `.../investigate-general`) não existem mais (be-rpg commits e123710/
