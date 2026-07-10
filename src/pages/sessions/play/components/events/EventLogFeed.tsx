@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Avatar } from '../../../../../components/ui/Avatar';
 import type { SessionEvent } from '../../../../../types';
 import './EventLogFeed.css';
@@ -19,7 +20,14 @@ function formatRelative(iso: string): string {
   return `Há ${diffD}d`;
 }
 
-function extractText(event: SessionEvent): string {
+function extractText(event: SessionEvent, t: any): string {
+  if (event.type === 'scene_investigation') {
+    const skillCheck = event.skill_check || 'investigation';
+    const skillName = t(`skills:${skillCheck}.name`, { defaultValue: skillCheck });
+    const successKey = event.success ? 'true' : 'false';
+    return t(`common:events.scene_investigation_success_${successKey}`, { skill: skillName });
+  }
+
   const payload = event.payload as Record<string, unknown> | null;
   if (payload && typeof payload === 'object') {
     const candidate = payload.text ?? payload.label ?? payload.message;
@@ -50,24 +58,26 @@ function RollBadge({ event }: { event: SessionEvent }) {
 }
 
 function EventCard({ event }: { event: SessionEvent }) {
+  const { t } = useTranslation(['common', 'skills']);
   const unread = event.revealed === false;
   const cardClass = `eventlogfeed-card ${unread ? 'eventlogfeed-card-unread' : 'eventlogfeed-card-read'}`;
 
-  const heroLabel = event.hero_id ? `Herói ${event.hero_id.slice(0, 8)}` : null;
+  const heroLabel = event.hero_name || (event.hero_id ? `Herói ${event.hero_id.slice(0, 8)}` : null);
   const isNarrative = !isRollLike(event) && !event.npc_id;
   const isNpc = !isRollLike(event) && !!event.npc_id;
 
   return (
     <li className={cardClass}>
-      <div className="eventlogfeed-avatar">
+      <div className="eventlogfeed-avatar-wrapper">
         {isNpc || isNarrative ? (
-          <span className="material-symbols-outlined">psychiatry</span>
+          <div className="ui-avatar ui-avatar-npc">
+            <span className="material-symbols-outlined">psychiatry</span>
+          </div>
         ) : (
           <Avatar
             url={event.hero_avatar_url}
             name={heroLabel ?? undefined}
             size={48}
-            style={{ border: 'none' }}
           />
         )}
         {unread && <span className="eventlogfeed-avatar-dot" />}
@@ -83,9 +93,9 @@ function EventCard({ event }: { event: SessionEvent }) {
         </div>
 
         {isNarrative ? (
-          <p className="eventlogfeed-narrative-text">"{extractText(event)}"</p>
+          <p className="eventlogfeed-narrative-text">"{extractText(event, t)}"</p>
         ) : (
-          <p className="eventlogfeed-text">{extractText(event)}</p>
+          <p className="eventlogfeed-text">{extractText(event, t)}</p>
         )}
 
         {isRollLike(event) && event.success != null && (
