@@ -460,6 +460,10 @@ export type SessionEvent = {
   choice_text?: string | null; // npc_dialogue_choice
   payload: unknown; // fallback JSONB para tipos futuros sem colunas dedicadas
   created_at: string;
+  // Implicit ack (be-rpg PR #74): marca o evento como revelado no banco ao
+  // buscá-lo, mas retorna `false` na resposta que primeiro o revela — permite
+  // diferenciar "novo desde a última visita" sem uma segunda chamada.
+  revealed?: boolean;
 };
 
 export type SessionEventsPage = {
@@ -604,7 +608,12 @@ export type SessionSocketEventType =
   | 'player_ready_changed'
   | 'session_started'
   | 'roll_resolved'
-  | 'session.poi_discovered';
+  | 'session.poi_discovered'
+  // Envelope de session_events (be-rpg PR #74) — hoje só chega via fetch de
+  // /events, mas o contrato de WS já reserva este tipo para quando o backend
+  // passar a emitir session_events em tempo real. Caminho dormente: nenhum
+  // fluxo real dispara isto ainda.
+  | 'dice_roll';
 
 export type SessionSocketEvent = {
   type: SessionSocketEventType;

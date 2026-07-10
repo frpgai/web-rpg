@@ -5,7 +5,8 @@ import { useSessionSocket } from '../../../../../hooks/useSessionSocket';
 import { Spinner } from '../../../../../components/ui/Spinner';
 import { SessionHeader } from '../../../../../components/navigation/SessionHeader';
 import { MapViewer } from './MapViewer';
-import { TimelineFeed } from './TimelineFeed';
+import { TimelineFeed } from './events/TimelineFeed';
+import { EventImmersiveOverlay } from './events/EventImmersiveOverlay';
 import { ActionDock } from './ActionDock';
 import { NPCDialogueModal } from './NPCDialogueModal';
 import { InvestigateModal } from './InvestigateModal';
@@ -48,6 +49,11 @@ export function ScenePhase({ sessionId, session }: Props) {
   // POI selecionado ao clicar num pin no mapa (fora do modo dev) — abre a
   // bottom sheet de detalhes (spec 00153-mesa-jogo/scene.md seção 3.1).
   const [selectedPoi, setSelectedPoi] = useState<ScenePointOfInterest | null>(null);
+  // Evento dice_roll recebido via envelope de session_events (be-rpg PR #74)
+  // — dispara o EventImmersiveOverlay. Caminho DORMENTE hoje: nenhum fluxo
+  // real emite este envelope em tempo real ainda (separado e independente do
+  // DiceRollOverlay/useDiceRollStore/WS roll_resolved, que continua intocado).
+  const [immersiveEvent, setImmersiveEvent] = useState<SessionEvent | null>(null);
 
   const loadScene = useCallback(() => {
     if (!session.current_scene_id) {
@@ -70,13 +76,14 @@ export function ScenePhase({ sessionId, session }: Props) {
   }, [loadScene]);
 
   const fetchEvents = useCallback(() => {
+    if (!scene?.id) return;
     setEventsLoading(true);
     sessionApi
-      .getEvents(sessionId)
+      .getEvents(sessionId, scene.id)
       .then((page) => setEvents(page.items))
       .catch((err) => console.error('Failed to load scene events:', err))
       .finally(() => setEventsLoading(false));
-  }, [sessionId]);
+  }, [sessionId, scene?.id]);
 
   useEffect(() => {
     fetchEvents();
@@ -93,6 +100,13 @@ export function ScenePhase({ sessionId, session }: Props) {
         if (pois && pois.length > 0) {
           setJustDiscoveredPoiId(pois[0].id);
         }
+      } else if (event.type === 'dice_roll') {
+        // Envelope de session_events tipo dice_roll (be-rpg PR #74) — adiciona
+        // à timeline local e ativa o overlay imersivo. Não confundir com
+        // 'roll_resolved' acima, que segue o fluxo real de DiceRollOverlay.
+        const diceEvent = (event.payload ?? event) as SessionEvent;
+        setEvents((prev) => [...prev, diceEvent]);
+        setImmersiveEvent(diceEvent);
       }
       fetchEvents();
     }, [fetchEvents, loadScene])
@@ -141,6 +155,7 @@ export function ScenePhase({ sessionId, session }: Props) {
       {activeNpc && (
         <NPCDialogueModal
           sessionId={sessionId}
+          sceneId={scene.id}
           npc={activeNpc}
           onClose={() => setActiveNpc(null)}
           onEventLogged={fetchEvents}
@@ -176,6 +191,10 @@ export function ScenePhase({ sessionId, session }: Props) {
       )}
 
       <DiceRollOverlay />
+
+      {immersiveEvent && (
+        <EventImmersiveOverlay event={immersiveEvent} onClose={() => setImmersiveEvent(null)} />
+      )}
     </div>
   );
 }

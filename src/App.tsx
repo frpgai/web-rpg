@@ -17,6 +17,7 @@ import ConfigureSessionPage from './pages/sessions/configure-session/ConfigureSe
 import LobbyPage from './pages/sessions/configure-session/lobby/LobbyPage';
 import PlayPage from './pages/sessions/play/PlayPage';
 import AppLayout from './layouts/AppLayout';
+import PlayLayout from './layouts/PlayLayout';
 import { PrivateRoute } from './components/common/PrivateRoute';
 import { useAuthStore } from './stores/authStore';
 import { systemService } from './api/services/systemService';
@@ -45,7 +46,18 @@ export default function App() {
         <Route path="/login" component={LoginPage} />
         <Route path="/register" component={RegisterPage} />
 
-        {/* ==================== 2. ROTAS PRIVADAS ==================== */}
+        {/* ==================== 2. ROTA DE JOGO (PlayLayout) ==================== */}
+        {/* Precisa vir antes do catch-all "/app/*" abaixo — wouter <Switch>
+            renderiza apenas a primeira rota que casar. */}
+        <Route path="/app/sessions/:id/play">
+          <PrivateRoute>
+            <PlayLayout>
+              <PlayPage />
+            </PlayLayout>
+          </PrivateRoute>
+        </Route>
+
+        {/* ==================== 3. ROTAS PRIVADAS DO PAINEL ==================== */}
         <Route path="/app/*">
           <PrivateRoute>
             <AppLayout>
@@ -76,7 +88,6 @@ export default function App() {
                 <Route path="/app/sessions/create/select-campaign" component={CreateSessionPage} />
                 <Route path="/app/sessions/new/configure/:campaignId" component={ConfigureSessionPage} />
                 <Route path="/app/sessions/:id/lobby" component={LobbyPage} />
-                <Route path="/app/sessions/:id/play" component={PlayPage} />
 
                 <Route>
                   <div style={{ padding: '20px', textAlign: 'center' }}>

@@ -1,9 +1,9 @@
 import { useEffect, useRef } from 'react';
-import { getAssetUrl } from '../../../../../utils/url';
-import { useAmbientVolume } from '../../../../../utils/useAmbientVolume';
-import { Spinner } from '../../../../../components/ui/Spinner';
-import { TypewriterText } from './TypewriterText';
-import type { SceneDetail, SessionEvent } from '../../../../../types';
+import { getAssetUrl } from '../../../../../../utils/url';
+import { useAmbientVolume } from '../../../../../../utils/useAmbientVolume';
+import { Spinner } from '../../../../../../components/ui/Spinner';
+import { TypewriterText } from '../TypewriterText';
+import type { SceneDetail, SessionEvent } from '../../../../../../types';
 import './TimelineFeed.css';
 
 type Props = {
@@ -21,6 +21,12 @@ function extractText(event: SessionEvent): string {
   return event.type;
 }
 
+// Marcador sutil para eventos com `revealed === false` (be-rpg PR #74,
+// implicit ack) — indica que o evento é novo desde a última visita à cena.
+function NewEventBadge() {
+  return <span className="timelinefeed-badge-new" aria-label="Novo" title="Novo" />;
+}
+
 function DiceRollRow({ event }: { event: SessionEvent }) {
   const payload = (event.payload ?? {}) as Record<string, unknown>;
   const roll = typeof payload.roll === 'number' ? payload.roll : undefined;
@@ -30,6 +36,7 @@ function DiceRollRow({ event }: { event: SessionEvent }) {
 
   return (
     <li className="timelinefeed-row timelinefeed-row-dice">
+      {event.revealed === false && <NewEventBadge />}
       <span className="timelinefeed-dice-badge">d20</span>
       <div className="timelinefeed-dice-body">
         <span className="timelinefeed-dice-total">
@@ -57,6 +64,7 @@ function PoiInvestigationRow({ event, scene }: { event: SessionEvent; scene: Sce
 
   return (
     <li className="timelinefeed-row timelinefeed-row-dice">
+      {event.revealed === false && <NewEventBadge />}
       <span className="timelinefeed-dice-badge">d20</span>
       <div className="timelinefeed-dice-body">
         <span className="timelinefeed-dice-total">
@@ -82,6 +90,7 @@ function NpcSpeechRow({ event, scene }: { event: SessionEvent; scene: SceneDetai
 
   return (
     <li className="timelinefeed-row timelinefeed-row-npc">
+      {event.revealed === false && <NewEventBadge />}
       {npc?.avatar_url ? (
         <img className="timelinefeed-npc-avatar" src={getAssetUrl(npc.avatar_url)} alt={npc.name} />
       ) : (
@@ -147,6 +156,7 @@ export function TimelineFeed({ scene, events, loading }: Props) {
             }
             return (
               <li key={event.id} className="timelinefeed-row timelinefeed-row-generic">
+                {event.revealed === false && <NewEventBadge />}
                 <p className="timelinefeed-generic-text">{extractText(event)}</p>
               </li>
             );

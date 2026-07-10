@@ -1,0 +1,162 @@
+/* Overlay glassmorphic para eventos dice_roll do envelope session_events
+   (be-rpg PR #74). Estilo inspirado em DiceRollOverlay.module.css e no
+   componente "dice-glow"/"glass-panel" da tela Stitch "Mesa de Jogo:
+   Timeline Imersiva" (screen 5a6ff930a7ac448b9beb8168a454b092) — recriado
+   aqui com Custom Properties próprias, sem importar o CSS original. */
+
+.event-immersive-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(19, 19, 24, 0.85);
+  backdrop-filter: blur(12px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: var(--space-md);
+  animation: event-immersive-overlay-fade-in 300ms ease-out forwards;
+}
+
+.event-immersive-overlay-panel {
+  position: relative;
+  width: 100%;
+  max-width: 320px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-lg);
+  border-radius: var(--radius-lg);
+  background: rgba(19, 19, 24, 0.8);
+  border: 1px solid rgba(215, 186, 255, 0.1);
+  box-shadow: inset 0 0 12px rgba(215, 186, 255, 0.15), 0 0 20px rgba(215, 186, 255, 0.05);
+  animation: event-immersive-overlay-pop 400ms ease-out forwards;
+}
+
+.event-immersive-overlay-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-primary);
+  opacity: 0.8;
+}
+
+.event-immersive-overlay-die {
+  position: relative;
+  width: 96px;
+  height: 96px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(215, 186, 255, 0.5);
+  box-shadow: 0 0 15px rgba(215, 186, 255, 0.4);
+  background: linear-gradient(135deg, rgba(215, 186, 255, 0.1), transparent);
+  animation: event-immersive-overlay-spin 900ms ease-out;
+}
+
+.event-immersive-overlay-die-icon {
+  position: absolute;
+  font-size: 64px;
+  color: var(--color-primary);
+  opacity: 0.25;
+}
+
+.event-immersive-overlay-die-value {
+  position: relative;
+  z-index: 1;
+  font-family: var(--font-display);
+  font-size: 32px;
+  color: var(--color-primary);
+  filter: drop-shadow(0 0 8px rgba(215, 186, 255, 0.6));
+}
+
+.event-immersive-overlay-calc {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-xs);
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: var(--color-text-muted);
+}
+
+.event-immersive-overlay-total {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.event-immersive-overlay-hero {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+
+.event-immersive-overlay-result {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 2px 10px;
+  border-radius: var(--radius-full);
+}
+
+.event-immersive-overlay-result-success {
+  color: var(--color-tertiary);
+  background-color: rgba(49, 227, 104, 0.15);
+}
+
+.event-immersive-overlay-result-failure {
+  color: var(--color-error);
+  background-color: rgba(255, 180, 171, 0.15);
+}
+
+.event-immersive-overlay-close {
+  position: absolute;
+  top: var(--space-sm);
+  right: var(--space-sm);
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-full);
+  border: none;
+  background: transparent;
+  color: var(--color-text-muted);
+  cursor: pointer;
+}
+
+.event-immersive-overlay-close:hover {
+  color: var(--color-primary);
+}
+
+@keyframes event-immersive-overlay-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes event-immersive-overlay-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes event-immersive-overlay-spin {
+  from {
+    transform: rotate(-180deg) scale(0.6);
+  }
+  to {
+    transform: rotate(0deg) scale(1);
+  }
+}

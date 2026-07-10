@@ -26,7 +26,7 @@ export type GroupConversationEntry = {
  * resolver. Isso deveria ser resolvido expondo `hero_id` também para
  * `npc_dialogue_choice` no backend.
  */
-export function useNpcGroupConversations(sessionId: string, npc: SceneNPC | null) {
+export function useNpcGroupConversations(sessionId: string, sceneId: string, npc: SceneNPC | null) {
   const [entries, setEntries] = useState<GroupConversationEntry[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -40,7 +40,7 @@ export function useNpcGroupConversations(sessionId: string, npc: SceneNPC | null
     setError(null);
 
     Promise.all([
-      sessionApi.getEvents(sessionId),
+      sessionApi.getEvents(sessionId, sceneId),
       sessionApi.getPlayers(sessionId),
       npcApi.getDialogueTree(npc.id).catch(() => null),
     ])
@@ -80,7 +80,7 @@ export function useNpcGroupConversations(sessionId: string, npc: SceneNPC | null
         setError('Não foi possível carregar as conversas do grupo.');
       })
       .finally(() => setLoading(false));
-  }, [sessionId, npc]);
+  }, [sessionId, sceneId, npc]);
 
   return { entries, loading, error };
 }
