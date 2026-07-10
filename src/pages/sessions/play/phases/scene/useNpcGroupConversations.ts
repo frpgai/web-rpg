@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { sessionApi } from '../../../../../api/services/session';
 import { npcApi } from '../../../../../api/services/npc';
-import type { DialogueNodeView, SceneNPC, SessionEvent, SessionPlayer } from '../../../../../types';
+import type { DialogueNodeView, SceneNPC, SessionEvent, SessionPlayerDetail } from '../../../../../types';
 
 export type GroupConversationEntry = {
   key: string;
@@ -46,7 +46,7 @@ export function useNpcGroupConversations(sessionId: string, sceneId: string, npc
     ])
       .then(([eventsPage, players, tree]) => {
         const nodesById = new Map<string, DialogueNodeView>((tree?.nodes ?? []).map((n) => [n.id, n]));
-        const heroByPlayerIndex = players.map((p: SessionPlayer) => p.hero?.name ?? p.username);
+        const heroByPlayerIndex = players.map((p: SessionPlayerDetail) => p.hero?.name ?? p.username);
 
         const rows = eventsPage.items
           .filter((event: SessionEvent) => event.type === 'npc_dialogue_choice' && event.npc_id === npc.id)

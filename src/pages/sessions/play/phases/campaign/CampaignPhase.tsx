@@ -3,7 +3,7 @@ import { sessionApi } from '../../../../../api/services/session';
 import { campaignApi } from '../../../../../api/services/campaign';
 import { getAssetUrl } from '../../../../../utils/url';
 import { Spinner } from '../../../../../components/ui/Spinner';
-import type { CampaignDetail, SessionDetail, SessionPlayer } from '../../../../../types';
+import type { CampaignDetail, SessionDetail, SessionPlayerDetail } from '../../../../../types';
 import './CampaignPhase.css';
 
 type Props = {
@@ -26,7 +26,7 @@ function formatAudioTime(seconds: number): string {
   return `${minutes}:${secs.toString().padStart(2, '0')}`;
 }
 
-function HeroAvatar({ player, index }: { player: SessionPlayer; index: number }) {
+function HeroAvatar({ player, index }: { player: SessionPlayerDetail; index: number }) {
   const hero = player.hero;
   return (
     <div className="campaignphase-hero-avatar-wrapper">
@@ -60,7 +60,7 @@ function HeroAvatar({ player, index }: { player: SessionPlayer; index: number })
  */
 export function CampaignPhase({ sessionId, session, onAdvance }: Props) {
   const [campaign, setCampaign] = useState<CampaignDetail | null>(null);
-  const [players, setPlayers] = useState<SessionPlayer[]>([]);
+  const [players, setPlayers] = useState<SessionPlayerDetail[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchCampaign = () =>

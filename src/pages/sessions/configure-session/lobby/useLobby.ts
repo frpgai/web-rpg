@@ -3,7 +3,7 @@ import { useLocation } from 'wouter';
 import { lobbyApi } from './lobbyApi';
 import { useSessionSocket } from '../../../../hooks/useSessionSocket';
 import { useUserStore } from '../../../../stores/userStore';
-import type { SessionDetail, SessionPlayer } from '../../../../types';
+import type { SessionDetail, SessionPlayerDetail } from '../../../../types';
 
 export function useLobby(sessionId: string) {
   const [, setLocation] = useLocation();
@@ -17,7 +17,7 @@ export function useLobby(sessionId: string) {
   }, [user, fetchMe]);
 
   const [session, setSession] = useState<SessionDetail | null>(null);
-  const [players, setPlayers] = useState<SessionPlayer[]>([]);
+  const [players, setPlayers] = useState<SessionPlayerDetail[]>([]);
   const [sessionLoading, setSessionLoading] = useState(true);
   const [playersLoading, setPlayersLoading] = useState(true);
   const loading = sessionLoading || playersLoading;

@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import '../../../../../../i18n';
 import { TimelineFeed } from './TimelineFeed';
-import type { SceneDetail, SessionEvent, SessionPlayer } from '../../../../../../types';
+import type { SceneDetail, SessionEvent, SessionPlayerDetail } from '../../../../../../types';
 
 function baseScene(overrides: Partial<SceneDetail> = {}): SceneDetail {
   return {
@@ -14,7 +14,7 @@ function baseScene(overrides: Partial<SceneDetail> = {}): SceneDetail {
   } as SceneDetail;
 }
 
-const players: SessionPlayer[] = [
+const players: SessionPlayerDetail[] = [
   {
     user_id: 'user-1',
     username: 'felipe_user',
