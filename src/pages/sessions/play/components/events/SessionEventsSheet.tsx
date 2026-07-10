@@ -36,7 +36,7 @@ export function SessionEventsSheet({ sessionId, sceneId, onClose, onQueueCleared
   const [events, setEvents] = useState<SessionEvent[]>([]);
   const [loading, setLoading] = useState(Boolean(sceneId));
   const [queue, setQueue] = useState<SessionEvent[]>([]);
-  const [unreadOnly, setUnreadOnly] = useState(false);
+  const [unreadOnly, setUnreadOnly] = useState(true);
 
   const load = useCallback(() => {
     if (!sceneId) {
