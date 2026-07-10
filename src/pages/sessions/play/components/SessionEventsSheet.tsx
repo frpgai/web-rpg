@@ -4,6 +4,7 @@ import { Spinner } from '../../../../components/ui/Spinner';
 import { EventLogFeed } from './EventLogFeed';
 import { EventQueueOverlay } from './EventQueueOverlay';
 import type { SessionEvent } from '../../../../types';
+import emptyEventsIllustration from '../../../../assets/empty-events-state.png';
 import './SessionEventsSheet.css';
 
 type Props = {
@@ -86,8 +87,14 @@ export function SessionEventsSheet({ sessionId, sceneId, onClose, onQueueCleared
           </div>
         ) : events.length === 0 ? (
           <div className="sessioneventssheet-empty">
-            <div className="sessioneventssheet-empty-glow" />
-            <span className="material-symbols-outlined sessioneventssheet-empty-icon">menu_book</span>
+            <div className="sessioneventssheet-empty-illustration">
+              <div className="sessioneventssheet-empty-glow" />
+              <img
+                className="sessioneventssheet-empty-image"
+                src={emptyEventsIllustration}
+                alt="Grimório arcano pulsando com energia mística"
+              />
+            </div>
             <h3 className="sessioneventssheet-empty-title">Grimório de Destinos</h3>
             <p className="sessioneventssheet-empty-quote">
               "As estrelas se alinham para aqueles que buscam a verdade entre as sombras."

@@ -114,22 +114,54 @@
   position: relative;
 }
 
+.sessioneventssheet-empty-illustration {
+  position: relative;
+  width: 256px;
+  height: 256px;
+  max-width: 100%;
+  margin-top: var(--space-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .sessioneventssheet-empty-glow {
   position: absolute;
-  top: 0;
-  width: 200px;
-  height: 200px;
+  inset: 0;
   border-radius: var(--radius-full);
   background: color-mix(in srgb, var(--color-primary) 10%, transparent);
   filter: blur(60px);
+  animation: sessioneventssheet-arcane-pulse 4s ease-in-out infinite;
 }
 
-.sessioneventssheet-empty-icon {
+.sessioneventssheet-empty-image {
   position: relative;
-  margin-top: var(--space-lg);
-  font-size: 96px;
-  color: var(--color-primary);
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
   filter: drop-shadow(0 0 25px color-mix(in srgb, var(--color-primary) 40%, transparent));
+  animation: sessioneventssheet-float 6s ease-in-out infinite;
+}
+
+@keyframes sessioneventssheet-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-15px);
+  }
+}
+
+@keyframes sessioneventssheet-arcane-pulse {
+  0%,
+  100% {
+    opacity: 0.7;
+  }
+  50% {
+    opacity: 1;
+  }
 }
 
 .sessioneventssheet-empty-title {
@@ -178,6 +210,7 @@
   border-radius: var(--radius-full);
   background-color: var(--color-tertiary);
   box-shadow: 0 0 8px color-mix(in srgb, var(--color-tertiary) 60%, transparent);
+  animation: sessioneventssheet-arcane-pulse 4s ease-in-out infinite;
 }
 
 .sessioneventssheet-empty-cta {
