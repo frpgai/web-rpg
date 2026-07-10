@@ -124,8 +124,8 @@
   pointer-events: none;
 }
 
-.mapviewer-pin img,
-.mapviewer-pin .material-symbols-outlined {
+.mapviewer-pin > img,
+.mapviewer-pin > .material-symbols-outlined {
   width: 36px;
   height: 36px;
   border-radius: var(--radius-full);

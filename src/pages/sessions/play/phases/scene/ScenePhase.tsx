@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { sessionApi } from '../../../../../api/services/session';
 import { sceneApi } from '../../../../../api/services/scene';
 import { useSessionSocket } from '../../../../../hooks/useSessionSocket';
+import { useAuthStore } from '../../../../../stores/authStore';
 import { Spinner } from '../../../../../components/ui/Spinner';
 import { SessionHeader } from '../../../../../components/navigation/SessionHeader';
 import { MapViewer } from './MapViewer';
@@ -17,7 +18,7 @@ import type {
   ScenePointOfInterest,
   SessionDetail,
   SessionEvent,
-  SessionPlayer,
+  SessionPlayerDetail,
 } from '../../../../../types';
 import { DiceRollOverlay } from '../../../../../components/dice/DiceRollOverlay';
 import { useDiceRollStore } from '../../../../../stores/diceRollStore';
@@ -47,11 +48,9 @@ export function ScenePhase({ sessionId, session }: Props) {
   // luminoso dourado do pin no MapViewer apenas na primeira renderização
   // após a descoberta.
   const [justDiscoveredPoiId, setJustDiscoveredPoiId] = useState<string | null>(null);
-  // "Mover" não tem endpoint de persistência dedicado hoje (a spec não exige
-  // persistência para movimento, só para investigação) — exibimos apenas
-  // feedback local em vez de inventar um cálculo/endpoint no frontend
-  // (proibido pela Regra de Ouro em web-rpg/CLAUDE.md). Documentado como
-  // limitação.
+  // Toast de feedback de movimento — exibido enquanto a chamada real a
+  // `sessionApi.movePlayer` (plano 00008-mover-jogador-no-mapa, item C) está
+  // em andamento/concluída.
   const [poiNotice, setPoiNotice] = useState<{ poi: ScenePointOfInterest; kind: 'move' } | null>(null);
   // POI selecionado ao clicar num pin no mapa (fora do modo dev) — abre a
   // bottom sheet de detalhes (spec 00153-mesa-jogo/scene.md seção 3.1).
@@ -64,7 +63,12 @@ export function ScenePhase({ sessionId, session }: Props) {
   // Jogadores da sessão — usado por `TimelineFeed` para resolver `hero_id` em
   // nome do herói na linha de `scene_investigation` (be-rpg PR #76), mesmo
   // padrão de `useNpcGroupConversations.ts` (sessionApi.getPlayers).
-  const [players, setPlayers] = useState<SessionPlayer[]>([]);
+  const [players, setPlayers] = useState<SessionPlayerDetail[]>([]);
+  // Jogador atual (usuário autenticado) dentro da lista de players da sessão
+  // — usado pelo POIDetailSheet (plano 00008-mover-jogador-no-mapa, item D)
+  // para condicionar o botão "Investigar" a `current_poi_id === poi.id`.
+  const authUserId = useAuthStore((state) => state.user?.id);
+  const currentPlayer = players.find((p) => p.user_id === authUserId) ?? null;
 
   const loadScene = useCallback(() => {
     if (!session.current_scene_id) {
@@ -100,12 +104,30 @@ export function ScenePhase({ sessionId, session }: Props) {
     fetchEvents();
   }, [fetchEvents, scene?.id]);
 
-  useEffect(() => {
-    sessionApi
+  const loadPlayers = useCallback(() => {
+    return sessionApi
       .getPlayers(sessionId)
       .then(setPlayers)
       .catch((err) => console.error('Failed to load session players:', err));
   }, [sessionId]);
+
+  useEffect(() => {
+    loadPlayers();
+  }, [loadPlayers]);
+
+  // Movimentação real do jogador para um POI (plano 00008-mover-jogador-no-mapa,
+  // item C) — substitui o toast temporário anterior. Após sucesso, recarrega
+  // players (nova posição/POI atual) e eventos (log de movimento) da cena.
+  const handleMovePlayer = useCallback(
+    (poi: ScenePointOfInterest) => {
+      setPoiNotice({ poi, kind: 'move' });
+      sessionApi
+        .movePlayer(sessionId, 'poi', poi.id)
+        .then(() => Promise.all([loadPlayers(), fetchEvents()]))
+        .catch((err) => console.error('Failed to move player:', err));
+    },
+    [sessionId, loadPlayers, fetchEvents]
+  );
 
   useSessionSocket(
     sessionId,
@@ -125,9 +147,14 @@ export function ScenePhase({ sessionId, session }: Props) {
         const diceEvent = (event.payload ?? event) as SessionEvent;
         setEvents((prev) => [...prev, diceEvent]);
         setImmersiveEvent(diceEvent);
+      } else if (event.type === 'notify' || event.event === 'notify') {
+        // Notificação genérica de mudança de estado da sessão (ex: movimento
+        // de jogador) — recarrega a lista de players para refletir novas
+        // coordenadas/POI atual (plano 00008-mover-jogador-no-mapa, item C).
+        loadPlayers();
       }
       fetchEvents();
-    }, [fetchEvents, loadScene])
+    }, [fetchEvents, loadScene, loadPlayers])
   );
 
   if (sceneLoading) {
@@ -152,6 +179,7 @@ export function ScenePhase({ sessionId, session }: Props) {
 
       <MapViewer
         scene={scene}
+        players={players}
         justDiscoveredPoiId={justDiscoveredPoiId}
         onPoiClick={(poiId) => {
           const poi = scene.points_of_interest.find((p) => p.id === poiId) ?? null;
@@ -187,9 +215,10 @@ export function ScenePhase({ sessionId, session }: Props) {
       {selectedPoi && (
         <POIDetailSheet
           poi={selectedPoi}
+          currentPlayer={currentPlayer}
           onClose={() => setSelectedPoi(null)}
           onMove={() => {
-            setPoiNotice({ poi: selectedPoi, kind: 'move' });
+            handleMovePlayer(selectedPoi);
             setSelectedPoi(null);
           }}
           onInvestigate={() => {

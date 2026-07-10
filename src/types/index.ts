@@ -402,12 +402,15 @@ export type SessionPlayerHero = {
   avatar_url: string | null;
 };
 
-export type SessionPlayer = {
+export type SessionPlayerDetail = {
   user_id: string;
   username: string;
   is_owner: boolean;
   hero: SessionPlayerHero | null;
   is_ready: boolean;
+  x_coordinate?: number | null;
+  y_coordinate?: number | null;
+  current_poi_id?: string | null;
 };
 
 export type SessionStatus = 'lobby' | 'active' | 'finished';
@@ -460,6 +463,9 @@ export type SessionEvent = {
   // scene_investigation) — distinto de `poi_id` (investigação direcionada a
   // um POI específico já conhecido). Sempre vazio quando `total < 10`.
   discovered_poi_ids?: string[] | null; // scene_investigation
+  x_coordinate?: number | null; // player_moved
+  y_coordinate?: number | null; // player_moved
+  target_name?: string | null; // player_moved
   npc_id?: string | null; // npc_dialogue_choice
   dialogue_node_id?: string | null; // npc_dialogue_choice
   dialogue_option_id?: string | null; // npc_dialogue_choice
