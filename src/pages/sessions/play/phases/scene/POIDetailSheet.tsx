@@ -8,6 +8,8 @@ type Props = {
   onClose: () => void;
   onMove: () => void;
   onInvestigate: () => void;
+  onOpen?: () => void;
+  onGenericAction?: (slug: string) => void;
 };
 
 // Modal de detalhes do POI (spec 00153-mesa-jogo/investigacao.md seção 2.2,
@@ -30,7 +32,15 @@ type Props = {
 // deliberadamente fora do payload, para não vazar essa informação de
 // mestre). Sem esse dado na API, a seção de dificuldade foi omitida em vez
 // de inventado — ver limitação no relatório final.
-export function POIDetailSheet({ poi, actions, onClose, onMove, onInvestigate }: Props) {
+export function POIDetailSheet({
+  poi,
+  actions,
+  onClose,
+  onMove,
+  onInvestigate,
+  onOpen,
+  onGenericAction,
+}: Props) {
   const discovered = !poi.investigable;
   // Plano 00009-acoes-dinamicas-interaction-engine, item C: as ações
   // disponíveis (mover/investigar/abrir) vêm do motor de interações
@@ -38,6 +48,12 @@ export function POIDetailSheet({ poi, actions, onClose, onMove, onInvestigate }:
   // ou de `current_poi_id` no frontend.
   const canMove = actions.some((action) => action.slug === 'move');
   const canInvestigate = actions.some((action) => action.slug === 'investigate');
+  const hasOpenAction = actions.some((action) => action.slug === 'open');
+  // Fallback genérico: qualquer slug futuro não tratado explicitamente ainda
+  // aparece na UI (botão secundário com o nome vindo do backend) em vez de
+  // ser silenciosamente ignorado.
+  const knownSlugs = new Set(['move', 'investigate', 'open']);
+  const genericActions = actions.filter((action) => !knownSlugs.has(action.slug));
 
   return (
     <div className="poidetailsheet-overlay" role="dialog" aria-modal="true">
@@ -80,6 +96,34 @@ export function POIDetailSheet({ poi, actions, onClose, onMove, onInvestigate }:
               </span>
             </button>
           )}
+
+          {hasOpenAction && (
+            <button type="button" className="poidetailsheet-action-primary" onClick={onOpen}>
+              <span className="poidetailsheet-action-icon">
+                <span className="material-symbols-outlined">lock_open</span>
+              </span>
+              <span className="poidetailsheet-action-text">
+                <span className="poidetailsheet-action-eyebrow">[C] Interagir</span>
+                <span>Abrir {poi.display_name}</span>
+              </span>
+            </button>
+          )}
+
+          {genericActions.map((action) => (
+            <button
+              type="button"
+              key={action.slug}
+              className="poidetailsheet-action-secondary"
+              onClick={() => onGenericAction?.(action.slug)}
+            >
+              <span className="poidetailsheet-action-icon poidetailsheet-action-icon-outline">
+                <span className="material-symbols-outlined">bolt</span>
+              </span>
+              <span className="poidetailsheet-action-text">
+                <span>{action.name}</span>
+              </span>
+            </button>
+          ))}
         </div>
 
         <div className="poidetailsheet-footer">

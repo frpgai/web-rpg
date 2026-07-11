@@ -23,7 +23,8 @@ export const interactionApi = {
   getActions: (sessionId: string, targetType: string, targetId: string) =>
     apiClient
       .get(`api/v1/sessions/${sessionId}/targets/${targetType}/${targetId}/actions`)
-      .json<InteractionAction[]>(),
+      .json<{ actions: InteractionAction[] }>()
+      .then((res) => res.actions),
 
   interact: (sessionId: string, input: InteractInput) =>
     apiClient

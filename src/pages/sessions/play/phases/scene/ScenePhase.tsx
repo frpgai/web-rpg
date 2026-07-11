@@ -129,6 +129,43 @@ export function ScenePhase({ sessionId, session }: Props) {
     [sessionId, loadPlayers, fetchEvents]
   );
 
+  // Ação "Abrir" (slug 'open', motor de interações — plano
+  // 00009-acoes-dinamicas-interaction-engine) — interação sem rolagem sobre o
+  // POI selecionado. Reaproveita interactionApi.interact já usado por
+  // InvestigateModal, com roll_type 'normal' por não haver skill check aqui.
+  const handleOpenPoi = useCallback(
+    (poi: ScenePointOfInterest) => {
+      interactionApi
+        .interact(sessionId, {
+          target_type: 'poi',
+          target_id: poi.id,
+          action: 'open',
+          roll_type: 'normal',
+        })
+        .then(() => Promise.all([loadScene(), fetchEvents()]))
+        .catch((err) => console.error('Failed to open POI:', err));
+    },
+    [sessionId, loadScene, fetchEvents]
+  );
+
+  // Fallback genérico para slugs de ação futuros não tratados explicitamente
+  // (pedido do usuário) — dispara a mesma interação sem rolagem, parametrizada
+  // pelo slug recebido do backend.
+  const handleGenericPoiAction = useCallback(
+    (poi: ScenePointOfInterest, slug: string) => {
+      interactionApi
+        .interact(sessionId, {
+          target_type: 'poi',
+          target_id: poi.id,
+          action: slug,
+          roll_type: 'normal',
+        })
+        .then(() => Promise.all([loadScene(), fetchEvents()]))
+        .catch((err) => console.error(`Failed to run generic POI action "${slug}":`, err));
+    },
+    [sessionId, loadScene, fetchEvents]
+  );
+
   useSessionSocket(
     sessionId,
     useCallback((event: any) => {
@@ -242,6 +279,14 @@ export function ScenePhase({ sessionId, session }: Props) {
           }}
           onInvestigate={() => {
             setInvestigateOpen(true);
+            setSelectedPoi(null);
+          }}
+          onOpen={() => {
+            handleOpenPoi(selectedPoi);
+            setSelectedPoi(null);
+          }}
+          onGenericAction={(slug) => {
+            handleGenericPoiAction(selectedPoi, slug);
             setSelectedPoi(null);
           }}
         />
