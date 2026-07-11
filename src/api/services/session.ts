@@ -19,7 +19,7 @@ export const sessionApi = {
       .post(`api/v1/sessions/${sessionId}/players/me/move`, {
         json: { target_type: targetType, target_id: targetId },
       })
-      .json<void>(),
+      .then(() => {}),
   start: (sessionId: string) =>
     apiClient.post(`api/v1/sessions/${sessionId}/start`).json<StartSessionResponse>(),
   // Avança a fase revelada do jogador (hybrid phase model) — quem realmente
