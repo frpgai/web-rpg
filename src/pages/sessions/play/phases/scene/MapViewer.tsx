@@ -2,11 +2,13 @@ import { useRef, useState } from 'react';
 import type { SyntheticEvent } from 'react';
 import type { PointerEvent, WheelEvent } from 'react';
 import { getAssetUrl } from '../../../../../utils/url';
-import type { SceneDetail } from '../../../../../types';
+import type { SceneDetail, SessionPlayerDetail } from '../../../../../types';
+import { Avatar } from '../../../../../components/ui/Avatar';
 import './MapViewer.css';
 
 type Props = {
   scene: SceneDetail;
+  players: SessionPlayerDetail[];
   justDiscoveredPoiId?: string | null;
   onPoiClick?: (poiId: string) => void;
 };
@@ -49,7 +51,7 @@ type DevOverride = { x: number; y: number };
 // sem clique/interação; falar com NPC é ação delegada ao ActionDock/timeline.
 // Pins de POI, fora do modo dev, abrem a bottom sheet de detalhes
 // (POIDetailSheet) ao clique — spec 00153-mesa-jogo/scene.md seção 3.1.
-export function MapViewer({ scene, justDiscoveredPoiId, onPoiClick }: Props) {
+export function MapViewer({ scene, players, justDiscoveredPoiId, onPoiClick }: Props) {
   const [scale] = useState(1);
   const offset = { x: 0, y: 0 };
   const [imageError, setImageError] = useState<string | null>(null);
@@ -238,6 +240,34 @@ export function MapViewer({ scene, justDiscoveredPoiId, onPoiClick }: Props) {
                   >
                     {poi.display_name}
                     {devMode && ` — X: ${position.left.toFixed(1)} | Y: ${position.top.toFixed(1)}`}
+                  </span>
+                </div>
+              );
+            })}
+
+          {players
+            .filter((player) => player.hero)
+            .map((player, index) => {
+              const hero = player.hero as NonNullable<SessionPlayerDetail['hero']>;
+              const position = resolvePosition(
+                player.x_coordinate,
+                player.y_coordinate,
+                hero.id,
+                index + 5,
+                index + 29
+              );
+              return (
+                <div
+                  key={hero.id}
+                  className="mapviewer-pin mapviewer-pin-player"
+                  style={{ left: `${position.left}%`, top: `${position.top}%` }}
+                  aria-label={hero.name}
+                >
+                  <Avatar size={40} url={hero.avatar_url} name={hero.name} />
+                  <span
+                    className={`mapviewer-pin-label${!showNames ? ' mapviewer-pin-label-hover-only' : ''}`}
+                  >
+                    {hero.name}
                   </span>
                 </div>
               );

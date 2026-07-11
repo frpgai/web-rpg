@@ -6,14 +6,20 @@ import type {
   SessionDetail,
   SessionEvent,
   SessionEventsPage,
-  SessionPlayer,
+  SessionPlayerDetail,
   StartSessionResponse,
 } from '../../types';
 
 export const sessionApi = {
   get: (sessionId: string) => apiClient.get(`api/v1/sessions/${sessionId}`).json<SessionDetail>(),
   getPlayers: (sessionId: string) =>
-    apiClient.get(`api/v1/sessions/${sessionId}/players`).json<SessionPlayer[]>(),
+    apiClient.get(`api/v1/sessions/${sessionId}/players`).json<SessionPlayerDetail[]>(),
+  movePlayer: (sessionId: string, targetType: 'poi' | 'npc', targetId: string) =>
+    apiClient
+      .post(`api/v1/sessions/${sessionId}/players/me/move`, {
+        json: { target_type: targetType, target_id: targetId },
+      })
+      .json<void>(),
   start: (sessionId: string) =>
     apiClient.post(`api/v1/sessions/${sessionId}/start`).json<StartSessionResponse>(),
   // Avança a fase revelada do jogador (hybrid phase model) — quem realmente

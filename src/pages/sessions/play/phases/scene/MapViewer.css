@@ -124,8 +124,8 @@
   pointer-events: none;
 }
 
-.mapviewer-pin img,
-.mapviewer-pin .material-symbols-outlined {
+.mapviewer-pin > img,
+.mapviewer-pin > .material-symbols-outlined {
   width: 36px;
   height: 36px;
   border-radius: var(--radius-full);
@@ -153,6 +153,15 @@
   font-size: 16px;
   border-color: var(--color-secondary);
   color: var(--color-secondary);
+}
+
+.mapviewer-pin-player {
+  z-index: 2;
+}
+
+.mapviewer-pin-player .ui-avatar {
+  border-color: var(--color-tertiary);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
 }
 
 .mapviewer-pin-label {

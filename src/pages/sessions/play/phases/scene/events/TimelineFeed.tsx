@@ -4,7 +4,7 @@ import { getAssetUrl } from '../../../../../../utils/url';
 import { useAmbientVolume } from '../../../../../../utils/useAmbientVolume';
 import { Spinner } from '../../../../../../components/ui/Spinner';
 import { TypewriterText } from '../TypewriterText';
-import type { SceneDetail, SessionEvent, SessionPlayer } from '../../../../../../types';
+import type { SceneDetail, SessionEvent, SessionPlayerDetail } from '../../../../../../types';
 import './TimelineFeed.css';
 
 type Props = {
@@ -14,10 +14,10 @@ type Props = {
   // Usado para resolver `hero_id` -> nome do herói (be-rpg PR #76,
   // scene_investigation) — mesmo padrão de `useNpcGroupConversations.ts`
   // (sessionApi.getPlayers), já que `SessionEvent` só traz o id.
-  players?: SessionPlayer[];
+  players?: SessionPlayerDetail[];
 };
 
-function resolveHeroName(players: SessionPlayer[] | undefined, heroId: string | null | undefined): string {
+function resolveHeroName(players: SessionPlayerDetail[] | undefined, heroId: string | null | undefined): string {
   if (!heroId) return 'Alguém';
   const player = players?.find((p) => p.hero?.id === heroId);
   return player?.hero?.name ?? player?.username ?? 'Alguém';
@@ -107,7 +107,7 @@ function SceneInvestigationRow({
 }: {
   event: SessionEvent;
   scene: SceneDetail;
-  players?: SessionPlayer[];
+  players?: SessionPlayerDetail[];
 }) {
   const { t } = useTranslation(['skills']);
 
@@ -144,6 +144,29 @@ function SceneInvestigationRow({
       <div className="timelinefeed-dice-body">
         <span className="timelinefeed-dice-total">{sentence}</span>
       </div>
+    </li>
+  );
+}
+
+// Evento `player_moved` (be-rpg PR #77, mover jogador no mapa) — gravado
+// quando um herói se move para uma nova coordenada na cena. Mostra uma
+// mensagem amigável com o nome do herói e o alvo/coordenadas do movimento.
+function PlayerMovedRow({ event, players }: { event: SessionEvent; players?: SessionPlayerDetail[] }) {
+  const heroName = event.hero_name ?? resolveHeroName(players, event.hero_id);
+  const targetName = event.target_name;
+  const x = event.x_coordinate;
+  const y = event.y_coordinate;
+
+  const sentence = targetName
+    ? `${heroName} moveu-se para ${targetName}.`
+    : x != null && y != null
+      ? `${heroName} moveu-se para as coordenadas (${x}, ${y}).`
+      : `${heroName} moveu-se para um novo local.`;
+
+  return (
+    <li className="timelinefeed-row timelinefeed-row-generic">
+      {event.revealed === false && <NewEventBadge />}
+      <p className="timelinefeed-generic-text">{sentence}</p>
     </li>
   );
 }
@@ -223,6 +246,9 @@ export function TimelineFeed({ scene, events, loading, players }: Props) {
               return (
                 <SceneInvestigationRow key={event.id} event={event} scene={scene} players={players} />
               );
+            }
+            if (event.type === 'player_moved') {
+              return <PlayerMovedRow key={event.id} event={event} players={players} />;
             }
             return (
               <li key={event.id} className="timelinefeed-row timelinefeed-row-generic">

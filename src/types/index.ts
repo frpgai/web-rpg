@@ -402,12 +402,15 @@ export type SessionPlayerHero = {
   avatar_url: string | null;
 };
 
-export type SessionPlayer = {
+export type SessionPlayerDetail = {
   user_id: string;
   username: string;
   is_owner: boolean;
   hero: SessionPlayerHero | null;
   is_ready: boolean;
+  x_coordinate?: number | null;
+  y_coordinate?: number | null;
+  current_poi_id?: string | null;
 };
 
 export type SessionStatus = 'lobby' | 'active' | 'finished';
@@ -460,6 +463,9 @@ export type SessionEvent = {
   // scene_investigation) — distinto de `poi_id` (investigação direcionada a
   // um POI específico já conhecido). Sempre vazio quando `total < 10`.
   discovered_poi_ids?: string[] | null; // scene_investigation
+  x_coordinate?: number | null; // player_moved
+  y_coordinate?: number | null; // player_moved
+  target_name?: string | null; // player_moved
   npc_id?: string | null; // npc_dialogue_choice
   dialogue_node_id?: string | null; // npc_dialogue_choice
   dialogue_option_id?: string | null; // npc_dialogue_choice
@@ -558,6 +564,17 @@ export type ScenePointOfInterest = {
   investigable: boolean;
 };
 
+// SessionScenePlayerView — posição atual do herói de cada jogador no mapa da
+// cena, exposta em GET /api/v1/sessions/{session_id}/scenes/{scene_id}
+// (be-rpg PR #79, SessionScenePlayerView). Shape flat — sem objeto `hero`
+// aninhado — espelhando exatamente o JSON retornado pelo backend.
+export type SessionScenePlayerView = {
+  hero_name: string;
+  hero_avatar_url?: string | null;
+  x_coordinate?: number | null;
+  y_coordinate?: number | null;
+};
+
 // SceneDetail — resposta de GET /api/v1/sessions/{session_id}/scenes/{scene_id}
 // (be-rpg PR #70, branch feature/scene-session-endpoint). Substitui o
 // endpoint antigo GET /api/v1/scenes/{id} (não escopado por sessão) — os
@@ -572,6 +589,7 @@ export type SceneDetail = {
   audio_transition_url?: string | null;
   npcs: SceneNPC[];
   points_of_interest: ScenePointOfInterest[];
+  players: SessionScenePlayerView[];
 };
 
 export type DialogueOptionView = {

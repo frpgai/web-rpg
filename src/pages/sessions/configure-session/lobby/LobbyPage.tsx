@@ -2,10 +2,10 @@ import { useParams } from 'wouter';
 import { Spinner } from '../../../../components/ui/Spinner';
 import { useLobby } from './useLobby';
 import { getAssetUrl } from '../../../../utils/url';
-import type { SessionPlayer } from '../../../../types';
+import type { SessionPlayerDetail } from '../../../../types';
 import './LobbyPage.css';
 
-function PlayerCard({ player }: { player: SessionPlayer }) {
+function PlayerCard({ player }: { player: SessionPlayerDetail }) {
   const hero = player.hero;
   return (
     <div className="lobby-player-card">

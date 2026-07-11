@@ -1,8 +1,9 @@
-import type { ScenePointOfInterest } from '../../../../../types';
+import type { ScenePointOfInterest, SessionPlayerDetail } from '../../../../../types';
 import './POIDetailSheet.css';
 
 type Props = {
   poi: ScenePointOfInterest;
+  currentPlayer: SessionPlayerDetail | null;
   onClose: () => void;
   onMove: () => void;
   onInvestigate: () => void;
@@ -28,8 +29,12 @@ type Props = {
 // deliberadamente fora do payload, para não vazar essa informação de
 // mestre). Sem esse dado na API, a seção de dificuldade foi omitida em vez
 // de inventado — ver limitação no relatório final.
-export function POIDetailSheet({ poi, onClose, onMove, onInvestigate }: Props) {
+export function POIDetailSheet({ poi, currentPlayer, onClose, onMove, onInvestigate }: Props) {
   const discovered = !poi.investigable;
+  // Plano 00008-mover-jogador-no-mapa, item D: o botão "Investigar" só é
+  // exibido quando o jogador atual já está posicionado neste POI
+  // (current_poi_id). Caso contrário, exibe apenas "Mover Personagem para Cá".
+  const isAtPoi = currentPlayer != null && currentPlayer.current_poi_id === poi.id;
 
   return (
     <div className="poidetailsheet-overlay" role="dialog" aria-modal="true">
@@ -49,7 +54,7 @@ export function POIDetailSheet({ poi, onClose, onMove, onInvestigate }: Props) {
             completa foi omitida em vez de inventada. */}
 
         <div className="poidetailsheet-actions">
-          {poi.investigable && (
+          {poi.investigable && isAtPoi && (
             <button type="button" className="poidetailsheet-action-primary" onClick={onInvestigate}>
               <span className="poidetailsheet-action-icon">
                 <span className="material-symbols-outlined">search</span>
@@ -61,15 +66,17 @@ export function POIDetailSheet({ poi, onClose, onMove, onInvestigate }: Props) {
             </button>
           )}
 
-          <button type="button" className="poidetailsheet-action-secondary" onClick={onMove}>
-            <span className="poidetailsheet-action-icon poidetailsheet-action-icon-outline">
-              <span className="material-symbols-outlined">navigation</span>
-            </span>
-            <span className="poidetailsheet-action-text">
-              <span className="poidetailsheet-action-eyebrow">[B] Movimento</span>
-              <span>Mover Personagem para Cá</span>
-            </span>
-          </button>
+          {!isAtPoi && (
+            <button type="button" className="poidetailsheet-action-secondary" onClick={onMove}>
+              <span className="poidetailsheet-action-icon poidetailsheet-action-icon-outline">
+                <span className="material-symbols-outlined">navigation</span>
+              </span>
+              <span className="poidetailsheet-action-text">
+                <span className="poidetailsheet-action-eyebrow">[B] Movimento</span>
+                <span>Mover Personagem para Cá</span>
+              </span>
+            </button>
+          )}
         </div>
 
         <div className="poidetailsheet-footer">
