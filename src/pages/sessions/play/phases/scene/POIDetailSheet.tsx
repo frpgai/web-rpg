@@ -1,4 +1,5 @@
 import type { ScenePointOfInterest } from '../../../../../types';
+import { isPoiDiscovered } from '../../../../../types';
 import type { InteractionAction } from '../../../../../api/services/interaction';
 import './POIDetailSheet.css';
 
@@ -17,14 +18,14 @@ type Props = {
 // "Detalhes do Ponto de Interesse: Estátua de Aldric" —
 // .stitch/designs/poi-detail.html).
 //
-// Dois estados por `poi.investigable` (SessionScenePOIView.Investigable,
-// be-rpg PR #70):
-// - true  (ainda não descoberto): mostra o nome genérico
-//   (`display_name` sem spoiler), botão proeminente "Investigar
-//   [Nome Genérico]", sem descrição (o backend não envia `description` para
-//   POIs não descobertos — narrativa fica reservada até a investigação).
-// - false (já descoberto OU público sem skill_check): mostra `display_name`
-//   detalhado + `description` completa; botão de investigar oculto.
+// Dois estados por `isPoiDiscovered(poi)` (derivado da lista dinâmica
+// `poi.actions`, be-rpg PR #80 — ver `types/index.ts`):
+// - não descoberto: mostra o nome genérico (`display_name` sem spoiler),
+//   botão proeminente "Investigar [Nome Genérico]", sem descrição (o
+//   backend não envia texto narrativo para ações ainda não concluídas —
+//   narrativa fica reservada até a investigação).
+// - descoberto (já investigado OU público sem skill_check): mostra
+//   `display_name` detalhado; botão de investigar oculto.
 //
 // Nota de contrato: a spec pede indicação da perícia/dificuldade recomendada
 // no estado "não descoberto", mas SessionScenePOIView não expõe
@@ -41,7 +42,7 @@ export function POIDetailSheet({
   onOpen,
   onGenericAction,
 }: Props) {
-  const discovered = !poi.investigable;
+  const discovered = isPoiDiscovered(poi);
   // Plano 00009-acoes-dinamicas-interaction-engine, item C: as ações
   // disponíveis (mover/investigar/abrir) vêm do motor de interações
   // (GET /actions), sem nenhuma verificação local de proximidade/coordenadas
@@ -68,9 +69,20 @@ export function POIDetailSheet({
         <h2 className="poidetailsheet-title">{poi.display_name}</h2>
         <div className="poidetailsheet-divider" />
 
-        {/* SessionScenePOIView (be-rpg PR #70) não expõe mais `description` —
-            ver nota de contrato acima. Sem esse dado, a seção de descrição
-            completa foi omitida em vez de inventada. */}
+        {/* SessionScenePOIView (be-rpg PR #70/#80) não expõe mais uma
+            `description` fixa por POI — ver nota de contrato acima. Quando o
+            POI está descoberto, `poi.actions` pode trazer o texto narrativo
+            resolvido da ação concluída (`action.text`, ex: texto de sucesso
+            de "investigate"/"open") — exibido aqui se presente; caso
+            contrário a seção é omitida em vez de inventada. */}
+        {discovered &&
+          poi.actions
+            .filter((action) => action.completed && action.text)
+            .map((action) => (
+              <p key={action.slug} className="poidetailsheet-description">
+                {action.text}
+              </p>
+            ))}
 
         <div className="poidetailsheet-actions">
           {canInvestigate && (

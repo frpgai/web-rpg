@@ -27,9 +27,13 @@ function baseScene(overrides: Partial<SceneDetail> = {}): SceneDetail {
     id: 'scene-1',
     npcs: [],
     points_of_interest: [
-      { id: 'poi-hidden-1', display_name: 'O Poço', investigable: true },
-      { id: 'poi-visible', display_name: 'Praça', investigable: false },
-      { id: 'poi-hidden-no-check', display_name: 'Baú sem teste', investigable: false },
+      { id: 'poi-hidden-1', display_name: 'O Poço', actions: [{ slug: 'investigate', completed: false }] },
+      { id: 'poi-visible', display_name: 'Praça', actions: [] },
+      {
+        id: 'poi-hidden-no-check',
+        display_name: 'Baú sem teste',
+        actions: [{ slug: 'investigate', completed: true }],
+      },
     ],
     ...overrides,
   } as SceneDetail;
@@ -47,12 +51,14 @@ beforeEach(() => {
 });
 
 describe('useInvestigate', () => {
-  it('exposes only POIs with investigable=true in eligiblePois (be-rpg PR #70)', async () => {
+  it('exposes only POIs with a pending investigate action in eligiblePois (be-rpg PR #80)', async () => {
     const scene = baseScene();
     const { result } = renderHook(() => useInvestigate('session-1', scene));
 
     await waitFor(() => expect(result.current.heroId).toBe('hero-1'));
-    expect(result.current.eligiblePois).toEqual([{ id: 'poi-hidden-1', display_name: 'O Poço', investigable: true }]);
+    expect(result.current.eligiblePois).toEqual([
+      { id: 'poi-hidden-1', display_name: 'O Poço', actions: [{ slug: 'investigate', completed: false }] },
+    ]);
   });
 
   it('investigate() triggers a generic roll-request with target_type=poi, action=investigate, and roll_type=normal', async () => {
