@@ -67,11 +67,14 @@ function DiceRollRow({ event }: { event: SessionEvent }) {
 }
 
 function PoiInvestigationRow({ event, scene }: { event: SessionEvent; scene: SceneDetail }) {
-  // SessionScenePOIView (be-rpg PR #70) não expõe mais `success_text`/
-  // `failure_text` (estado interno de domínio) — a narração do resultado da
-  // investigação não é mais renderizada aqui; sem esse dado, a linha mostra
-  // apenas o resultado numérico da rolagem em vez de inventar um texto.
+  // SessionScenePOIView (be-rpg PR #70) não expunha `success_text`/
+  // `failure_text` fixos por POI. Com a lista dinâmica `poi.actions`
+  // (be-rpg PR #80 — SUPOSIÇÃO de shape, backend ainda não mergeado), o
+  // texto narrativo resolvido da ação "investigate" concluída, se presente,
+  // é exibido; sem esse dado a linha mostra apenas o resultado numérico da
+  // rolagem em vez de inventar um texto.
   const poi = scene.points_of_interest.find((p) => p.id === event.poi_id);
+  const investigateText = poi?.actions.find((a) => a.slug === 'investigate' && a.completed)?.text;
 
   return (
     <li className="timelinefeed-row timelinefeed-row-dice">
@@ -89,6 +92,7 @@ function PoiInvestigationRow({ event, scene }: { event: SessionEvent; scene: Sce
         >
           {event.success ? 'Sucesso' : 'Falha'}
         </span>
+        {investigateText && <span className="timelinefeed-dice-flavor">{investigateText}</span>}
       </div>
     </li>
   );

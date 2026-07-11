@@ -539,8 +539,32 @@ export type SceneNPC = {
   y_coordinate?: number | null;
 };
 
+// ScenePointOfInterestAction — item da lista dinâmica de ações de um POI
+// nesta sessão (be-rpg PR #80, branch feature/poi-actions-normalization,
+// ainda não mergeada em main). Substitui o antigo catálogo fixo de colunas
+// (`dc`, `skill_id`, `open_dc`, `open_skill_id`, `success_text`,
+// `failure_text`) por três tabelas novas: `poi_actions` (catálogo — quais
+// ações um modelo de POI aceita), `scene_poi_actions` (configuração de
+// dificuldade/perícia/textos por ação, por pin de cena) e
+// `sessions_scenes_poi_actions` (estado de conclusão por sessão). O
+// `poi.Resolver` do backend agora expõe uma lista dinâmica de ações
+// disponíveis por POI, já filtrando as concluídas na sessão (ou marcando-as
+// como concluídas — ver `completed` abaixo).
+//
+// SUPOSIÇÃO (backend não mergeado ainda — validar quando integrado): o shape
+// exato do JSON não está disponível. Assume-se aqui que cada ação traz
+// `slug` (ex: "investigate", "open"), um `completed` booleano (estado desta
+// sessão) e um `text` narrativo já resolvido pelo backend quando concluída
+// (substituindo os antigos `success_text`/`failure_text` fixos por POI) —
+// ausente/`null` enquanto a ação não foi concluída, para não vazar spoiler.
+export type ScenePointOfInterestAction = {
+  slug: string;
+  completed: boolean;
+  text?: string | null;
+};
+
 // ScenePointOfInterest — shape slim reduzido de GET
-// /api/v1/sessions/{session_id}/scenes/{scene_id} (be-rpg PR #70,
+// /api/v1/sessions/{session_id}/scenes/{scene_id} (be-rpg PR #70, PR #80,
 // SessionScenePOIView). O backend deliberadamente expõe só o necessário para
 // renderizar um pin e abrir sua modal de detalhes — todos os demais campos
 // que existiam antes (name, short_name, type, skill_check, dc, success_text,
@@ -557,12 +581,27 @@ export type ScenePointOfInterest = {
   display_name: string;
   x_coordinate?: number | null;
   y_coordinate?: number | null;
-  // true quando o POI tem skill_check configurado e ainda não foi
-  // descoberto nesta sessão — habilita a ação "Investigar". false para POIs
-  // já descobertos ou públicos (sem skill_check). Ver be-rpg PR #70,
-  // SessionScenePOIView.Investigable.
-  investigable: boolean;
+  // Lista dinâmica de ações disponíveis para este POI nesta sessão (be-rpg
+  // PR #80, `poi_actions`/`scene_poi_actions`/`sessions_scenes_poi_actions`).
+  // Substitui o antigo campo booleano fixo `investigable` — ver helpers
+  // `isPoiInvestigable`/`isPoiDiscovered` abaixo, que derivam o mesmo estado
+  // a partir desta lista.
+  actions: ScenePointOfInterestAction[];
 };
+
+// Helpers que substituem o antigo campo booleano fixo
+// `SessionScenePOIView.Investigable` (be-rpg PR #70) pela derivação
+// equivalente a partir da lista dinâmica de ações (be-rpg PR #80): um POI é
+// "investigável" quando tem uma ação `investigate` ainda não concluída
+// nesta sessão, e "descoberto" quando não tem mais nenhuma ação
+// `investigate` pendente.
+export function isPoiInvestigable(poi: ScenePointOfInterest): boolean {
+  return poi.actions.some((action) => action.slug === 'investigate' && !action.completed);
+}
+
+export function isPoiDiscovered(poi: ScenePointOfInterest): boolean {
+  return !isPoiInvestigable(poi);
+}
 
 // SessionScenePlayerView — posição atual do herói de cada jogador no mapa da
 // cena, exposta em GET /api/v1/sessions/{session_id}/scenes/{scene_id}

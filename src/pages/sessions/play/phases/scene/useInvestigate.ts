@@ -4,6 +4,7 @@ import { useAuthStore } from '../../../../../stores/authStore';
 import { useDiceRollStore } from '../../../../../stores/diceRollStore';
 import { interactionApi } from '../../../../../api/services/interaction';
 import type { SceneDetail, ScenePointOfInterest } from '../../../../../types';
+import { isPoiInvestigable } from '../../../../../types';
 
 /**
  * Fluxo de Investigação (spec 00153-mesa-jogo/investigacao.md, seções 2.3 e
@@ -47,7 +48,9 @@ export function useInvestigate(sessionId: string, scene: SceneDetail) {
       .catch((err) => console.error('Failed to load session players for investigate flow:', err));
   }, [sessionId, authUserId]);
 
-  const eligiblePois: ScenePointOfInterest[] = scene.points_of_interest.filter((poi) => poi.investigable);
+  // be-rpg PR #80: `investigable` deu lugar à lista dinâmica `poi.actions` —
+  // ver `isPoiInvestigable` em `types/index.ts`.
+  const eligiblePois: ScenePointOfInterest[] = scene.points_of_interest.filter(isPoiInvestigable);
   const [sceneActions, setSceneActions] = useState<any[]>([]);
 
   useEffect(() => {
