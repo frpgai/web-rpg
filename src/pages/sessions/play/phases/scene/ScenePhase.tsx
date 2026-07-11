@@ -4,7 +4,10 @@ import { sceneApi } from '../../../../../api/services/scene';
 import { interactionApi, type InteractionAction } from '../../../../../api/services/interaction';
 import { useSessionSocket } from '../../../../../hooks/useSessionSocket';
 import { useSessionEventStream } from '../../../../../hooks/useSessionEventStream';
+import { useInteractionsStream } from '../../../../../hooks/useInteractionsStream';
+import { useAuthStore } from '../../../../../stores/authStore';
 import { Spinner } from '../../../../../components/ui/Spinner';
+import { Toast } from '../../../../../components/ui/Toast';
 import { SessionHeader } from '../../../../../components/navigation/SessionHeader';
 import { MapViewer } from './MapViewer';
 import { TimelineFeed } from './events/TimelineFeed';
@@ -69,6 +72,12 @@ export function ScenePhase({ sessionId, session }: Props) {
   // nome do herói na linha de `scene_investigation` (be-rpg PR #76), mesmo
   // padrão de `useNpcGroupConversations.ts` (sessionApi.getPlayers).
   const [players, setPlayers] = useState<SessionPlayerDetail[]>([]);
+  // Toast de narrativa/erro exibido apenas para o jogador executor de uma
+  // interação sem rolagem, recebido via stream SSE dedicado de interações
+  // (be-rpg PR #82, GET .../interactions/stream) — plano
+  // 00012-resolucao-imediata-narrativa, item F.A.
+  const [narrativeToast, setNarrativeToast] = useState<string | null>(null);
+  const currentUserId = useAuthStore((s) => s.user?.id);
 
   const loadScene = useCallback(() => {
     if (!session.current_scene_id) {
@@ -206,6 +215,30 @@ export function ScenePhase({ sessionId, session }: Props) {
   // independente da cena atual. Recarrega apenas a lista de players.
   useSessionEventStream(`sessions/${sessionId}/players/stream`, loadPlayers);
 
+  // Stream SSE dedicado de resolução de interações (be-rpg PR #82, GET
+  // .../interactions/stream) — plano 00012-resolucao-imediata-narrativa,
+  // item F.A. `roll_resolved` dispara a animação de dados para todos os
+  // jogadores da mesa; `narrative`/`roll_failed` só geram feedback visual
+  // (toast) para o jogador executor — os demais acompanham a mudança pelo
+  // log de eventos da cena (item F.B, stream separado e inalterado).
+  useInteractionsStream(sessionId, {
+    onRollResolved: (payload) => {
+      useDiceRollStore.getState().handleRollResolved(payload);
+    },
+    onNarrative: (payload) => {
+      if (payload.executor_user_id === currentUserId) {
+        setNarrativeToast(payload.text);
+      }
+    },
+    onRollFailed: (payload) => {
+      if (payload.executor_user_id !== currentUserId) return;
+      setNarrativeToast(payload.error);
+      if (['pending_roll', 'rolling'].includes(useDiceRollStore.getState().rollState)) {
+        useDiceRollStore.getState().reset();
+      }
+    },
+  });
+
   if (sceneLoading) {
     return (
       <div className="sceneplay-root sceneplay-loading">
@@ -302,6 +335,8 @@ export function ScenePhase({ sessionId, session }: Props) {
       )}
 
       <DiceRollOverlay />
+
+      <Toast message={narrativeToast} onDismiss={() => setNarrativeToast(null)} />
 
       {immersiveEvent && (
         <EventImmersiveOverlay event={immersiveEvent} onClose={() => setImmersiveEvent(null)} />
