@@ -152,13 +152,14 @@ function SceneInvestigationRow({
 // quando um herói se move para uma nova coordenada na cena. Mostra uma
 // mensagem amigável com o nome do herói e o alvo/coordenadas do movimento.
 function PlayerMovedRow({ event, players }: { event: SessionEvent; players?: SessionPlayerDetail[] }) {
+  const { t } = useTranslation();
   const heroName = event.hero_name ?? resolveHeroName(players, event.hero_id);
   const targetName = event.target_name;
   const x = event.x_coordinate;
   const y = event.y_coordinate;
 
   const sentence = targetName
-    ? `${heroName} moveu-se para ${targetName}.`
+    ? t('events.player_moved', { heroName, targetName })
     : x != null && y != null
       ? `${heroName} moveu-se para as coordenadas (${x}, ${y}).`
       : `${heroName} moveu-se para um novo local.`;

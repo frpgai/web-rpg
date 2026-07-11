@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
 import { sessionApi } from '../../../../../api/services/session';
 import { sceneApi } from '../../../../../api/services/scene';
+import { interactionApi, type InteractionAction } from '../../../../../api/services/interaction';
 import { useSessionSocket } from '../../../../../hooks/useSessionSocket';
 import { useSessionEventStream } from '../../../../../hooks/useSessionEventStream';
-import { useAuthStore } from '../../../../../stores/authStore';
 import { Spinner } from '../../../../../components/ui/Spinner';
 import { SessionHeader } from '../../../../../components/navigation/SessionHeader';
 import { MapViewer } from './MapViewer';
@@ -56,6 +56,10 @@ export function ScenePhase({ sessionId, session }: Props) {
   // POI selecionado ao clicar num pin no mapa (fora do modo dev) — abre a
   // bottom sheet de detalhes (spec 00153-mesa-jogo/scene.md seção 3.1).
   const [selectedPoi, setSelectedPoi] = useState<ScenePointOfInterest | null>(null);
+  // Ações ativas do POI selecionado, retornadas pelo motor de interações
+  // (GET /actions) — plano 00009-acoes-dinamicas-interaction-engine, item B.
+  // Substitui a antiga verificação local de proximidade/coordenadas.
+  const [poiActions, setPoiActions] = useState<InteractionAction[]>([]);
   // Evento dice_roll recebido via envelope de session_events (be-rpg PR #74)
   // — dispara o EventImmersiveOverlay. Caminho DORMENTE hoje: nenhum fluxo
   // real emite este envelope em tempo real ainda (separado e independente do
@@ -65,11 +69,6 @@ export function ScenePhase({ sessionId, session }: Props) {
   // nome do herói na linha de `scene_investigation` (be-rpg PR #76), mesmo
   // padrão de `useNpcGroupConversations.ts` (sessionApi.getPlayers).
   const [players, setPlayers] = useState<SessionPlayerDetail[]>([]);
-  // Jogador atual (usuário autenticado) dentro da lista de players da sessão
-  // — usado pelo POIDetailSheet (plano 00008-mover-jogador-no-mapa, item D)
-  // para condicionar o botão "Investigar" a `current_poi_id === poi.id`.
-  const authUserId = useAuthStore((state) => state.user?.id);
-  const currentPlayer = players.find((p) => p.user_id === authUserId) ?? null;
 
   const loadScene = useCallback(() => {
     if (!session.current_scene_id) {
@@ -128,6 +127,43 @@ export function ScenePhase({ sessionId, session }: Props) {
         .catch((err) => console.error('Failed to move player:', err));
     },
     [sessionId, loadPlayers, fetchEvents]
+  );
+
+  // Ação "Abrir" (slug 'open', motor de interações — plano
+  // 00009-acoes-dinamicas-interaction-engine) — interação sem rolagem sobre o
+  // POI selecionado. Reaproveita interactionApi.interact já usado por
+  // InvestigateModal, com roll_type 'normal' por não haver skill check aqui.
+  const handleOpenPoi = useCallback(
+    (poi: ScenePointOfInterest) => {
+      interactionApi
+        .interact(sessionId, {
+          target_type: 'poi',
+          target_id: poi.id,
+          action: 'open',
+          roll_type: 'normal',
+        })
+        .then(() => Promise.all([loadScene(), fetchEvents()]))
+        .catch((err) => console.error('Failed to open POI:', err));
+    },
+    [sessionId, loadScene, fetchEvents]
+  );
+
+  // Fallback genérico para slugs de ação futuros não tratados explicitamente
+  // (pedido do usuário) — dispara a mesma interação sem rolagem, parametrizada
+  // pelo slug recebido do backend.
+  const handleGenericPoiAction = useCallback(
+    (poi: ScenePointOfInterest, slug: string) => {
+      interactionApi
+        .interact(sessionId, {
+          target_type: 'poi',
+          target_id: poi.id,
+          action: slug,
+          roll_type: 'normal',
+        })
+        .then(() => Promise.all([loadScene(), fetchEvents()]))
+        .catch((err) => console.error(`Failed to run generic POI action "${slug}":`, err));
+    },
+    [sessionId, loadScene, fetchEvents]
   );
 
   useSessionSocket(
@@ -197,6 +233,13 @@ export function ScenePhase({ sessionId, session }: Props) {
         onPoiClick={(poiId) => {
           const poi = scene.points_of_interest.find((p) => p.id === poiId) ?? null;
           setSelectedPoi(poi);
+          setPoiActions([]);
+          if (poi) {
+            interactionApi
+              .getActions(sessionId, 'poi', poi.id)
+              .then(setPoiActions)
+              .catch((err) => console.error('Failed to load POI actions:', err));
+          }
         }}
       />
 
@@ -228,7 +271,7 @@ export function ScenePhase({ sessionId, session }: Props) {
       {selectedPoi && (
         <POIDetailSheet
           poi={selectedPoi}
-          currentPlayer={currentPlayer}
+          actions={poiActions}
           onClose={() => setSelectedPoi(null)}
           onMove={() => {
             handleMovePlayer(selectedPoi);
@@ -236,6 +279,14 @@ export function ScenePhase({ sessionId, session }: Props) {
           }}
           onInvestigate={() => {
             setInvestigateOpen(true);
+            setSelectedPoi(null);
+          }}
+          onOpen={() => {
+            handleOpenPoi(selectedPoi);
+            setSelectedPoi(null);
+          }}
+          onGenericAction={(slug) => {
+            handleGenericPoiAction(selectedPoi, slug);
             setSelectedPoi(null);
           }}
         />
