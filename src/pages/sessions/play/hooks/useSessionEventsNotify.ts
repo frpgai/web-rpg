@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
-import { sessionApi } from '../api/services/session';
-import { useSessionEventStream } from './useSessionEventStream';
+import { sessionApi } from '../../../../api/services/session';
+import { useSessionEventStream } from '../../../../hooks/useSessionEventStream';
 
 /**
  * Estado de "há evento não revelado" na cena atual (be-rpg PR #75,
