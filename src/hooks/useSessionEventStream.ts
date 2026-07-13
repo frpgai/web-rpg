@@ -10,6 +10,11 @@ const API_BASE_URL: string = import.meta.env.VITE_API_URL ?? '';
  * incluir os ids necessários (ex: `sessions/{id}/scenes/{sceneId}/events/stream`).
  * Passe `path` como `null`/`undefined` para desabilitar a assinatura (ex:
  * enquanto um id dependente ainda não está disponível).
+ *
+ * ATENÇÃO: este é um hook utilitário de infraestrutura de baixo nível — ele
+ * NÃO deve ser importado/chamado diretamente por componentes de tela (views).
+ * Sempre envelope-o por um hook de domínio semântico (ex: `useSceneEventsStream`,
+ * `usePlayersStream`) que já resolve o `path` a partir dos ids do domínio.
  */
 export function useSessionEventStream(path: string | null | undefined, onNotify: () => void) {
   useEffect(() => {
