@@ -1,9 +1,9 @@
 .ui-toast {
   position: fixed;
   left: 50%;
-  bottom: calc(var(--space-xl) + 64px);
+  top: calc(var(--space-xl) + 16px);
   transform: translateX(-50%);
-  z-index: 1000;
+  z-index: 10000; /* acima do DiceRollOverlay (9999): feedback de roll_failed não pode ficar escondido atrás do overlay de dados */
   background-color: var(--color-surface-high);
   border: 1px solid var(--color-outline-variant);
   color: var(--color-text);
@@ -26,7 +26,7 @@
 @keyframes ui-toast-fade-in {
   from {
     opacity: 0;
-    transform: translate(-50%, 8px);
+    transform: translate(-50%, -8px);
   }
   to {
     opacity: 1;

@@ -47,6 +47,7 @@ export function ScenePhase({ sessionId, session }: Props) {
   const [eventsLoading, setEventsLoading] = useState(true);
   const [activeNpc, setActiveNpc] = useState<SceneNPC | null>(null);
   const [investigateOpen, setInvestigateOpen] = useState(false);
+  const [investigatePresetPoi, setInvestigatePresetPoi] = useState<ScenePointOfInterest | null>(null);
   // POI recém-descoberto por uma investigação bem-sucedida nesta sessão de
   // tela (spec A00153 seção 4.3, passo 6) — usado para acionar o pulso
   // luminoso dourado do pin no MapViewer apenas na primeira renderização
@@ -298,7 +299,15 @@ export function ScenePhase({ sessionId, session }: Props) {
       )}
 
       {investigateOpen && (
-        <InvestigateModal sessionId={sessionId} scene={scene} onClose={() => setInvestigateOpen(false)} />
+        <InvestigateModal
+          sessionId={sessionId}
+          scene={scene}
+          presetPoi={investigatePresetPoi}
+          onClose={() => {
+            setInvestigateOpen(false);
+            setInvestigatePresetPoi(null);
+          }}
+        />
       )}
 
       {selectedPoi && (
@@ -311,6 +320,7 @@ export function ScenePhase({ sessionId, session }: Props) {
             setSelectedPoi(null);
           }}
           onInvestigate={() => {
+            setInvestigatePresetPoi(selectedPoi);
             setInvestigateOpen(true);
             setSelectedPoi(null);
           }}

@@ -35,7 +35,7 @@ type Props = {
 // de inventado — ver limitação no relatório final.
 export function POIDetailSheet({
   poi,
-  actions,
+  actions = [],
   onClose,
   onMove,
   onInvestigate,
