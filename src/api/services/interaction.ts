@@ -24,7 +24,7 @@ export const interactionApi = {
     apiClient
       .get(`api/v1/sessions/${sessionId}/targets/${targetType}/${targetId}/actions`)
       .json<{ actions: InteractionAction[] }>()
-      .then((res) => res.actions),
+      .then((res) => res.actions || []),
 
   interact: (sessionId: string, input: InteractInput) =>
     apiClient

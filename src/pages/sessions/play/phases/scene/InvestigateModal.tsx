@@ -31,17 +31,18 @@ type Props = {
 type Step = 'choice' | 'poi-pick';
 
 export function InvestigateModal({ sessionId, scene, presetPoi, onClose }: Props) {
-  const { eligiblePois, error, investigate, investigateGeneral } = useInvestigate(sessionId, scene);
+  const { eligiblePois, error, investigate, investigateGeneral, heroId } = useInvestigate(sessionId, scene);
   const [step, setStep] = useState<Step>('choice');
 
   useEffect(() => {
-    if (presetPoi) {
+    if (presetPoi && heroId) {
       investigate(presetPoi);
       onClose();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [presetPoi, heroId]);
 
+  if (presetPoi && !heroId) return null; // Wait for hero to load before dismissing/returning null
   if (presetPoi) return null;
 
   function pickPoi(poi: ScenePointOfInterest) {
