@@ -13,7 +13,6 @@ import type {
   SessionEvent,
   SessionPlayerDetail,
 } from '../../../../../../types';
-import { useSceneEventsStream } from './useSceneEventsStream';
 import { usePlayersStream } from './usePlayersStream';
 
 /**
@@ -157,10 +156,6 @@ export function useScenePhase(sessionId: string, session: SessionDetail) {
     },
     [sessionId, loadScene, fetchEvents]
   );
-
-  // Canal SSE de eventos da cena (be-rpg PR #75, GET .../scenes/{sceneId}/
-  // events/stream).
-  useSceneEventsStream(sessionId, scene?.id, fetchEvents);
 
   // Canal SSE dedicado de players da sessão (be-rpg PR #79, GET .../sessions/
   // {id}/players/stream) — dispara "notify" a cada join/leave/MovePlayer,

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
-import { sessionApi } from '../api/services/session';
-import { useSceneEventsStream } from '../pages/sessions/play/phases/scene/hooks/useSceneEventsStream';
+import { sessionApi } from '../../../../api/services/session';
+import { useSessionEventStream } from '../../../../hooks/useSessionEventStream';
 
 /**
  * Estado de "há evento não revelado" na cena atual (be-rpg PR #75,
@@ -29,7 +29,9 @@ export function useSessionEventsNotify(sessionId: string | undefined, sceneId: s
     refresh();
   }, [refresh]);
 
-  useSceneEventsStream(sessionId, sceneId, refresh);
+  const streamPath =
+    sessionId && sceneId ? `sessions/${sessionId}/scenes/${sceneId}/events/stream` : null;
+  useSessionEventStream(streamPath, refresh);
 
   return { hasUnread, refresh };
 }

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useSessionEventsNotify } from '../../../../../hooks/useSessionEventsNotify';
+import { useSessionEventsNotify } from '../../hooks/useSessionEventsNotify';
 import { SessionEventsSheet } from '../events/SessionEventsSheet';
 import './SessionBottomNav.css';
 
