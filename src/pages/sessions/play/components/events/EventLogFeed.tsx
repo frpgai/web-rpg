@@ -98,7 +98,7 @@ function EventCard({ event }: { event: SessionEvent }) {
           <p className="eventlogfeed-text">{extractText(event, t)}</p>
         )}
 
-        {isRollLike(event) && event.success != null && (
+        {isRollLike(event) && (
           <span
             className={`eventlogfeed-result ${
               event.success ? 'eventlogfeed-result-success' : 'eventlogfeed-result-failure'
@@ -106,6 +106,10 @@ function EventCard({ event }: { event: SessionEvent }) {
           >
             {event.success ? 'Sucesso' : 'Falha'}
           </span>
+        )}
+
+        {isRollLike(event) && event.feedback_text && (
+          <p className="eventlogfeed-text">{event.feedback_text}</p>
         )}
       </div>
     </li>

@@ -457,7 +457,8 @@ export type SessionEvent = {
   modifier?: number | null; // dice_roll / poi_investigation
   total?: number | null; // dice_roll / poi_investigation
   dc?: number | null; // poi_investigation
-  success?: boolean | null; // dice_roll / poi_investigation / scene_investigation
+  success: boolean; // dice_roll / poi_investigation / scene_investigation — sempre presente (NOT NULL DEFAULT false)
+  feedback_text?: string; // dice_roll / poi_investigation / scene_investigation — feedback textual de rolagem de investigação
   poi_id?: string | null; // poi_investigation
   // POIs revelados por uma ação "Vasculhar o Local" (be-rpg PR #76,
   // scene_investigation) — distinto de `poi_id` (investigação direcionada a

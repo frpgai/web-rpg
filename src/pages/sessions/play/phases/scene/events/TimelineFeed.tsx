@@ -93,6 +93,7 @@ function PoiInvestigationRow({ event, scene }: { event: SessionEvent; scene: Sce
           {event.success ? 'Sucesso' : 'Falha'}
         </span>
         {investigateText && <span className="timelinefeed-dice-flavor">{investigateText}</span>}
+        {event.feedback_text && <span className="timelinefeed-dice-flavor">{event.feedback_text}</span>}
       </div>
     </li>
   );
@@ -147,6 +148,7 @@ function SceneInvestigationRow({
       <span className="timelinefeed-dice-badge">d20</span>
       <div className="timelinefeed-dice-body">
         <span className="timelinefeed-dice-total">{sentence}</span>
+        {event.feedback_text && <span className="timelinefeed-dice-flavor">{event.feedback_text}</span>}
       </div>
     </li>
   );

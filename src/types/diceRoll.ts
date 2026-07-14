@@ -1,21 +1,26 @@
 export type DiceType = 'd4' | 'd6' | 'd8' | 'd10' | 'd12' | 'd20';
 export type RollType = 'normal' | 'advantage' | 'disadvantage';
+// RollContext conhecidos como literais + string para os demais
+// `poi_<actionSlug>` gerados dinamicamente no backend
+// (fmt.Sprintf("poi_%s", actionSlug)) — não há mais enum/CHECK fixo no
+// banco, então o tipo é afrouxado para `string` mantendo os literais
+// documentados abaixo para autocomplete/legibilidade.
 export type RollContext =
   | 'ability_check_str' | 'ability_check_dex' | 'ability_check_con'
   | 'ability_check_int' | 'ability_check_wis' | 'ability_check_cha'
   | 'saving_throw_str' | 'saving_throw_dex' | 'saving_throw_con'
   | 'saving_throw_int' | 'saving_throw_wis' | 'saving_throw_cha'
   | 'attack_roll_melee' | 'attack_roll_ranged'
-  | 'damage_roll_melee' | 'damage_roll_ranged';
+  | 'damage_roll_melee' | 'damage_roll_ranged'
+  | 'poi_investigate' | 'scene_investigate'
+  | (string & {});
 
 export interface CreateRollRequestInput {
   context_type:
     | 'npc_dialogue_option'
     | 'scene_poi'
     | 'combat_attack'
-    | 'saving_throw'
-    | 'poi_investigation_directed'
-    | 'poi_investigation_general';
+    | 'saving_throw';
   context_id: string;
   hero_id: string;
   // Perícia escolhida pelo jogador — obrigatória para
