@@ -22,7 +22,10 @@ import { PrivateRoute } from './components/common/PrivateRoute';
 import { useAuthStore } from './stores/authStore';
 import { systemService } from './api/services/systemService';
 import { useSystemStore } from './stores/systemStore';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import './App.css';
+
 
 export default function App() {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
@@ -100,7 +103,10 @@ export default function App() {
           </PrivateRoute>
         </Route>
       </Switch>
+      <ToastContainer theme="dark" position="top-center" />
     </Router>
   );
 }
+
+
 

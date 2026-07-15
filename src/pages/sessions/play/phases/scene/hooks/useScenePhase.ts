@@ -14,6 +14,9 @@ import type {
   SessionPlayerDetail,
 } from '../../../../../../types';
 import { usePlayersStream } from './usePlayersStream';
+import { useSessionEventStream } from '../../../../../../hooks/useSessionEventStream';
+import { toast } from 'react-toastify';
+
 
 /**
  * Concentra todo o estado, efeitos de montagem, handlers de ação e conexões
@@ -54,12 +57,8 @@ export function useScenePhase(sessionId: string, session: SessionDetail) {
   // nome do herói na linha de `scene_investigation` (be-rpg PR #76), mesmo
   // padrão de `useNpcGroupConversations.ts` (sessionApi.getPlayers).
   const [players, setPlayers] = useState<SessionPlayerDetail[]>([]);
-  // Toast de narrativa/erro exibido apenas para o jogador executor de uma
-  // interação sem rolagem, recebido via stream SSE dedicado de interações
-  // (be-rpg PR #82, GET .../interactions/stream) — plano
-  // 00012-resolucao-imediata-narrativa, item F.A.
-  const [narrativeToast, setNarrativeToast] = useState<string | null>(null);
   const currentUserId = useAuthStore((s) => s.user?.id);
+
 
   const loadScene = useCallback(() => {
     if (!session.current_scene_id) {
@@ -107,17 +106,16 @@ export function useScenePhase(sessionId: string, session: SessionDetail) {
   }, [loadPlayers]);
 
   // Movimentação real do jogador para um POI (plano 00008-mover-jogador-no-mapa,
-  // item C) — substitui o toast temporário anterior. Após sucesso, recarrega
-  // players (nova posição/POI atual) e eventos (log de movimento) da cena.
+  // item C) — substitui o toast temporário anterior. Confia puramente nas streams
+  // reativas (SSE) de players e eventos que já escutam as mudanças em tempo real.
   const handleMovePlayer = useCallback(
     (poi: ScenePointOfInterest) => {
       setPoiNotice({ poi, kind: 'move' });
       sessionApi
         .movePlayer(sessionId, 'poi', poi.id)
-        .then(() => Promise.all([loadPlayers(), fetchEvents()]))
         .catch((err) => console.error('Failed to move player:', err));
     },
-    [sessionId, loadPlayers, fetchEvents]
+    [sessionId]
   );
 
   // Ação "Abrir" (slug 'open', motor de interações — plano
@@ -160,7 +158,49 @@ export function useScenePhase(sessionId: string, session: SessionDetail) {
   // Canal SSE dedicado de players da sessão (be-rpg PR #79, GET .../sessions/
   // {id}/players/stream) — dispara "notify" a cada join/leave/MovePlayer,
   // independente da cena atual. Recarrega apenas a lista de players.
-  usePlayersStream(sessionId, loadPlayers);
+  usePlayersStream(
+    sessionId,
+    useCallback(
+      (dataStr: string) => {
+        try {
+          const payload = JSON.parse(dataStr);
+          if (
+            payload &&
+            payload.player_id &&
+            payload.x_coordinate !== undefined &&
+            payload.y_coordinate !== undefined
+          ) {
+            setPlayers((prev) =>
+              prev.map((p) =>
+                p.user_id === payload.player_id
+                  ? {
+                      ...p,
+                      x_coordinate: payload.x_coordinate,
+                      y_coordinate: payload.y_coordinate,
+                    }
+                  : p
+              )
+            );
+          } else {
+            // Fallback para atualizações de lobby ou payloads vazios (join/leave)
+            loadPlayers();
+          }
+        } catch (err) {
+          console.error('Failed to parse players stream message:', err);
+          loadPlayers();
+        }
+      },
+      [loadPlayers]
+    )
+  );
+
+
+  // Canal SSE dedicado de eventos da cena (be-rpg PR #75, GET .../scenes/{sceneId}/events/stream)
+  // — dispara "notify" a cada novo evento gerado na cena, mantendo a timeline
+  // do feed de eventos atualizada em tempo real para todos na mesa.
+  const sceneEventsStreamPath =
+    sessionId && scene?.id ? `sessions/${sessionId}/scenes/${scene.id}/events/stream` : null;
+  useSessionEventStream(sceneEventsStreamPath, fetchEvents);
 
   // Stream SSE dedicado de resolução de interações (be-rpg PR #82, GET
   // .../interactions/stream) — plano 00012-resolucao-imediata-narrativa,
@@ -174,17 +214,18 @@ export function useScenePhase(sessionId: string, session: SessionDetail) {
     },
     onNarrative: (payload) => {
       if (payload.executor_user_id === currentUserId) {
-        setNarrativeToast(payload.text);
+        toast(payload.text);
       }
     },
     onRollFailed: (payload) => {
       if (payload.executor_user_id !== currentUserId) return;
-      setNarrativeToast(payload.error);
+      toast.error(payload.error);
       if (['pending_roll', 'rolling'].includes(useDiceRollStore.getState().rollState)) {
         useDiceRollStore.getState().reset();
       }
     },
   });
+
 
   return {
     scene,
@@ -199,6 +240,7 @@ export function useScenePhase(sessionId: string, session: SessionDetail) {
     investigatePresetPoi,
     setInvestigatePresetPoi,
     justDiscoveredPoiId,
+    setJustDiscoveredPoiId,
     poiNotice,
     setPoiNotice,
     selectedPoi,
@@ -208,8 +250,6 @@ export function useScenePhase(sessionId: string, session: SessionDetail) {
     immersiveEvent,
     setImmersiveEvent,
     players,
-    narrativeToast,
-    setNarrativeToast,
     loadScene,
     fetchEvents,
     loadPlayers,
@@ -218,3 +258,4 @@ export function useScenePhase(sessionId: string, session: SessionDetail) {
     handleGenericPoiAction,
   };
 }
+

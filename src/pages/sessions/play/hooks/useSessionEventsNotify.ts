@@ -1,6 +1,14 @@
 import { useCallback, useEffect, useState } from 'react';
+import { toast } from 'react-toastify';
+import { useTranslation } from 'react-i18next';
 import { sessionApi } from '../../../../api/services/session';
 import { useSessionEventStream } from '../../../../hooks/useSessionEventStream';
+
+interface SessionEventNotifyPayload {
+  message: string;
+  level: 'info' | 'warning' | 'error' | 'success';
+  variables?: Record<string, string>;
+}
 
 /**
  * Estado de "há evento não revelado" na cena atual (be-rpg PR #75,
@@ -13,8 +21,21 @@ import { useSessionEventStream } from '../../../../hooks/useSessionEventStream';
  */
 export function useSessionEventsNotify(sessionId: string | undefined, sceneId: string | undefined) {
   const [hasUnread, setHasUnread] = useState(false);
+  const { t } = useTranslation();
 
-  const refresh = useCallback(() => {
+  const refresh = useCallback((dataStr: string) => {
+    console.log('useSessionEventsNotify.refresh', { dataStr });
+
+    try {
+      const event = JSON.parse(dataStr) as SessionEventNotifyPayload;
+      const key = event.message.replace(/^event\./, 'events.');
+      const message = t(key, event.variables ?? {});
+      const notify = toast[event.level] ?? toast.info;
+      notify(message);
+    } catch (err) {
+      console.error('Failed to parse SSE event data as JSON:', err, { dataStr });
+    }
+
     if (!sessionId || !sceneId) {
       setHasUnread(false);
       return;
@@ -24,10 +45,6 @@ export function useSessionEventsNotify(sessionId: string | undefined, sceneId: s
       .then((res) => setHasUnread(res.has_unread))
       .catch((err) => console.error('Failed to fetch events notify status:', err));
   }, [sessionId, sceneId]);
-
-  useEffect(() => {
-    refresh();
-  }, [refresh]);
 
   const streamPath =
     sessionId && sceneId ? `sessions/${sessionId}/scenes/${sceneId}/events/stream` : null;
