@@ -2,8 +2,9 @@ import { useSessionEventStream } from '../../../../../../hooks/useSessionEventSt
 
 export function usePlayersStream(
   sessionId: string | null | undefined,
-  onNotify: () => void
+  onNotify: (data: string) => void
 ) {
   const streamPath = sessionId ? `sessions/${sessionId}/players/stream` : null;
   useSessionEventStream(streamPath, onNotify);
 }
+

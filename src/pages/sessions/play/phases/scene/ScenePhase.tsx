@@ -1,6 +1,6 @@
 import { interactionApi } from '../../../../../api/services/interaction';
 import { Spinner } from '../../../../../components/ui/Spinner';
-import { Toast } from '../../../../../components/ui/Toast';
+
 import { SessionHeader } from '../../../../../components/navigation/SessionHeader';
 import { MapViewer } from './MapViewer';
 import { TimelineFeed } from './events/TimelineFeed';
@@ -129,18 +129,7 @@ export function ScenePhase({ sessionId, session }: Props) {
         />
       )}
 
-      {state.poiNotice && (
-        <div className="sceneplay-poi-toast" role="status">
-          <span>Deslocando-se para {state.poiNotice.poi.display_name}...</span>
-          <button type="button" onClick={() => state.setPoiNotice(null)} aria-label="Fechar aviso">
-            <span className="material-symbols-outlined">close</span>
-          </button>
-        </div>
-      )}
-
       <DiceRollOverlay />
-
-      <Toast message={state.narrativeToast} onDismiss={() => state.setNarrativeToast(null)} />
 
       {state.immersiveEvent && (
         <EventImmersiveOverlay event={state.immersiveEvent} onClose={() => state.setImmersiveEvent(null)} />

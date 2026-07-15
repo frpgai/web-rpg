@@ -16,8 +16,13 @@ export const sessionApi = {
     apiClient.get(`api/v1/sessions/${sessionId}/players`).json<SessionPlayerDetail[]>(),
   movePlayer: (sessionId: string, targetType: 'poi' | 'npc', targetId: string) =>
     apiClient
-      .post(`api/v1/sessions/${sessionId}/players/me/move`, {
-        json: { target_type: targetType, target_id: targetId },
+      .post(`api/v1/sessions/${sessionId}/interactions`, {
+        json: {
+          target_type: targetType,
+          target_id: targetId,
+          action: 'move',
+          roll_type: 'normal',
+        },
       })
       .then(() => {}),
   start: (sessionId: string) =>

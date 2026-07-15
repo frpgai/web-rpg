@@ -16,17 +16,22 @@ const API_BASE_URL: string = import.meta.env.VITE_API_URL ?? '';
  * Sempre envelope-o por um hook de domínio semântico (ex: `useSceneEventsStream`,
  * `usePlayersStream`) que já resolve o `path` a partir dos ids do domínio.
  */
-export function useSessionEventStream(path: string | null | undefined, onNotify: () => void) {
+export function useSessionEventStream(path: string | null | undefined, onNotify: (data: string) => void) {
   useEffect(() => {
     if (!path) return;
 
     const token = useAuthStore.getState().token;
     const sse = new EventSource(`${API_BASE_URL}/api/v1/${path}${path.includes('?') ? '&' : '?'}token=${token}`);
 
-    sse.addEventListener('notify', onNotify);
+    const handleEvent = (event: MessageEvent) => {
+      onNotify(event.data);
+    };
+
+    sse.addEventListener('notify', handleEvent);
 
     return () => {
       sse.close();
     };
   }, [path, onNotify]);
 }
+
