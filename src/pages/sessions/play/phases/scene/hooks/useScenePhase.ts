@@ -14,8 +14,8 @@ import type {
   SessionPlayerDetail,
 } from '../../../../../../types';
 import { usePlayersStream } from './usePlayersStream';
-import { useSessionEventStream } from '../../../../../../hooks/useSessionEventStream';
 import { toast } from 'react-toastify';
+import { useSceneEventsStreamTick } from '../../../context/SceneEventsStreamContext';
 
 
 /**
@@ -195,12 +195,15 @@ export function useScenePhase(sessionId: string, session: SessionDetail) {
   );
 
 
-  // Canal SSE dedicado de eventos da cena (be-rpg PR #75, GET .../scenes/{sceneId}/events/stream)
-  // — dispara "notify" a cada novo evento gerado na cena, mantendo a timeline
-  // do feed de eventos atualizada em tempo real para todos na mesa.
-  const sceneEventsStreamPath =
-    sessionId && scene?.id ? `sessions/${sessionId}/scenes/${scene.id}/events/stream` : null;
-  useSessionEventStream(sceneEventsStreamPath, fetchEvents);
+  // Canal SSE de eventos da cena (be-rpg PR #75, GET .../scenes/{sceneId}/events/stream)
+  // é assinado uma única vez em `PlayLayout` (via `useSessionEventsNotify`) —
+  // aqui apenas consome o "tick" repassado por `SceneEventsStreamContext` para
+  // recarregar a timeline, evitando uma segunda conexão `EventSource` ao mesmo path.
+  const streamTick = useSceneEventsStreamTick();
+  useEffect(() => {
+    if (streamTick === 0) return;
+    fetchEvents();
+  }, [streamTick, fetchEvents]);
 
   // Stream SSE dedicado de resolução de interações (be-rpg PR #82, GET
   // .../interactions/stream) — plano 00012-resolucao-imediata-narrativa,

@@ -103,7 +103,7 @@ export default function App() {
           </PrivateRoute>
         </Route>
       </Switch>
-      <ToastContainer theme="dark" position="top-center" />
+      <ToastContainer theme="dark" position="top-center"  autoClose={8000}/>
     </Router>
   );
 }

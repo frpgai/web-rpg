@@ -24,7 +24,6 @@
   "events": {
     "scene_investigation_success_true": "Vasculhou o local usando {{skill}} e descobriu novos segredos!",
     "scene_investigation_success_false": "Vasculhou a área usando {{skill}}, mas não encontrou nada de interesse nas proximidades.",
-    "player_moved": "{{hero}} moveu-se para {{target}}.",
-    "poi_move": "{{hero}} moveu-se para {{target}}."
+    "player_moved": "moveu-se para {{target}}."
   }
 }

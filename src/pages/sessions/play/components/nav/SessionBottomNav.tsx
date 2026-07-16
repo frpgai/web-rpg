@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { useSessionEventsNotify } from '../../hooks/useSessionEventsNotify';
 import { SessionEventsSheet } from '../events/SessionEventsSheet';
 import './SessionBottomNav.css';
 
@@ -15,6 +14,8 @@ const TABS: { id: SessionNavTab; icon: string; label: string }[] = [
 type Props = {
   sessionId: string;
   sceneId: string | null;
+  hasUnread: boolean;
+  refresh: () => void;
 };
 
 /**
@@ -34,9 +35,8 @@ type Props = {
  * "Chat" e "World Map" ainda não têm telas implementadas — pressioná-los é
  * no-op documentado até existir uma spec para essas rotas.
  */
-export function SessionBottomNav({ sessionId, sceneId }: Props) {
+export function SessionBottomNav({ sessionId, sceneId, hasUnread, refresh }: Props) {
   const [sheetOpen, setSheetOpen] = useState(false);
-  const { hasUnread, refresh } = useSessionEventsNotify(sessionId, sceneId ?? undefined);
 
   function handlePress(tab: SessionNavTab) {
     if (tab === 'events') {

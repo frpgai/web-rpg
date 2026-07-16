@@ -3,7 +3,9 @@ import { SessionBottomNav } from './SessionBottomNav';
 
 describe('SessionBottomNav', () => {
   it('renderiza as 4 abas Missões/Eventos/Equipe/Grimório com a aba Eventos ativa', () => {
-    render(<SessionBottomNav sessionId="test-session" sceneId="test-scene" />);
+    render(
+      <SessionBottomNav sessionId="test-session" sceneId="test-scene" hasUnread={false} refresh={() => {}} />
+    );
 
     const eventsTab = screen.getByRole('button', { name: /eventos/i });
     expect(eventsTab).toBeInTheDocument();
