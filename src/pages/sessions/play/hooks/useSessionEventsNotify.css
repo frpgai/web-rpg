@@ -1,0 +1,24 @@
+.session-event-toast {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.session-event-toast-body {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.session-event-toast-hero {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 0.8rem;
+  color: var(--color-primary);
+}
+
+.session-event-toast-message {
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  color: var(--color-text);
+}
