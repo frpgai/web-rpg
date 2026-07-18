@@ -14,7 +14,7 @@ export interface NarrativeStreamPayload {
   executor_user_id: string;
 }
 
-export interface RollFailedStreamPayload {
+export interface SystemErrorStreamPayload {
   interaction_id: string;
   error: string;
   executor_user_id: string;
@@ -23,13 +23,13 @@ export interface RollFailedStreamPayload {
 type Handlers = {
   onRollResolved: (payload: RollResolvedStreamPayload) => void;
   onNarrative: (payload: NarrativeStreamPayload) => void;
-  onRollFailed: (payload: RollFailedStreamPayload) => void;
+  onSystemError: (payload: SystemErrorStreamPayload) => void;
 };
 
 /**
  * Conecta ao stream SSE dedicado de resolução de interações
  * (`GET /api/v1/sessions/{sessionId}/interactions/stream`, be-rpg PR #82) e
- * despacha os eventos nomeados `roll_resolved`, `narrative` e `roll_failed`
+ * despacha os eventos nomeados `roll_resolved`, `narrative` e `system_error`
  * para os handlers informados. Substitui a antiga emissão desses eventos via
  * `useSessionSocket` (WebSocket) — plano 00012-resolucao-imediata-narrativa,
  * item F.A. Não afeta o stream de log de eventos da cena
@@ -66,17 +66,17 @@ export function useInteractionsStream(sessionId: string | null | undefined, hand
       }
     };
 
-    const onRollFailed = (message: MessageEvent) => {
+    const onSystemError = (message: MessageEvent) => {
       try {
-        handlersRef.current.onRollFailed(JSON.parse(message.data));
+        handlersRef.current.onSystemError(JSON.parse(message.data));
       } catch (err) {
-        console.error('Failed to parse roll_failed event:', err);
+        console.error('Failed to parse system_error event:', err);
       }
     };
 
     sse.addEventListener('roll_resolved', onRollResolved);
     sse.addEventListener('narrative', onNarrative);
-    sse.addEventListener('roll_failed', onRollFailed);
+    sse.addEventListener('system_error', onSystemError);
 
     sse.onerror = (err) => {
       console.error('Interactions stream error:', err);
