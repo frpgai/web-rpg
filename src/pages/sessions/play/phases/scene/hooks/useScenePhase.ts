@@ -208,7 +208,7 @@ export function useScenePhase(sessionId: string, session: SessionDetail) {
   // Stream SSE dedicado de resolução de interações (be-rpg PR #82, GET
   // .../interactions/stream) — plano 00012-resolucao-imediata-narrativa,
   // item F.A. `roll_resolved` dispara a animação de dados para todos os
-  // jogadores da mesa; `narrative`/`roll_failed` só geram feedback visual
+  // jogadores da mesa; `narrative`/`system_error` só geram feedback visual
   // (toast) para o jogador executor — os demais acompanham a mudança pelo
   // log de eventos da cena (item F.B, stream separado e inalterado).
   useInteractionsStream(sessionId, {
@@ -220,7 +220,7 @@ export function useScenePhase(sessionId: string, session: SessionDetail) {
         toast(payload.text);
       }
     },
-    onRollFailed: (payload) => {
+    onSystemError: (payload) => {
       if (payload.executor_user_id !== currentUserId) return;
       toast.error(payload.error);
       if (['pending_roll', 'rolling'].includes(useDiceRollStore.getState().rollState)) {

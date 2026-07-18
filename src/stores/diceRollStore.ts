@@ -42,7 +42,6 @@ interface DiceRollStore {
 let minRollDurationTimeout: any = null;
 let fallbackTimeout: any = null;
 let autoCloseTimeout: any = null;
-let rollingStartTime = 0;
 
 export const useDiceRollStore = create<DiceRollStore>((set, get) => ({
   rollState: 'idle',
@@ -83,7 +82,6 @@ export const useDiceRollStore = create<DiceRollStore>((set, get) => ({
     if (!sessionId || !rollInput) return;
 
     set({ rollState: 'rolling', error: null, showFallbackButton: false });
-    rollingStartTime = Date.now();
 
     if (sessionId === 'test') {
       set({ rollRequestId: 'test-req' });
@@ -184,17 +182,10 @@ export const useDiceRollStore = create<DiceRollStore>((set, get) => ({
     if (roll.sequence === 1) {
       set({ currentRoll: roll, attackRoll: roll });
 
-      // Garante uma duração mínima de animação de 1.5s para suspense
-      const elapsed = Date.now() - rollingStartTime;
-      const delay = Math.max(0, 1500 - elapsed);
-
-      if (minRollDurationTimeout) clearTimeout(minRollDurationTimeout);
-      minRollDurationTimeout = setTimeout(() => {
-        if (get().rollState === 'rolling') {
-          if (fallbackTimeout) clearTimeout(fallbackTimeout);
-          set({ rollState: 'reveal_raw' });
-        }
-      }, delay);
+      if (get().rollState === 'rolling') {
+        if (fallbackTimeout) clearTimeout(fallbackTimeout);
+        set({ rollState: 'reveal_raw' });
+      }
     } else if (roll.sequence === 2) {
       // Se é a rolagem de dano encadeada
       if (rollState === 'rolling_damage' || rollState === 'rolling') {
@@ -225,7 +216,6 @@ export const useDiceRollStore = create<DiceRollStore>((set, get) => ({
       // Se era ataque e tem dano pendente ou esperado
       if (currentRoll && currentRoll.sequence === 1 && currentRoll.sequence_total === 2) {
         set({ rollState: 'rolling_damage' });
-        rollingStartTime = Date.now();
 
         // Se o dano já está no buffer, aplica imediatamente após um leve delay
         if (pendingDamage) {
