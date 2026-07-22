@@ -13,6 +13,13 @@
 
 - **Nenhuma regra de negócio ou cálculo de stats ocorre no frontend** — HP, DEF, bônus de atributo, slots de magia (spell slots) e qualquer outro valor derivado são sempre calculados e retornados pelo backend. O frontend é responsável apenas por exibir dados e capturar o input do usuário.
 
+## Sem Fallback Mudo (Falhas Devem Ser Visíveis)
+
+- **Proibido** usar `?.`/`??`/`try{} catch {}` vazio/`as any` como forma de "blindar" contra dado ausente ou fora do formato esperado vindo da API. Isso é um dos principais problemas do projeto: uma quebra de contrato do backend (campo renomeado, resposta com formato diferente, endpoint mudou) fica **indistinguível** de um estado legítimo (ainda carregando, usuário não preencheu aquele campo), e o bug só aparece muito depois, exigindo investigação longa pra achar a causa.
+- Se um dado é **garantido pelo contrato da API** (o backend sempre retorna aquele campo para aquele estado), acesse direto (`hero.ancestry.name`), sem optional chaining nem fallback. Se o campo não vier, deixe o `TypeError` estourar e aparecer no console — é o sinal correto de que o contrato quebrou.
+- Reserve tratamento de erro (try/catch, estados de loading/error) apenas para o que é **genuinamente incerto**: falha de rede, 404/403 esperado, campo opcional documentado como tal.
+- Nunca silencie um `catch` sem logar (`console.error`) e sem propagar/exibir algo pro usuário. Um `catch {}` vazio com comentário tipo "falha → segue outro fluxo" esconde o erro real atrás de um comportamento que parece intencional.
+
 ## Stitch (Design System) — Pixel-Perfect via MCP
 
 - Projeto: https://stitch.withgoogle.com/projects/15326270198202696484

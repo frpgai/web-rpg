@@ -23,6 +23,7 @@ import { useAuthStore } from './stores/authStore';
 import { systemService } from './api/services/systemService';
 import { useSystemStore } from './stores/systemStore';
 import { ToastContainer } from 'react-toastify';
+import { GlobalLoadingIndicator } from './components/common/GlobalLoadingIndicator';
 import 'react-toastify/dist/ReactToastify.css';
 import './App.css';
 
@@ -43,6 +44,7 @@ export default function App() {
 
   return (
     <Router hook={useHashLocation}>
+      <GlobalLoadingIndicator />
       <Switch>
         {/* ==================== 1. ROTAS PÚBLICAS ==================== */}
         <Route path="/" component={LandingPage} />

@@ -1,12 +1,12 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 import { useLocation, useParams } from 'wouter';
+import { toast } from 'react-toastify';
 import { BottomSheet } from '../../../../components/ui/BottomSheet';
 import { CreationStepHeader } from '../../../../components/hero-creation/CreationStepHeader';
 import { CreationFooter } from '../../../../components/hero-creation/CreationFooter';
-import { useHeroCreationStore } from '../../../../stores/heroCreationStore';
-import { catalogApi } from '../../../../api/services/catalog';
+import { useAestheticsData } from './hooks/useAestheticsData';
+import { useAvatarSelection } from './hooks/useAvatarSelection';
 import { heroApi } from '../../../../api/services/hero';
-import type { AvatarPreset, HeroDetail } from '../../../../types';
 import { getAssetUrl } from '../../../../utils/url';
 import './AestheticsPage.css';
 
@@ -16,177 +16,95 @@ export default function AestheticsPage() {
   const heroId = params?.id ?? null;
 
   const {
-    ancestry,
-    characterClass,
-    background,
-    name,
-    backstory,
-    avatarId,
-    setName,
-    setBackstory,
-    setAvatar,
-  } = useHeroCreationStore();
+    hero,
+    heroLoaded,
+    heroError,
+    vocationDetails,
+  } = useAestheticsData(heroId);
 
-  const [hero, setHero] = useState<HeroDetail | null>(null);
-  const [heroInitialized, setHeroInitialized] = useState(false);
-  const [avatarList, setAvatarList] = useState<AvatarPreset[]>([]);
-  const [loadingAvatars, setLoadingAvatars] = useState(false);
-  const [avatarError, setAvatarError] = useState(false);
+  const {
+    avatarList,
+    avatarsLoading,
+    avatarError,
+    reloadAvatars,
+    avatarId,
+    setAvatarId,
+    activePreset,
+  } = useAvatarSelection(hero);
+
+  const [name, setName] = useState('');
+  const [backstory, setBackstory] = useState('');
   const [nameBlurred, setNameBlurred] = useState(false);
-  const [backstoryLen, setBackstoryLen] = useState(backstory.length);
 
   // BottomSheet State
   const [infoSheetOpen, setInfoSheetOpen] = useState(false);
   const [infoSheetTitle, setInfoSheetTitle] = useState('');
   const [infoSheetContent, setInfoSheetContent] = useState('');
 
-  // ─── Load hero from backend when heroId is present ────────────────────────
+  // ─── Hydrate local fields from the loaded hero draft ──────────────────────
+  useEffect(() => {
+    if (!hero) return;
+    if (hero.name) setName(hero.name);
+    if (hero.backstory) setBackstory(hero.backstory);
+  }, [hero]);
+
+  // ─── Guard: without a heroId there's no draft to hydrate from ─────────────
   useEffect(() => {
     if (!heroId) {
-      setHeroInitialized(true);
-      return;
+      setLocation('/app/hero/create/origins');
     }
-
-    let cancelled = false;
-    async function init() {
-      try {
-        const data = await heroApi.get(heroId!);
-        if (cancelled) return;
-        setHero(data);
-        // Hydrate store from backend data
-        if (data.name) setName(data.name);
-        if (data.backstory) {
-          setBackstory(data.backstory);
-          setBackstoryLen(data.backstory.length);
-        }
-      } catch {
-        setLocation('/hero/create/origins');
-      } finally {
-        if (!cancelled) setHeroInitialized(true);
-      }
-    }
-    init();
-    return () => { cancelled = true; };
-  }, [heroId]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [heroId, setLocation]);
 
   // ─── Guard: must have completed steps 1 and 2 ─────────────────────────────
   useEffect(() => {
-    if (!heroInitialized) return;
-
-    if (heroId) {
-      if (!hero?.ancestry || !hero?.class || !hero?.background) {
-        setLocation('/app/hero/create/origins');
-        return;
-      }
-      const attrs = (hero as any).sheet?.base_attributes ?? (hero as any).sheet?.attributes ?? hero.attributes;
-      if (!attrs) {
-        setLocation(`/app/hero/create/attributes/${heroId}`);
-      }
-    } else {
-      const { ancestry: a, characterClass: v, background: b } =
-        useHeroCreationStore.getState();
-      if (!a || !v || !b) {
-        setLocation('/app/hero/create/origins');
-      }
+    if (!heroLoaded || !hero) return;
+    if (!hero.ancestry || !hero.class || !hero.background) {
+      console.warn('AestheticsPage: hero draft missing origins, redirecting back');
+      // setLocation('/app/hero/create/origins');
+      return;
     }
-  }, [heroInitialized, hero, heroId, setLocation]);
-
-  // ─── Load avatars ──────────────────────────────────────────────────────────
-  const loadAvatars = useCallback(async () => {
-    const resolvedAncestry = ancestry ?? (hero?.ancestry ? { id: hero.ancestry.id } : null);
-    const resolvedClass = characterClass ?? (hero?.class ? { id: hero.class.id } : null);
-    const resolvedBackground = background ?? (hero?.background ? { id: hero.background.id } : null);
-    if (!resolvedAncestry || !resolvedClass) return;
-    setLoadingAvatars(true);
-    setAvatarError(false);
-    try {
-      const presets = await catalogApi.fetchAvatars(
-        resolvedAncestry.id,
-        resolvedClass.id,
-        resolvedBackground?.id,
-      );
-      setAvatarList(presets);
-      // Hydrate avatar from hero backend data if present
-      const heroAvatarUrl = hero?.avatar_url;
-      if (heroAvatarUrl) {
-        const matching = presets.find((p) => p.url === heroAvatarUrl);
-        if (matching && !avatarId) {
-          setAvatar(matching.id, matching.url);
-        }
-      } else {
-        const rec = presets.find((p) => p.recommended);
-        if (rec && !avatarId) {
-          setAvatar(rec.id, rec.url);
-        }
-      }
-    } catch (err) {
-      console.error('Failed to load avatars preset:', err);
-      setAvatarError(true);
-    } finally {
-      setLoadingAvatars(false);
+    if (!hero.attributes) {
+      // setLocation(`/app/hero/create/attributes/${heroId}`);
+      console.warn('AestheticsPage: hero draft missing attributes, redirecting back');
     }
-  }, [ancestry, characterClass, background, hero, avatarId, setAvatar]);
-
-  useEffect(() => {
-    if (!heroInitialized) return;
-    loadAvatars();
-  }, [loadAvatars, heroInitialized]);
-
-  // ─── Active avatar preset ──────────────────────────────────────────────────
-  const activePreset = avatarList.find((p) => p.id === avatarId) ?? avatarList[0] ?? null;
+  }, [heroLoaded, hero, heroId, setLocation]);
 
   // ─── Name validation ──────────────────────────────────────────────────────
   const nameIsValid = name.trim().length >= 2 && name.trim().length <= 40;
   const showNameError = nameBlurred && !nameIsValid;
 
-  const handleNameChange = (val: string) => {
-    setName(val);
-  };
-
   const handleNameBlur = () => {
     setNameBlurred(true);
   };
 
-  // ─── Backstory handler ─────────────────────────────────────────────────────
   const handleBackstoryChange = (val: string) => {
-    const trimmed = val.slice(0, 500);
-    setBackstory(trimmed);
-    setBackstoryLen(trimmed.length);
+    setBackstory(val.slice(0, 500));
   };
 
   // ─── Derived key attribute ────────────────────────────────────────────────
-  const keyAttrLabel = characterClass?.key_attribute?.toUpperCase() ?? '—';
-  // When heroId is present, read from sheet; otherwise not available (step 2 not in this store)
-  const keyAttr = characterClass?.key_attribute?.toLowerCase();
+  const keyAttrLabel = vocationDetails?.key_attribute?.toUpperCase() ?? '—';
+  const keyAttr = vocationDetails?.key_attribute?.toLowerCase();
   const sheetAttrs = hero?.attributes as Record<string, { final: number }> | null | undefined;
-  const keyAttrValue: number | null =
-    heroId && keyAttr && sheetAttrs ? (sheetAttrs[keyAttr]?.final ?? null) : null;
+  const keyAttrValue: number | null = keyAttr && sheetAttrs ? (sheetAttrs[keyAttr]?.final ?? null) : null;
 
   const canNext = nameIsValid && !!avatarId;
 
   const handleBack = () => {
-    if (heroId) {
-      setLocation(`/app/hero/create/attributes/${heroId}`);
-    } else {
-      setLocation('/app/hero/create/attributes');
-    }
+    setLocation(`/app/hero/create/attributes/${heroId}`);
   };
 
   const handleNext = async () => {
-    if (heroId) {
-      try {
-        const resolvedPreset = avatarList.find((p) => p.id === avatarId) || activePreset;
-        await heroApi.saveDraftAesthetics(heroId, {
-          name: name.trim(),
-          avatar_url: resolvedPreset?.url || '',
-          backstory: backstory.trim(),
-        });
-      } catch (err) {
-        console.error('Failed to save draft aesthetics:', err);
-      }
+    if (!heroId) return;
+    try {
+      await heroApi.saveDraftAesthetics(heroId, {
+        name: name.trim(),
+        avatar_url: activePreset?.url || '',
+        backstory: backstory.trim(),
+      });
       setLocation(`/app/hero/create/summary/${heroId}`);
-    } else {
-      setLocation('/app/hero/create/summary');
+    } catch (err: unknown) {
+      console.error('AestheticsPage: failed to save draft aesthetics', err);
+      toast.error('Não foi possível salvar. Tente novamente.');
     }
   };
 
@@ -197,8 +115,17 @@ export default function AestheticsPage() {
     setInfoSheetOpen(true);
   };
 
-  if (!heroInitialized) return null;
-  if (!heroId && (!ancestry || !characterClass)) return null;
+  if (!heroLoaded) return null;
+  if (heroError) {
+    return (
+      <div className="aesthetics-page-root">
+        <div className="aesthetics-error-banner">
+          <span className="aesthetics-error-banner-text">{heroError}</span>
+        </div>
+      </div>
+    );
+  }
+  if (!hero) return null;
 
   return (
     <div className="aesthetics-page-root">
@@ -218,15 +145,15 @@ export default function AestheticsPage() {
 
           {avatarError && (
             <div className="aesthetics-error-banner">
-              <span className="aesthetics-error-banner-text">Erro ao carregar avatares.</span>
-              <button className="aesthetics-retry-button" onClick={loadAvatars} type="button">
+              <span className="aesthetics-error-banner-text">{avatarError}</span>
+              <button className="aesthetics-retry-button" onClick={reloadAvatars} type="button">
                 Tentar novamente
               </button>
             </div>
           )}
 
           {/* Main Avatar Display */}
-          {loadingAvatars ? (
+          {avatarsLoading ? (
             <div className="aesthetics-main-avatar-skeleton" />
           ) : (
             <div className="aesthetics-main-avatar-container">
@@ -263,7 +190,7 @@ export default function AestheticsPage() {
           {/* Thumbnail Carousel */}
           <div className="aesthetics-thumbnail-carousel-container">
             <div className="aesthetics-thumbnail-carousel">
-              {loadingAvatars
+              {avatarsLoading
                 ? Array.from({ length: 3 }).map((_, i) => (
                     <div key={i} className="aesthetics-thumbnail-thumb aesthetics-thumbnail-skeleton" />
                   ))
@@ -276,7 +203,7 @@ export default function AestheticsPage() {
                         className={`aesthetics-thumbnail-thumb ${
                           isSelected ? 'aesthetics-thumbnail-selected' : 'aesthetics-thumbnail-unselected'
                         }`}
-                        onClick={() => setAvatar(preset.id, preset.url)}
+                        onClick={() => setAvatarId(preset.id)}
                         type="button"
                       >
                         <img
@@ -314,7 +241,7 @@ export default function AestheticsPage() {
             type="text"
             className={`aesthetics-input ${showNameError ? 'aesthetics-input-error' : ''}`}
             value={name}
-            onChange={(e) => handleNameChange(e.target.value)}
+            onChange={(e) => setName(e.target.value)}
             onBlur={handleNameBlur}
             placeholder="Ex: Aethelred o Audaz"
             maxLength={40}
@@ -343,7 +270,7 @@ export default function AestheticsPage() {
           />
           <div className="aesthetics-textarea-footer">
             <span className="aesthetics-textarea-hint">Breve introdução narrativa</span>
-            <span className="aesthetics-char-count">{backstoryLen} / 500</span>
+            <span className="aesthetics-char-count">{backstory.length} / 500</span>
           </div>
         </div>
 
@@ -352,45 +279,26 @@ export default function AestheticsPage() {
           <button
             type="button"
             className="aesthetics-context-box aesthetics-context-btn"
-            onClick={() => {
-              const nameStr = characterClass?.name ?? hero?.class?.name ?? 'Classe';
-              // Check if we have description on Vocation or CharacterClass, otherwise fallback
-              const desc = (characterClass as any)?.description ?? 'Sua vocação e profissão de combate.';
-              openInfo(nameStr, desc);
-            }}
+            onClick={() => openInfo(hero.class?.name ?? 'Classe', 'Sua vocação e profissão de combate.')}
           >
             <span className="aesthetics-context-box-label">CLASSE ⓘ</span>
-            <span className="aesthetics-context-box-value">
-              {characterClass?.name ?? hero?.class?.name ?? '—'}
-            </span>
+            <span className="aesthetics-context-box-value">{hero.class?.name ?? '—'}</span>
           </button>
           <button
             type="button"
             className="aesthetics-context-box aesthetics-context-btn"
-            onClick={() => {
-              const nameStr = ancestry?.name ?? hero?.ancestry?.name ?? 'Raça';
-              const desc = ancestry?.description ?? (hero?.ancestry as any)?.description ?? 'Sua origem biológica e traços físicos.';
-              openInfo(nameStr, desc);
-            }}
+            onClick={() => openInfo(hero.ancestry?.name ?? 'Raça', 'Sua origem biológica e traços físicos.')}
           >
             <span className="aesthetics-context-box-label">RAÇA ⓘ</span>
-            <span className="aesthetics-context-box-value">
-              {ancestry?.name ?? hero?.ancestry?.name ?? '—'}
-            </span>
+            <span className="aesthetics-context-box-value">{hero.ancestry?.name ?? '—'}</span>
           </button>
           <button
             type="button"
             className="aesthetics-context-box aesthetics-context-btn"
-            onClick={() => {
-              const nameStr = background?.name ?? hero?.background?.name ?? 'Antecedente';
-              const desc = background?.description ?? (hero?.background as any)?.description ?? 'O que seu herói fazia antes de virar aventureiro.';
-              openInfo(nameStr, desc);
-            }}
+            onClick={() => openInfo(hero.background?.name ?? 'Antecedente', 'O que seu herói fazia antes de virar aventureiro.')}
           >
             <span className="aesthetics-context-box-label">ANTECEDENTE ⓘ</span>
-            <span className="aesthetics-context-box-value">
-              {background?.name ?? hero?.background?.name ?? '—'}
-            </span>
+            <span className="aesthetics-context-box-value">{hero.background?.name ?? '—'}</span>
           </button>
           <button
             type="button"

@@ -1,13 +1,15 @@
 import { SvgIcon } from '../../../../components/ui/SvgIcon';
 import { Tooltip } from '../../../../components/ui/Tooltip';
+import type { SystemAttribute } from '../../../../api/services/attributes';
 import type { Ancestry, Background, Vocation } from '../../../../types';
 import type { PreviewResult } from '../../../../types';
-import { ATTR_LABELS, KEY_ATTR_PT, SECONDARY } from './origins.utils';
+import { KEY_ATTR_PT, SECONDARY } from './origins.utils';
 
 interface DestinySpectrumProps {
   ancestry: Ancestry | null;
   background: Background | null;
   vocation: Vocation | null;
+  systemAttributes: SystemAttribute[];
   preview: PreviewResult | null;
   previewLoading: boolean;
   previewError: string | null;
@@ -24,6 +26,7 @@ export function DestinySpectrum({
   ancestry,
   background,
   vocation,
+  systemAttributes,
   preview,
   previewLoading,
   previewError,
@@ -31,7 +34,9 @@ export function DestinySpectrum({
   const eligibleAttrs = background?.eligible_attributes ?? [];
 
   const eligibleLabel = eligibleAttrs.length > 0
-    ? eligibleAttrs.map((a) => ATTR_LABELS[a] ?? a.toUpperCase()).join(' / ')
+    ? eligibleAttrs
+        .map((attrId) => systemAttributes.find((a) => a.id === attrId)?.abbreviation ?? attrId)
+        .join(' / ')
     : null;
 
   const spellSlotsLabel = preview?.is_spellcaster

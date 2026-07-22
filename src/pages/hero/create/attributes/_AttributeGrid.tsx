@@ -1,16 +1,16 @@
 import './_AttributeGrid.css';
 import type { HeroAttributes } from '../../../../types';
-import type { PointBuyRules } from '../../../../hooks/usePointBuyRules';
 import type { SystemAttribute } from '../../../../api/services/attributes';
+import type { PointBuyRules } from './type';
 
 interface Props {
   attrs: HeroAttributes;
   remaining: number;
-  attributeBonuses: Partial<Record<keyof HeroAttributes, number>>;
+  attributeBonuses: Partial<Record<string, number>>;
   eligibleAttributes: string[];
   asiPoolRemaining: number;
   asiMaxPerAttr: number;
-  onSetAttr: (key: keyof HeroAttributes, val: number) => void;
+  onSetAttr: (key: string, val: number) => void;
   rules: PointBuyRules;
   systemAttributes: SystemAttribute[];
   loading?: boolean;
@@ -31,7 +31,7 @@ export function AttributeGrid({
   }
 
   // Derived exclusively from API data — no static fallbacks
-  const attrKeys = systemAttributes.map((a) => a.slug as keyof HeroAttributes);
+  const attrKeys = systemAttributes.map((a) => a.slug);
   const abbrevMap = Object.fromEntries(systemAttributes.map((a) => [a.slug, a.abbreviation]));
   const nameMap = Object.fromEntries(systemAttributes.map((a) => [a.slug, a.name]));
   const descMap = Object.fromEntries(systemAttributes.map((a) => [a.slug, a.description]));
