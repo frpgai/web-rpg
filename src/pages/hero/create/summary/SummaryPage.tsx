@@ -6,7 +6,7 @@ import { CreationFooter } from '../../../../components/hero-creation/CreationFoo
 import { heroApi } from '../../../../api/services/hero';
 import { catalogApi } from '../../../../api/services/catalog';
 import { getAssetUrl } from '../../../../utils/url';
-import { useHeroCreationStore } from '../../../../stores/heroCreationStore';
+// import { useHeroCreationStore } from '../../../../stores/heroCreationStore';
 import type {
   HeroDetail,
   ClassKit,
@@ -38,7 +38,8 @@ export default function SummaryPage() {
   const params = useParams<{ id?: string }>();
   const heroId = params?.id ?? null;
 
-  const store = useHeroCreationStore();
+  // const store = useHeroCreationStore();
+  const store = {} as any; // TODO: fix store typing
 
   const [hero, setHero] = useState<HeroDetail | null>(null);
   const [loading, setLoading] = useState(true);
@@ -63,7 +64,7 @@ export default function SummaryPage() {
 
     async function fetchAll() {
       try {
-        const data = await heroApi.get(heroId!);
+        const data = await heroApi.get(heroId!, 'draft');
         setHero(data);
 
         const vocationId = data.class?.id;

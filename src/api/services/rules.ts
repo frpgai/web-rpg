@@ -1,6 +1,6 @@
 import { apiClient } from '../client';
 
-export interface PointBuyRulesResponse {
+export interface SystemRulesResponse {
   id: string;
   system_id: string;
   point_buy_budget: number;
@@ -9,6 +9,6 @@ export interface PointBuyRulesResponse {
   point_buy_costs: Record<string, number>;
 }
 
-export async function getPointBuyRules(): Promise<PointBuyRulesResponse> {
-  return apiClient.get('api/v1/rules').json<PointBuyRulesResponse>();
+export async function getSystemRules(): Promise<SystemRulesResponse> {
+  return apiClient.get('api/v1/rules').json<SystemRulesResponse>();
 }

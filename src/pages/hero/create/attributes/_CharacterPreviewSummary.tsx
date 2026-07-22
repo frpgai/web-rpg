@@ -9,7 +9,12 @@ interface Props {
 }
 
 export function CharacterPreviewSummary({ ancestry, background, characterClass, loading }: Props) {
-  if (loading) {
+  // TODO: ancestry/background/characterClass no longer arrive as full nested
+  // objects from GET /heroes/{id} (flat Hero shape now — see NOTES.md /
+  // AttributesPage). Guarding here as a temporary skeleton until the caller
+  // is updated to pass the right shape; don't remove this guard without
+  // fixing the data flow first.
+  if (loading || !ancestry || !background || !characterClass) {
     return <div className="attr-preview-skeleton" />;
   }
 

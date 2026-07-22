@@ -1,12 +1,10 @@
 import { useLocation } from 'wouter';
-import { useState, useEffect } from 'react';
-import { useOriginsStep } from '../../../../hooks/useOriginsStep';
-import { useHeroCreationStore } from '../../../../stores/heroCreationStore';
+import { useState } from 'react';
+import { useOriginsData } from './hooks/useOriginsData';
 import { CreationStepHeader } from '../../../../components/hero-creation/CreationStepHeader';
 import { CreationFooter } from '../../../../components/hero-creation/CreationFooter';
 import { OracleButton } from '../../../../components/hero-creation/OracleButton';
-import type { Ancestry, Background, Vocation, DraftHero } from '../../../../types';
-import { heroApi } from '../../../../api/services/hero';
+import type { Ancestry, Background, Vocation } from '../../../../types';
 import { SECONDARY, TERTIARY } from './origins.utils';
 import { SectionPanel } from './SectionPanel';
 import { AncestryCard } from './AncestryCard';
@@ -33,37 +31,27 @@ export default function OriginsPage() {
     ancestries,
     vocations,
     backgrounds,
+    systemAttributes,
     preview,
-    catalogLoading: loading,
     previewLoading,
     previewError,
-    catalogError: error,
-    reloadCatalog: reload,
     fetchPreview,
-  } = useOriginsStep();
+    draft: draftData,
+    draftError,
+    discardDraft,
+    saveDraft,
+  } = useOriginsData();
 
-  const {
-    ancestry, characterClass, background,
-    setAncestry, setCharacterClass, setBackground, reset,
-  } = useHeroCreationStore();
+  const ancestriesLoading = ancestries.length === 0;
+  const vocationsLoading = vocations.length === 0;
+  const backgroundsLoading = backgrounds.length === 0;
 
-  // characterClass now accepts StoredClass (Vocation | CharacterClass)
-  const vocation = characterClass as Vocation | null;
+  const [ancestry, setAncestry] = useState<Ancestry | null>(null);
+  const [vocation, setVocation] = useState<Vocation | null>(null);
+  const [background, setBackground] = useState<Background | null>(null);
 
-  const [hasDraft, setHasDraft] = useState(false);
-  const [draftData, setDraftData] = useState<DraftHero | null>(null);
-
-  // Load draft on mount
-  useEffect(() => {
-    heroApi.getDraft().then((draft) => {
-      if (draft) {
-        setDraftData(draft);
-        setHasDraft(true);
-      }
-    }).catch(() => {
-      // silently ignore draft load errors
-    });
-  }, []);
+  const [dismissedDraft, setDismissedDraft] = useState(false);
+  const hasDraft = draftData !== null && !dismissedDraft;
 
   function handleContinueDraft() {
     if (!draftData) return;
@@ -72,7 +60,7 @@ export default function OriginsPage() {
     const foundBackground = draftData.background_id ? backgrounds.find((bg) => bg.id === draftData.background_id) : undefined;
 
     if (foundAncestry) setAncestry(foundAncestry);
-    if (foundVocation) setCharacterClass(foundVocation);
+    if (foundVocation) setVocation(foundVocation);
     if (foundBackground) setBackground(foundBackground);
 
     if (foundAncestry || foundVocation || foundBackground) {
@@ -83,19 +71,15 @@ export default function OriginsPage() {
       );
     }
 
-    setHasDraft(false);
-    setDraftData(null);
+    setDismissedDraft(true);
   }
 
   async function handleDiscardDraft() {
-    try {
-      await heroApi.deleteDraft();
-    } catch {
-      // non-blocking
-    }
-    reset();
-    setHasDraft(false);
-    setDraftData(null);
+    await discardDraft();
+    setAncestry(null);
+    setVocation(null);
+    setBackground(null);
+    setDismissedDraft(true);
   }
 
   function handleOracle() {
@@ -104,24 +88,19 @@ export default function OriginsPage() {
     const randVocation = vocations[Math.floor(Math.random() * vocations.length)];
     const randBackground = backgrounds[Math.floor(Math.random() * backgrounds.length)];
     setAncestry(randAncestry);
-    setCharacterClass(randVocation);
+    setVocation(randVocation);
     setBackground(randBackground);
     fetchPreview(randAncestry.id, randVocation.id, randBackground.id);
   }
 
   async function handleNext() {
     if (!ancestry || !vocation || !background) return;
-    try {
-      const draft = await heroApi.saveDraft({
-        draft_step: 'origins',
-        ancestry_id: ancestry.id,
-        vocation_id: vocation.id,
-        background_id: background.id,
-      });
-      setLocation(`/app/hero/create/attributes/${draft.id}`);
-    } catch {
-      console.error('Failed to save draft');
-    }
+    const draft = await saveDraft({
+      ancestry_id: ancestry.id,
+      vocation_id: vocation.id,
+      background_id: background.id,
+    });
+    setLocation(`/app/hero/create/attributes/${draft.id}`);
   }
 
   function handleBack() {
@@ -136,7 +115,7 @@ export default function OriginsPage() {
   }
 
   function handleSelectVocation(v: Vocation) {
-    setCharacterClass(v);
+    setVocation(v);
     fetchPreview(ancestry?.id ?? null, v.id, background?.id ?? null);
   }
 
@@ -163,13 +142,14 @@ export default function OriginsPage() {
           progressPct={25}
         />
 
+        {draftError ? <ErrorRow message={draftError} /> : null}
+
         {/* ── Ancestralidade ───────────────────────────────────────────────── */}
         <SectionPanel
           icon="notebook"
           iconColor={SECONDARY}
           title="Ancestralidade"
-          loading={loading}
-          errorSlot={error ? <ErrorRow message={error} onRetry={reload} /> : null}
+          loading={ancestriesLoading}
           skeletonHeight={110}
           gridClassName="origins-ancestry-grid"
         >
@@ -188,14 +168,14 @@ export default function OriginsPage() {
           icon="shield-star"
           iconColor={SECONDARY}
           title="Antecedente"
-          loading={loading}
-          errorSlot={error ? <ErrorRow message={error} onRetry={reload} /> : null}
+          loading={backgroundsLoading}
           gridClassName="origins-row-grid"
         >
           {backgrounds.map((bg: Background) => (
             <BackgroundCard
               key={bg.id}
               background={bg}
+              systemAttributes={systemAttributes}
               selected={background?.id === bg.id}
               onSelect={handleSelectBackground}
             />
@@ -207,7 +187,7 @@ export default function OriginsPage() {
           icon="dice-multiple"
           iconColor={TERTIARY}
           title="Vocação"
-          loading={loading}
+          loading={vocationsLoading}
           gridClassName="origins-row-grid"
         >
           {vocations.map((v: Vocation) => (
@@ -225,6 +205,7 @@ export default function OriginsPage() {
           ancestry={ancestry}
           background={background}
           vocation={vocation}
+          systemAttributes={systemAttributes}
           preview={preview}
           previewLoading={previewLoading}
           previewError={previewError}
@@ -233,7 +214,7 @@ export default function OriginsPage() {
         {/* ── Oráculo ──────────────────────────────────────────────────────── */}
         <OracleButton
           onPress={handleOracle}
-          disabled={loading}
+          disabled={ancestriesLoading || vocationsLoading || backgroundsLoading}
           hint={canNext ? 'Rolar origens aleatórias' : 'Selecione ancestralidade, antecedente e vocação'}
         />
       </div>

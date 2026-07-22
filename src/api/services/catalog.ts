@@ -11,12 +11,12 @@ export const catalogApi = {
   vocationDetails: (id: string) => apiClient.get(`api/v1/vocations/${id}`).json<VocationDetails>(),
   avatars: (ancestry: string, classSlug: string) =>
     apiClient.get(`api/v1/avatars?ancestry=${ancestry}&characterClass=${classSlug}`).json<AvatarPreset[]>(),
-  fetchAvatars: (ancestryId: string, classId: string, backgroundId?: string) => {
+  fetchAvatars: (ancestryId: string, vocationId: string, backgroundId: string) => {
     const params = new URLSearchParams({
       ancestry_id: ancestryId,
-      characterClass_id: classId,
+      vocation_id: vocationId,
+      background_id: backgroundId,
     });
-    if (backgroundId) params.append('background_id', backgroundId);
     return apiClient.get(`api/v1/avatars?${params.toString()}`).json<AvatarPreset[]>();
   },
   vocationStartingKits: (vocationId: string) =>

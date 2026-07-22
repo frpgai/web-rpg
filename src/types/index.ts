@@ -254,14 +254,10 @@ export interface AvatarPreset {
   recommended: boolean;
 }
 
-export interface HeroAttributes {
-  str: number;
-  dex: number;
-  con: number;
-  int: number;
-  wis: number;
-  cha: number;
-}
+// Keyed by system attribute slug (str/dex/con/... today, but driven by
+// whatever the active system's system_attributes table defines — never a
+// fixed set of columns).
+export type HeroAttributes = Record<string, number>;
 
 export interface HeroStats {
   hp: number;
@@ -271,22 +267,15 @@ export interface HeroStats {
   def: number;
 }
 
-export interface HeroSheet {
-  attributes: HeroAttributes;
-  base_attributes?: HeroAttributes;
-  bonuses?: Record<string, number>;
-  stats: HeroStats;
-  traits: string[];
-  abilities: ClassAbility[];
-  inventory: { name: string; rarity: string; weight_kg: number }[];
-}
-
 export interface HeroDetail {
   id: string;
   name: string;
   ancestry: { id: string; slug: string; name: string } | null;
   class: { id: string; slug: string; name: string } | null;
   background: { id: string; slug: string; name: string } | null;
+  ancestry_id: string;
+  vocation_id: string;
+  background_id: string;
   level: number;
   xp: number;
   xp_next_level: number;

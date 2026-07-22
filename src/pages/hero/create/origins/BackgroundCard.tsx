@@ -1,16 +1,18 @@
 import { useState } from 'react';
 import { SvgIcon } from '../../../../components/ui/SvgIcon';
 import { BottomSheet } from '../../../../components/ui/BottomSheet';
+import type { SystemAttribute } from '../../../../api/services/attributes';
 import type { Background } from '../../../../types';
-import { ATTR_LABELS, SECONDARY } from './origins.utils';
+import { SECONDARY } from './origins.utils';
 
 interface BackgroundCardProps {
   background: Background;
+  systemAttributes: SystemAttribute[];
   selected: boolean;
   onSelect: (background: Background) => void;
 }
 
-export function BackgroundCard({ background, selected, onSelect }: BackgroundCardProps) {
+export function BackgroundCard({ background, systemAttributes, selected, onSelect }: BackgroundCardProps) {
   const [sheetOpen, setSheetOpen] = useState(false);
 
   function handleInfo(e: React.MouseEvent) {
@@ -19,6 +21,11 @@ export function BackgroundCard({ background, selected, onSelect }: BackgroundCar
   }
 
   const eligible = background.eligible_attributes ?? [];
+
+  function attrLabel(attrId: string): string {
+    const attr = systemAttributes.find((a) => a.id === attrId);
+    return attr ? attr.abbreviation : attrId;
+  }
 
   return (
     <>
@@ -41,7 +48,7 @@ export function BackgroundCard({ background, selected, onSelect }: BackgroundCar
             <div className="origins-bg-attr-chips">
               {eligible.map((attr) => (
                 <span key={attr} className="origins-bg-attr-chip">
-                  {ATTR_LABELS[attr] ?? attr.toUpperCase()}
+                  {attrLabel(attr)}
                 </span>
               ))}
             </div>
@@ -71,7 +78,7 @@ export function BackgroundCard({ background, selected, onSelect }: BackgroundCar
             <div className="bottom-sheet-attrs-list">
               {eligible.map((attr) => (
                 <span key={attr} className="bottom-sheet-attr-chip">
-                  {ATTR_LABELS[attr] ?? attr.toUpperCase()}
+                  {attrLabel(attr)}
                 </span>
               ))}
             </div>
